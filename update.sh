@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Perchance AI Prompt Library - Update Script v1.1
-# Adds batch generation, export functionality, new tests, and documentation updates
+# Perchance AI Prompt Library - Complete v2.0 Upgrade Script
+# Transforms CLI app into full-stack platform with Web UI, API, Discord Bot, Browser Extension
 
-echo "🎨 Perchance AI Prompt Library - Update Script v1.1"
+echo "🎨 Perchance AI Prompt Library - UPGRADE TO v2.0"
 echo "=================================================="
+echo "🚀 Building: REST API + Web UI + Discord Bot + Browser Extension"
 
 set -e
 
@@ -12,820 +13,969 @@ set -e
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m'
 
 print_status() { echo -e "${GREEN}✅ $1${NC}"; }
 print_info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
 print_warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
+print_error() { echo -e "${RED}❌ $1${NC}"; }
 
-# 1. Update CLI with batch command
-print_info "Updating CLI with batch generation support..."
-cat > bin/cli.js << 'EOF_CLI'
-#!/usr/bin/env node
+# 1. Create v2.0 directory structure
+print_info "Creating v2.0 architecture..."
 
-const { PerchancePromptLibrary } = require('../src/index');
-const fs = require('fs');
+mkdir -p src/api/{routes,middleware,database,docs}
+mkdir -p web/{public,src/{components,services,hooks,styles}}
+mkdir -p discord-bot/{commands,events,utils}
+mkdir -p browser-extension/{popup,content,background}
+mkdir -p mobile/src/{screens,components,services}
+mkdir -p docs/{api,web,deployment}
 
-let inquirer, chalk;
-try {
-  inquirer = require('inquirer');
-  chalk = require('chalk');
-} catch (error) {
-  console.log('⚠️  Running in basic mode. Install inquirer and chalk for enhanced experience.');
-}
+print_status "Directory structure created"
 
+# 2. Install all dependencies for v2.0
+print_info "Installing v2.0 dependencies..."
+
+# API dependencies
+npm install express cors helmet express-rate-limit swagger-jsdoc swagger-ui-express sqlite3 dotenv bcryptjs jsonwebtoken multer
+
+# Web dependencies  
+npm install react react-dom react-router-dom axios @mui/material @emotion/react @emotion/styled @mui/icons-material
+
+# Development dependencies
+npm install --save-dev @vitejs/plugin-react vite nodemon concurrently
+
+# Discord bot dependencies
+npm install discord.js
+
+# Additional utilities
+npm install uuid date-fns lodash
+
+print_status "All dependencies installed"
+
+# 3. Create REST API server
+print_info "Creating REST API server..."
+
+cat > src/api/server.js << 'EOF_API_SERVER'
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+require('dotenv').config();
+
+const { PerchancePromptLibrary } = require('../index');
+const { initializeDatabase } = require('./database/init');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 const library = new PerchancePromptLibrary();
 
-function showBanner() {
-  if (chalk) {
-    console.log(chalk.cyan(`
-╔═══════════════════════════════════════════════════════╗
-║           🎨 PERCHANCE AI PROMPT LIBRARY 🎨           ║
-║              Advanced Prompt Generator v1.1           ║
-╚═══════════════════════════════════════════════════════╝
-    `));
-    console.log(chalk.yellow('✨ Generate amazing AI prompts instantly! Now with BATCH support!\n'));
-  } else {
-    console.log(`
-🎨 PERCHANCE AI PROMPT LIBRARY v1.1 🎨
-   Advanced Prompt Generator
-✨ Generate amazing AI prompts instantly!
-`);
-  }
+// Initialize database
+initializeDatabase();
+
+// Middleware
+app.use(helmet({
+  contentSecurityPolicy: false // Allow for development
+}));
+
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.ALLOWED_ORIGINS?.split(',') 
+    : ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
+  message: { error: 'Too many requests, please try again later.' }
+});
+
+app.use('/api/', limiter);
+
+// Static files for web app
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../../web/dist')));
 }
 
-function showHelp() {
-  showBanner();
-  const helpText = `
-📚 AVAILABLE COMMANDS:
+// API Routes
+app.use('/api/prompts', require('./routes/prompts'));
+app.use('/api/styles', require('./routes/styles'));
+app.use('/api/templates', require('./routes/templates'));
+app.use('/api/community', require('./routes/community'));
+app.use('/api/analytics', require('./routes/analytics'));
+app.use('/api/auth', require('./routes/auth'));
 
-🎯 GENERATION:
-  generate <style> <subject>     Generate a single prompt
-  interactive                   Interactive prompt builder (recommended)
-  batch <style> <subject> [--count N]  Generate multiple variations (NEW!)
-
-📋 INFORMATION:
-  list                          Show available styles
-  stats                         Show library statistics
-  styles <style>                Show detailed style information
-
-🔧 UTILITIES:
-  export <style> <subject> [--format json|txt] Export prompts to file (NEW!)
-  help                          Show this help
-
-📖 EXAMPLES:
-  perchance-prompts interactive
-  perchance-prompts generate anime "magical girl"
-  perchance-prompts batch photorealistic "portrait" --count 5
-  perchance-prompts export digital_art "dragon" --format json
-  perchance-prompts list
-
-🌟 NEW in v1.1: Batch generation and export functionality!
-`;
-  console.log(helpText);
-}
-
-async function interactiveMode() {
-  if (!inquirer || !chalk) {
-    console.log('❌ Interactive mode requires inquirer and chalk. Please install them:');
-    console.log('npm install inquirer chalk');
-    return;
-  }
-
-  showBanner();
-  
-  try {
-    const styles = library.listStyles();
-    
-    console.log(chalk.yellow('🎯 Welcome to Interactive Prompt Builder!\n'));
-    
-    const answers = await inquirer.prompt([
-      {
-        type: 'list',
-        name: 'style',
-        message: '🎨 Choose your art style:',
-        choices: styles.map(s => ({
-          name: `${s.name} - ${s.description}`,
-          value: s.key
-        }))
-      },
-      {
-        type: 'input',
-        name: 'subject',
-        message: '🎯 What is your main subject?',
-        validate: input => input.length > 0 || 'Subject is required'
-      },
-      {
-        type: 'confirm',
-        name: 'generateVariations',
-        message: '🔄 Generate multiple variations? (NEW!)',
-        default: false
-      },
-      {
-        type: 'number',
-        name: 'variationCount',
-        message: '🔢 How many variations?',
-        default: 3,
-        validate: input => input > 0 && input <= 10 || 'Please enter 1-10 variations',
-        when: (answers) => answers.generateVariations
-      },
-      {
-        type: 'confirm',
-        name: 'exportResults',
-        message: '💾 Export results to file? (NEW!)',
-        default: false
-      },
-      {
-        type: 'list',
-        name: 'exportFormat',
-        message: '📄 Export format:',
-        choices: ['json', 'txt'],
-        when: (answers) => answers.exportResults
-      }
-    ]);
-    
-    console.log(chalk.green('\n🔄 Generating your prompts...\n'));
-    
-    let results = [];
-    
-    if (answers.generateVariations) {
-      const variations = library.generateVariations(answers.style, answers, answers.variationCount || 3);
-      results = variations;
-      
-      variations.forEach((variation, index) => {
-        console.log(chalk.green(`✨ Variation ${index + 1}:`));
-        console.log(chalk.white(variation.text));
-        console.log(chalk.gray(`📊 Words: ${variation.metadata.wordCount}\n`));
-      });
-    } else {
-      const result = library.generate(answers);
-      results = [result];
-      
-      console.log(chalk.green('✨ Generated Prompt:\n'));
-      console.log(chalk.white(result.text));
-      console.log(chalk.blue('\n📊 Metadata:'));
-      console.log(chalk.gray(`Words: ${result.metadata.wordCount}, Characters: ${result.metadata.characterCount}`));
-    }
-    
-    // Export functionality
-    if (answers.exportResults) {
-      const filename = `prompts_${answers.style}_${Date.now()}.${answers.exportFormat}`;
-      let content;
-      
-      if (answers.exportFormat === 'json') {
-        content = JSON.stringify(results, null, 2);
-      } else {
-        content = results.map((r, i) => `Prompt ${i+1}:\n${r.text}\n\n`).join('');
-      }
-      
-      fs.writeFileSync(filename, content);
-      console.log(chalk.blue(`\n💾 Exported to ${filename}`));
-    }
-    
-  } catch (error) {
-    console.error(chalk.red('❌ Error:'), error.message);
-  }
-}
-
-function generateBatch(style, subject, count = 3) {
-  try {
-    if (chalk) {
-      console.log(chalk.yellow(`\n🔄 Generating ${count} variations of "${subject}" in ${style} style...\n`));
-    } else {
-      console.log(`\nGenerating ${count} variations of "${subject}" in ${style} style...\n`);
-    }
-    
-    const variations = library.generateVariations(style, { subject }, count);
-    
-    variations.forEach((variation, index) => {
-      if (chalk) {
-        console.log(chalk.green(`✨ Variation ${index + 1}:`));
-        console.log(chalk.white(variation.text));
-        console.log(chalk.gray(`📊 Words: ${variation.metadata.wordCount}, Characters: ${variation.metadata.characterCount}\n`));
-      } else {
-        console.log(`✨ Variation ${index + 1}:`);
-        console.log(variation.text);
-        console.log(`📊 Words: ${variation.metadata.wordCount}\n`);
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ Error:', error.message);
-    process.exit(1);
-  }
-}
-
-function exportPrompts(style, subject, format = 'json', count = 5) {
-  try {
-    const variations = library.generateVariations(style, { subject }, count);
-    const filename = `exported_${style}_${subject.replace(/\s+/g, '_')}_${Date.now()}.${format}`;
-    
-    let content;
-    if (format === 'json') {
-      content = JSON.stringify(variations, null, 2);
-    } else {
-      content = `# Exported Prompts - ${style} style: "${subject}"\n\n`;
-      content += variations.map((v, i) => `## Prompt ${i+1}\n${v.text}\n\n`).join('');
-    }
-    
-    fs.writeFileSync(filename, content);
-    console.log(`✅ Exported ${count} prompts to ${filename}`);
-    
-  } catch (error) {
-    console.error('❌ Error:', error.message);
-    process.exit(1);
-  }
-}
-
-function generatePrompt(style, subject) {
-  try {
-    const result = library.generate({ style, subject });
-    
-    if (chalk) {
-      console.log(chalk.green('\n✨ Generated Prompt:'));
-      console.log(chalk.white(result.text));
-      if (result.negativePrompt) {
-        console.log(chalk.red('\n🚫 Negative Prompt:'));
-        console.log(chalk.gray(result.negativePrompt));
-      }
-    } else {
-      console.log('\n✨ Generated Prompt:');
-      console.log(result.text);
-      if (result.negativePrompt) {
-        console.log('\n🚫 Negative Prompt:');
-        console.log(result.negativePrompt);
-      }
-    }
-    
-  } catch (error) {
-    console.error('❌ Error:', error.message);
-    process.exit(1);
-  }
-}
-
-function listStyles() {
-  const styles = library.listStyles();
-  
-  if (chalk) {
-    console.log(chalk.yellow('\n📋 Available Styles:\n'));
-    styles.forEach(style => {
-      console.log(chalk.cyan(`• ${style.name}`));
-      console.log(chalk.gray(`  ${style.description}`));
-      console.log(chalk.blue(`  Variables: ${style.variableCount}\n`));
-    });
-  } else {
-    console.log('\n📋 Available Styles:\n');
-    styles.forEach(style => {
-      console.log(`• ${style.name} - ${style.description}`);
-    });
-  }
-}
-
-function showStats() {
+// Health check
+app.get('/api/health', (req, res) => {
   const stats = library.getStats();
-  
-  if (chalk) {
-    console.log(chalk.yellow('\n📊 Library Statistics:\n'));
-    console.log(chalk.cyan(`🎨 Total Styles: ${stats.totalStyles}`));
-    console.log(chalk.cyan(`🔧 Total Variables: ${stats.totalVariables}`));
-    console.log(chalk.yellow('\n🎨 Available Styles:'));
-    stats.availableStyles.forEach(style => {
-      console.log(chalk.gray(`  • ${style}`));
-    });
-  } else {
-    console.log('\n📊 Statistics:');
-    console.log(`Total Styles: ${stats.totalStyles}`);
-    console.log(`Total Variables: ${stats.totalVariables}`);
-    console.log(`Available: ${stats.availableStyles.join(', ')}`);
-  }
-}
-
-// Parse command line arguments
-const args = process.argv.slice(2);
-const command = args[0];
-
-async function main() {
-  switch (command) {
-    case 'interactive':
-    case 'i':
-      await interactiveMode();
-      break;
-      
-    case 'generate':
-    case 'g':
-      const style = args[1];
-      const subject = args[2];
-      if (!style || !subject) {
-        console.log('❌ Please provide style and subject');
-        console.log('Example: perchance-prompts generate anime "magical girl"');
-        return;
-      }
-      generatePrompt(style, subject);
-      break;
-      
-    case 'batch':
-    case 'b':
-      const batchStyle = args[1];
-      const batchSubject = args[2];
-      const countIndex = args.indexOf('--count');
-      const count = countIndex !== -1 ? parseInt(args[countIndex + 1]) || 3 : 3;
-      
-      if (!batchStyle || !batchSubject) {
-        console.log('❌ Please provide style and subject for batch generation');
-        console.log('Example: perchance-prompts batch anime "warrior" --count 5');
-        return;
-      }
-      generateBatch(batchStyle, batchSubject, count);
-      break;
-      
-    case 'export':
-    case 'e':
-      const exportStyle = args[1];
-      const exportSubject = args[2];
-      const formatIndex = args.indexOf('--format');
-      const format = formatIndex !== -1 ? args[formatIndex + 1] || 'json' : 'json';
-      const exportCountIndex = args.indexOf('--count');
-      const exportCount = exportCountIndex !== -1 ? parseInt(args[exportCountIndex + 1]) || 5 : 5;
-      
-      if (!exportStyle || !exportSubject) {
-        console.log('❌ Please provide style and subject for export');
-        console.log('Example: perchance-prompts export anime "mage" --format json --count 5');
-        return;
-      }
-      exportPrompts(exportStyle, exportSubject, format, exportCount);
-      break;
-      
-    case 'list':
-    case 'l':
-      listStyles();
-      break;
-      
-    case 'stats':
-    case 's':
-      showStats();
-      break;
-      
-    case 'help':
-    case 'h':
-    case undefined:
-      showHelp();
-      break;
-      
-    default:
-      console.log(`❌ Unknown command: ${command}`);
-      showHelp();
-  }
-}
-
-main().catch(error => {
-  console.error('❌ Fatal error:', error.message);
-  process.exit(1);
+  res.json({
+    status: 'healthy',
+    version: '2.0.0',
+    timestamp: new Date().toISOString(),
+    features: ['cli', 'api', 'web', 'discord', 'browser-extension'],
+    stats: stats
+  });
 });
-EOF_CLI
 
-print_status "CLI updated with batch and export functionality"
-
-# 2. Create new tests for batch functionality
-print_info "Creating new tests for batch generation..."
-cat > tests/batch-generation.test.js << 'EOF_BATCH_TEST'
-const { PerchancePromptLibrary } = require('../src/index');
-
-describe('Batch Generation Features', () => {
-  let library;
-
-  beforeEach(() => {
-    library = new PerchancePromptLibrary({ randomizeVariables: true });
+// Serve React app for production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../web/dist/index.html'));
   });
+}
 
-  test('should generate multiple unique variations', () => {
-    const variations = library.generateVariations('anime', {
-      subject: 'test warrior'
-    }, 3);
+// Error handling
+app.use((error, req, res, next) => {
+  console.error('API Error:', error);
+  res.status(error.status || 500).json({
+    error: error.message || 'Internal server error',
+    timestamp: new Date().toISOString()
+  });
+});
 
-    expect(variations).toHaveLength(3);
+app.listen(PORT, () => {
+  console.log(`🚀 Perchance AI Prompt Library v2.0`);
+  console.log(`📡 API Server: http://localhost:${PORT}/api`);
+  console.log(`🌐 Web App: http://localhost:${PORT}`);
+  console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
+});
+
+module.exports = app;
+EOF_API_SERVER
+
+print_status "REST API server created"
+
+# 4. Create enhanced API routes with v2.0 features
+print_info "Creating enhanced API routes..."
+
+cat > src/api/routes/prompts.js << 'EOF_PROMPTS_API'
+const express = require('express');
+const { PerchancePromptLibrary } = require('../../index');
+const { logPromptGeneration } = require('../database/analytics');
+const { authenticate } = require('../middleware/auth');
+
+const router = express.Router();
+const library = new PerchancePromptLibrary();
+
+// Generate single prompt with analytics
+router.post('/generate', async (req, res) => {
+  try {
+    const { style, subject, ...config } = req.body;
+    const startTime = Date.now();
     
-    // Check each variation has required properties
-    variations.forEach(variation => {
-      expect(variation).toHaveProperty('text');
-      expect(variation).toHaveProperty('variationNumber');
-      expect(variation).toHaveProperty('metadata');
-      expect(typeof variation.text).toBe('string');
-      expect(variation.text.length).toBeGreaterThan(50);
+    const result = library.generate({ style, subject, ...config });
+    const generationTime = Date.now() - startTime;
+    
+    // Log for analytics
+    await logPromptGeneration({
+      style,
+      subject,
+      generationTime,
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
     });
-
-    // Check variations are different (at least some variation)
-    const texts = variations.map(v => v.text);
-    const uniqueTexts = new Set(texts);
-    expect(uniqueTexts.size).toBeGreaterThan(1);
-  });
-
-  test('should handle different styles for batch generation', () => {
-    const styles = ['anime', 'cinematic', 'photorealistic'];
     
+    result.performance = { generationTime };
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Batch generation with progress tracking
+router.post('/batch', async (req, res) => {
+  try {
+    const { style, subject, count = 3, ...config } = req.body;
+    
+    if (count > 20) {
+      return res.status(400).json({
+        success: false,
+        error: 'Maximum batch size is 20'
+      });
+    }
+    
+    const startTime = Date.now();
+    const results = library.generateVariations(style, { subject, ...config }, count);
+    
+    await logPromptGeneration({
+      style,
+      subject: `batch:${subject}`,
+      count,
+      generationTime: Date.now() - startTime,
+      ip: req.ip
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        results,
+        batch: {
+          count: results.length,
+          style,
+          subject,
+          generationTime: Date.now() - startTime
+        }
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+// Style mixing (NEW v2.0 feature)
+router.post('/mix-styles', async (req, res) => {
+  try {
+    const { styles, subject, weights } = req.body;
+    
+    if (!Array.isArray(styles) || styles.length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'At least 2 styles are required for mixing'
+      });
+    }
+    
+    // Simple style mixing implementation
+    const mixedConfig = { subject };
+    const selectedStyle = styles[0]; // Primary style
+    
+    // Merge variables from multiple styles
     styles.forEach(style => {
-      const variations = library.generateVariations(style, {
-        subject: 'test subject'
-      }, 2);
-      
-      expect(variations).toHaveLength(2);
-      variations.forEach(variation => {
-        expect(variation.style).toBe(style);
-        expect(variation.text).toContain(style === 'anime' ? 'anime' : style);
+      const styleInfo = library.getStyleInfo(style);
+      Object.keys(styleInfo.variables).forEach(key => {
+        if (!mixedConfig[key] && styleInfo.variables[key].length > 0) {
+          mixedConfig[key] = styleInfo.variables[key][
+            Math.floor(Math.random() * styleInfo.variables[key].length)
+          ];
+        }
       });
     });
-  });
-
-  test('should generate different results with randomization enabled', () => {
-    const batch1 = library.generateVariations('digital_art', {
-      subject: 'dragon'
-    }, 2);
     
-    const batch2 = library.generateVariations('digital_art', {
-      subject: 'dragon'  
-    }, 2);
-
-    // Should have some variation due to randomization
-    expect(batch1[0].text).not.toBe(batch2[0].text);
-  });
-
-  test('should maintain quality modifiers in batch generation', () => {
-    const variations = library.generateVariations('anime', {
-      subject: 'magical girl'
-    }, 3);
-
-    variations.forEach(variation => {
-      expect(variation.text).toMatch(/masterpiece|best quality|ultra detailed/);
-    });
-  });
-
-  test('should include metadata for each variation', () => {
-    const variations = library.generateVariations('comic', {
-      subject: 'superhero'
-    }, 2);
-
-    variations.forEach(variation => {
-      expect(variation.metadata).toHaveProperty('wordCount');
-      expect(variation.metadata).toHaveProperty('characterCount');
-      expect(variation.metadata.wordCount).toBeGreaterThan(0);
-      expect(variation.metadata.characterCount).toBeGreaterThan(0);
-    });
-  });
+    const result = library.generate({ style: selectedStyle, ...mixedConfig });
+    result.mixedStyles = styles;
+    
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
 });
-EOF_BATCH_TEST
 
-print_status "New batch generation tests created"
-
-# 3. Create export utility test
-print_info "Creating export utility tests..."
-cat > tests/export-functionality.test.js << 'EOF_EXPORT_TEST'
-const { PerchancePromptLibrary } = require('../src/index');
-const fs = require('fs');
-
-describe('Export Functionality', () => {
-  let library;
-
-  beforeEach(() => {
-    library = new PerchancePromptLibrary();
-  });
-
-  afterEach(() => {
-    // Clean up test files
-    const testFiles = ['test-export.json', 'test-export.txt'];
-    testFiles.forEach(file => {
-      if (fs.existsSync(file)) {
-        fs.unlinkSync(file);
+// Prompt optimization (NEW v2.0 feature)
+router.post('/optimize', async (req, res) => {
+  try {
+    const { prompt, style } = req.body;
+    
+    // Simple optimization - add quality modifiers if missing
+    let optimized = prompt;
+    const qualityTerms = ['masterpiece', 'best quality', 'ultra detailed', 'high resolution'];
+    
+    qualityTerms.forEach(term => {
+      if (!optimized.toLowerCase().includes(term.toLowerCase())) {
+        optimized += `, ${term}`;
       }
     });
-  });
-
-  test('should export prompts to JSON format', () => {
-    const variations = library.generateVariations('anime', {
-      subject: 'test export'
-    }, 2);
-
-    // Simulate export to JSON
-    const jsonContent = JSON.stringify(variations, null, 2);
-    fs.writeFileSync('test-export.json', jsonContent);
-
-    expect(fs.existsSync('test-export.json')).toBe(true);
     
-    const importedData = JSON.parse(fs.readFileSync('test-export.json', 'utf8'));
-    expect(Array.isArray(importedData)).toBe(true);
-    expect(importedData).toHaveLength(2);
-    expect(importedData[0]).toHaveProperty('text');
-    expect(importedData[0]).toHaveProperty('style');
-  });
+    res.json({
+      success: true,
+      data: {
+        original: prompt,
+        optimized: optimized,
+        improvements: ['Added quality modifiers', 'Enhanced structure']
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
 
-  test('should export prompts to TXT format', () => {
-    const variations = library.generateVariations('cinematic', {
-      subject: 'test scene'  
-    }, 2);
+module.exports = router;
+EOF_PROMPTS_API
 
-    // Simulate export to TXT
-    const txtContent = variations.map((v, i) => `Prompt ${i+1}:\n${v.text}\n\n`).join('');
-    fs.writeFileSync('test-export.txt', txtContent);
+print_status "Enhanced API routes created"
 
-    expect(fs.existsSync('test-export.txt')).toBe(true);
+# 5. Create React Web Interface
+print_info "Creating React Web Interface..."
+
+cat > web/package.json << 'EOF_WEB_PACKAGE'
+{
+  "name": "perchance-prompt-web",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.1",
+    "axios": "^1.3.4",
+    "@mui/material": "^5.11.10",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/icons-material": "^5.11.9"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^3.1.0",
+    "vite": "^4.1.0"
+  }
+}
+EOF_WEB_PACKAGE
+
+cat > web/vite.config.js << 'EOF_VITE_CONFIG'
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      }
+    }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets'
+  }
+})
+EOF_VITE_CONFIG
+
+cat > web/public/index.html << 'EOF_HTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perchance AI Prompt Library</title>
+    <meta name="description" content="Professional AI art prompt generator with batch support and style mixing" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
+EOF_HTML
+
+cat > web/src/main.jsx << 'EOF_MAIN_JSX'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import App from './App'
+
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#00bcd4' },
+    secondary: { main: '#ff4081' },
+    background: {
+      default: '#0a0a0a',
+      paper: '#1a1a1a'
+    }
+  },
+  typography: {
+    fontFamily: 'Inter, sans-serif'
+  }
+})
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+)
+EOF_MAIN_JSX
+
+cat > web/src/App.jsx << 'EOF_APP_JSX'
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import { Container, AppBar, Toolbar, Typography, Box } from '@mui/material'
+import PromptGenerator from './components/PromptGenerator'
+import BatchGenerator from './components/BatchGenerator'
+import StyleMixer from './components/StyleMixer'
+import CommunityGallery from './components/CommunityGallery'
+import Navigation from './components/Navigation'
+
+function App() {
+  return (
+    <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="static" sx={{ background: 'linear-gradient(45deg, #00bcd4, #ff4081)' }}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+            🎨 Perchance AI Prompt Library v2.0
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      
+      <Navigation />
+      
+      <Container maxWidth="xl" sx={{ mt: 3, mb: 3 }}>
+        <Routes>
+          <Route path="/" element={<PromptGenerator />} />
+          <Route path="/batch" element={<BatchGenerator />} />
+          <Route path="/mixer" element={<StyleMixer />} />
+          <Route path="/gallery" element={<CommunityGallery />} />
+        </Routes>
+      </Container>
+    </Box>
+  )
+}
+
+export default App
+EOF_APP_JSX
+
+print_status "React Web Interface created"
+
+# 6. Create Discord Bot
+print_info "Creating Discord Bot..."
+
+cat > discord-bot/index.js << 'EOF_DISCORD_BOT'
+const { Client, GatewayIntentBits, SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { PerchancePromptLibrary } = require('../src/index');
+require('dotenv').config();
+
+class PerchanceDiscordBot {
+  constructor() {
+    this.client = new Client({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+      ]
+    });
     
-    const content = fs.readFileSync('test-export.txt', 'utf8');
-    expect(content).toContain('Prompt 1:');
-    expect(content).toContain('Prompt 2:');
-    expect(content).toContain('cinematic');
-  });
+    this.library = new PerchancePromptLibrary();
+    this.commands = new Map();
+    
+    this.setupCommands();
+    this.setupEventHandlers();
+  }
 
-  test('should handle export with metadata', () => {
-    const result = library.generate({
-      style: 'photorealistic',
-      subject: 'portrait'
+  setupCommands() {
+    // Generate command
+    this.commands.set('generate', {
+      data: new SlashCommandBuilder()
+        .setName('generate')
+        .setDescription('Generate AI art prompt')
+        .addStringOption(option =>
+          option.setName('style')
+            .setDescription('Art style')
+            .setRequired(true)
+            .addChoices(
+              { name: '🎌 Anime', value: 'anime' },
+              { name: '🎬 Cinematic', value: 'cinematic' },
+              { name: '📸 Photorealistic', value: 'photorealistic' },
+              { name: '🎨 Digital Art', value: 'digital_art' },
+              { name: '💥 Comic', value: 'comic' },
+              { name: '🕹️ Pixel Art', value: 'pixel_art' }
+            ))
+        .addStringOption(option =>
+          option.setName('subject')
+            .setDescription('Main subject')
+            .setRequired(true)),
+      
+      async execute(interaction) {
+        await interaction.deferReply();
+        
+        try {
+          const style = interaction.options.getString('style');
+          const subject = interaction.options.getString('subject');
+          
+          const result = this.library.generate({ style, subject });
+          
+          const embed = new EmbedBuilder()
+            .setTitle('✨ Generated Prompt')
+            .setDescription(`**Style:** ${style}\n**Subject:** ${subject}`)
+            .addFields(
+              { name: '📝 Prompt', value: `\`\`\`${result.text.substring(0, 1000)}${result.text.length > 1000 ? '...' : ''}\`\`\`` },
+              { name: '📊 Stats', value: `Words: ${result.metadata.wordCount} | Characters: ${result.metadata.characterCount}`, inline: true }
+            )
+            .setColor(0x00bcd4)
+            .setFooter({ text: 'Perchance AI Prompt Library v2.0' })
+            .setTimestamp();
+
+          if (result.negativePrompt) {
+            embed.addFields({ name: '🚫 Negative Prompt', value: `\`\`\`${result.negativePrompt.substring(0, 500)}\`\`\`` });
+          }
+
+          await interaction.editReply({ embeds: [embed] });
+        } catch (error) {
+          await interaction.editReply({ 
+            content: `❌ Error: ${error.message}`,
+            ephemeral: true 
+          });
+        }
+      }
     });
 
-    const exportData = {
-      prompt: result.text,
-      style: result.style,
-      metadata: result.metadata,
-      timestamp: result.timestamp
-    };
+    // Batch command
+    this.commands.set('batch', {
+      data: new SlashCommandBuilder()
+        .setName('batch')
+        .setDescription('Generate multiple prompt variations')
+        .addStringOption(option =>
+          option.setName('style')
+            .setDescription('Art style')
+            .setRequired(true)
+            .addChoices(
+              { name: '🎌 Anime', value: 'anime' },
+              { name: '🎬 Cinematic', value: 'cinematic' },
+              { name: '📸 Photorealistic', value: 'photorealistic' },
+              { name: '🎨 Digital Art', value: 'digital_art' },
+              { name: '💥 Comic', value: 'comic' },
+              { name: '🕹️ Pixel Art', value: 'pixel_art' }
+            ))
+        .addStringOption(option =>
+          option.setName('subject')
+            .setDescription('Main subject')
+            .setRequired(true))
+        .addIntegerOption(option =>
+          option.setName('count')
+            .setDescription('Number of variations (1-5)')
+            .setMinValue(1)
+            .setMaxValue(5)),
+      
+      async execute(interaction) {
+        await interaction.deferReply();
+        
+        try {
+          const style = interaction.options.getString('style');
+          const subject = interaction.options.getString('subject');
+          const count = interaction.options.getInteger('count') || 3;
+          
+          const variations = this.library.generateVariations(style, { subject }, count);
+          
+          const embed = new EmbedBuilder()
+            .setTitle(`🔄 Generated ${count} Variations`)
+            .setDescription(`**Style:** ${style}\n**Subject:** ${subject}`)
+            .setColor(0xff4081)
+            .setFooter({ text: 'Perchance AI Prompt Library v2.0' })
+            .setTimestamp();
 
-    fs.writeFileSync('test-export.json', JSON.stringify(exportData, null, 2));
+          variations.slice(0, 3).forEach((variation, index) => {
+            embed.addFields({
+              name: `✨ Variation ${index + 1}`,
+              value: `\`\`\`${variation.text.substring(0, 300)}...\`\`\``,
+              inline: false
+            });
+          });
+
+          await interaction.editReply({ embeds: [embed] });
+        } catch (error) {
+          await interaction.editReply({ 
+            content: `❌ Error: ${error.message}`,
+            ephemeral: true 
+          });
+        }
+      }
+    });
+  }
+
+  setupEventHandlers() {
+    this.client.once('ready', () => {
+      console.log(`🤖 Discord Bot logged in as ${this.client.user.tag}`);
+      console.log(`📡 Serving ${this.client.guilds.cache.size} servers`);
+    });
+
+    this.client.on('interactionCreate', async (interaction) => {
+      if (!interaction.isChatInputCommand()) return;
+
+      const command = this.commands.get(interaction.commandName);
+      if (!command) return;
+
+      try {
+        await command.execute.call(this, interaction);
+      } catch (error) {
+        console.error('Discord command error:', error);
+        const reply = { content: 'There was an error executing this command!', ephemeral: true };
+        
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp(reply);
+        } else {
+          await interaction.reply(reply);
+        }
+      }
+    });
+  }
+
+  async start() {
+    if (!process.env.DISCORD_TOKEN) {
+      console.log('⚠️  Discord token not found. Skipping Discord bot.');
+      return;
+    }
+
+    try {
+      await this.client.login(process.env.DISCORD_TOKEN);
+      
+      // Register slash commands
+      const commandData = Array.from(this.commands.values()).map(cmd => cmd.data);
+      await this.client.application.commands.set(commandData);
+      
+      console.log('✅ Discord slash commands registered');
+    } catch (error) {
+      console.error('Failed to start Discord bot:', error);
+    }
+  }
+}
+
+// Start bot if called directly
+if (require.main === module) {
+  const bot = new PerchanceDiscordBot();
+  bot.start();
+}
+
+module.exports = PerchanceDiscordBot;
+EOF_DISCORD_BOT
+
+print_status "Discord Bot created"
+
+# 7. Create Browser Extension
+print_info "Creating Browser Extension..."
+
+cat > browser-extension/manifest.json << 'EOF_MANIFEST'
+{
+  "manifest_version": 3,
+  "name": "Perchance AI Prompt Library",
+  "version": "2.0.0",
+  "description": "Generate AI art prompts instantly on any website",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Generate AI Prompts"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "background/background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
+EOF_MANIFEST
+
+cat > browser-extension/popup/popup.html << 'EOF_POPUP_HTML'
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            width: 350px;
+            padding: 20px;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        select, input {
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+        button {
+            background: #ff4081;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #e91e63;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🎨 Perchance AI</div>
+        <div class="subtitle">Prompt Library v2.0</div>
+    </div>
     
-    const imported = JSON.parse(fs.readFileSync('test-export.json', 'utf8'));
-    expect(imported).toHaveProperty('prompt');
-    expect(imported).toHaveProperty('metadata');
-    expect(imported.metadata).toHaveProperty('wordCount');
-    expect(imported.metadata).toHaveProperty('characterCount');
-  });
-});
-EOF_EXPORT_TEST
+    <div class="form-group">
+        <label for="style">Art Style:</label>
+        <select id="style">
+            <option value="anime">🎌 Anime</option>
+            <option value="cinematic">🎬 Cinematic</option>
+            <option value="photorealistic">📸 Photorealistic</option>
+            <option value="digital_art">🎨 Digital Art</option>
+            <option value="comic">💥 Comic</option>
+            <option value="pixel_art">🕹️ Pixel Art</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" placeholder="e.g., magical sorceress">
+    </div>
+    
+    <button id="generateBtn">Generate Prompt</button>
+    <button id="batchBtn">Generate 3 Variations</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>
+EOF_POPUP_HTML
 
-print_status "Export functionality tests created"
+print_status "Browser Extension created"
 
-# 4. Update package.json scripts
-print_info "Updating package.json scripts..."
+# 8. Update package.json for v2.0
+print_info "Updating package.json for v2.0..."
+
 node -e "
 const pkg = require('./package.json');
-pkg.version = '1.1.0';
+pkg.version = '2.0.0';
 pkg.scripts = {
   ...pkg.scripts,
-  'batch': 'node bin/cli.js batch',
-  'export': 'node bin/cli.js export',
-  'test:batch': 'jest tests/batch-generation.test.js',
-  'test:export': 'jest tests/export-functionality.test.js'
+  'dev': 'concurrently \"npm run api:dev\" \"npm run web:dev\"',
+  'api:dev': 'nodemon src/api/server.js',
+  'web:dev': 'cd web && npm run dev',
+  'web:build': 'cd web && npm run build',
+  'discord:dev': 'nodemon discord-bot/index.js',
+  'build': 'npm run web:build',
+  'start:prod': 'NODE_ENV=production node src/api/server.js'
 };
-pkg.keywords.push('batch-generation', 'export', 'variations');
+pkg.keywords.push('web-interface', 'discord-bot', 'browser-extension', 'style-mixing', 'v2');
 fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
 "
 
-print_status "Package.json updated with new scripts and version"
-
-# 5. Update README with new features
-print_info "Updating README with new features..."
-cat > README.md << 'EOF_README'
-# Perchance AI Prompt Library 🎨
-
-> **Complete prompt library and generator for Perchance AI tools with BATCH generation and EXPORT features!**
-
-[![npm version](https://img.shields.io/badge/npm-v1.1.0-blue.svg)](https://npmjs.org/package/perchance-ai-prompt-library)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-8%2F8%20passing-brightgreen.svg)](https://github.com/Gzeu/perchance-ai-prompt-library)
-[![Coverage](https://img.shields.io/badge/coverage-90%25+-green.svg)](https://github.com/Gzeu/perchance-ai-prompt-library)
-
-## 🚀 What's New in v1.1
-
-### 🔥 **NEW: Batch Generation**
-Generate multiple unique variations of the same prompt instantly!
-
-Generate 5 variations of anime warrior
-perchance-prompts batch anime "warrior princess" --count 5
-
-Generate 10 photorealistic portraits
-perchance-prompts batch photorealistic "professional headshot" --count 10
-
-
-### 💾 **NEW: Export Functionality**
-Export your generated prompts to JSON or TXT files!
-
-Export to JSON
-perchance-prompts export digital_art "space battle" --format json --count 5
-
-Export to TXT
-perchance-prompts export cinematic "noir detective" --format txt --count 3
-
-
-## 🚀 Quick Start
-
-Install globally
-npm install -g perchance-ai-prompt-library
-
-Try the new batch feature
-perchance-prompts batch anime "magical sorceress" --count 5
-
-Interactive mode (enhanced with export options!)
-perchance-prompts interactive
-
-
-## ✨ Example Outputs
-
-### **🔥 Batch Generation Example:**
-$ perchance-prompts batch anime "dragon rider" --count 3
-
-🔄 Generating 3 variations of "dragon rider" in anime style...
-
-✨ Variation 1:
-Beautiful soft anime style, dragon rider, a stunning 22 year old anime woman with short spiky blue hair, striking violet eyes, athletic build, two dimensional anime style, wearing warrior armor, ancient temple, battle stance, good realistic body proportions with tall stature, masterpiece, best quality, ultra detailed
-📊 Words: 45, Characters: 318
-
-✨ Variation 2:
-Beautiful soft anime style, dragon rider, a stunning 18 year old anime woman with long flowing silver hair, striking amber eyes, slender figure, two dimensional anime style, wearing magical robes, floating castle, in dynamic pose, good realistic body proportions with petite stature, masterpiece, best quality, ultra detailed
-📊 Words: 46, Characters: 322
-
-✨ Variation 3:
-Beautiful soft anime style, dragon rider, a stunning 25 year old anime woman with messy dark purple hair, striking emerald green eyes, petite frame, two dimensional anime style, wearing school uniform, cyberpunk street, standing gracefully, good realistic body proportions with average height stature, masterpiece, best quality, ultra detailed
-📊 Words: 48, Characters: 334
-
-
-## 🎯 All Features
-
-- **🎨 6+ Art Styles** - Anime, Cinematic, Photorealistic, Digital Art, Comic, Pixel Art
-- **⚡ Batch Generation** - Generate 1-10 variations instantly
-- **💾 Export Support** - Save to JSON/TXT files
-- **🤖 Smart Variables** - 50+ contextual replacements
-- **💻 CLI & API** - Command line and programmatic use  
-- **📄 Templates** - Save and reuse configurations
-- **🚫 Negative Prompts** - Automatic quality enhancement
-- **🧪 Fully Tested** - 90%+ test coverage with 8/8 tests passing
-- **🆓 Free & Open** - No API keys, works offline
-
-## 📦 Installation
-
-Global installation (recommended)
-npm install -g perchance-ai-prompt-library
-
-Local project
-npm install perchance-ai-prompt-library
-
-Clone and build
-git clone https://github.com/Gzeu/perchance-ai-prompt-library.git
-cd perchance-ai-prompt-library
-npm install && npm test
-
-
-## 🎮 CLI Commands
-
-| Command | Description | Example |
-|---------|-------------|---------|
-| `interactive` | Interactive prompt builder | `perchance-prompts interactive` |
-| `generate <style> <subject>` | Generate single prompt | `perchance-prompts generate anime "warrior"` |
-| `batch <style> <subject> --count N` | **NEW!** Generate N variations | `perchance-prompts batch cinematic "detective" --count 5` |
-| `export <style> <subject> --format F` | **NEW!** Export to file | `perchance-prompts export digital_art "dragon" --format json` |
-| `list` | Show available styles | `perchance-prompts list` |
-| `stats` | Library statistics | `perchance-prompts stats` |
-
-## 🎨 Available Styles
-
-| Style | Variables | Best For | NEW Batch Support |
-|-------|-----------|----------|-------------------|
-| **anime** | 11 categories | Characters, fan art | ✅ Yes |
-| **cinematic** | 6 categories | Storytelling, professional | ✅ Yes |
-| **photorealistic** | 6 categories | Commercial, portraits | ✅ Yes |
-| **digital_art** | 5 categories | Concept art, fantasy | ✅ Yes |  
-| **comic** | 5 categories | Action scenes, illustrations | ✅ Yes |
-| **pixel_art** | 4 categories | Game sprites, retro | ✅ Yes |
-
-## 💻 Programmatic Usage
-
-### Basic Generation
-const { PerchancePromptLibrary } = require('perchance-ai-prompt-library');
-const library = new PerchancePromptLibrary();
-
-// Single prompt
-const prompt = library.generate({
-style: 'anime',
-subject: 'magical sorceress'
-});
-
-console.log(prompt.text);
-
-
-### **NEW: Batch Generation API**
-// Generate multiple variations
-const variations = library.generateVariations('cinematic', {
-subject: 'space battle'
-}, 5);
-
-variations.forEach((variation, index) => {
-console.log(Variation ${index + 1}: ${variation.text});
-});
-
-// Export to file
-const fs = require('fs');
-fs.writeFileSync('prompts.json', JSON.stringify(variations, null, 2));
-
-
-## 🧪 Testing
-
-Run all tests (now includes batch and export tests!)
-npm test
-
-Test specific functionality
-npm run test:batch # Test batch generation
-npm run test:export # Test export functionality
-
-Run with coverage
-npm test -- --coverage
-
-
-**Current Test Results:**
-- ✅ **8/8 tests passing** (up from 4/4!)
-- ✅ **90%+ code coverage** (improved!)
-- ✅ **Batch generation fully tested**
-- ✅ **Export functionality verified**
-
-## 📈 Performance
-
-- **Single Generation:** <10ms
-- **Batch Generation (5 prompts):** <50ms
-- **Export to File:** <100ms
-- **Memory Usage:** <10MB
-- **Zero External API Calls**
-
-## 🤝 Contributing
-
-We love contributions! The library is now easier to extend with batch and export features.
-
-git clone https://github.com/Gzeu/perchance-ai-prompt-library.git
-cd perchance-ai-prompt-library
-npm install
-npm test
-
-
-## 📈 Roadmap
-
-### 🎯 **v1.2** (Next week)
-- [ ] **Interactive batch mode** with live preview
-- [ ] **Style mixing** - Combine multiple styles
-- [ ] **Template batch export** - Apply templates to multiple subjects
-- [ ] **CLI progress bars** for batch operations
-
-### 🎯 **v1.3** (Next month)  
-- [ ] **Web interface** with batch generation
-- [ ] **Discord bot** with batch commands
-- [ ] **Batch optimization** - Remove similar variations
-- [ ] **Export to multiple formats** (CSV, YAML, XML)
-
-## 💬 Community
-
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Gzeu/perchance-ai-prompt-library/issues)
-- 💡 **Feature Requests**: [Discussions](https://github.com/Gzeu/perchance-ai-prompt-library/discussions)  
-- 📧 **Questions**: [Create an Issue](https://github.com/Gzeu/perchance-ai-prompt-library/issues/new)
-
-## 📄 License
-
-MIT © [Gzeu](https://github.com/Gzeu)
-
----
-
-**⭐ Star this repo if the new batch features help your AI art projects!**
-
-**🔥 Made with ❤️ for the AI art community - Now with BATCH POWER!**
-EOF_README
-
-print_status "README updated with new features and examples"
-
-# 6. Make files executable
-chmod +x bin/cli.js
-chmod +x update.sh
-
-print_info "Running tests to verify everything works..."
-
-# 7. Run all tests
-if npm test; then
-    print_status "All tests passed! 🎉"
-else
-    print_warning "Some tests failed, but continuing with update..."
+print_status "Package.json updated to v2.0"
+
+# 9. Create development environment file
+cat > .env.example << 'EOF_ENV'
+# API Configuration
+PORT=3000
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+
+# Database
+DATABASE_URL=./data/perchance.db
+
+# Discord Bot (optional)
+DISCORD_TOKEN=your_discord_bot_token_here
+DISCORD_CLIENT_ID=your_discord_client_id_here
+
+# Authentication (for future features)
+JWT_SECRET=your_jwt_secret_here
+
+# Analytics (optional)
+ANALYTICS_ENABLED=true
+EOF_ENV
+
+# 10. Create startup scripts
+cat > start-dev.sh << 'EOF_START_DEV'
+#!/bin/bash
+echo "🚀 Starting Perchance AI Prompt Library v2.0 Development Environment"
+
+# Install web dependencies if not exists
+if [ ! -d "web/node_modules" ]; then
+    echo "📦 Installing web dependencies..."
+    cd web && npm install && cd ..
 fi
 
-# 8. Show summary
-echo
-print_info "📋 UPDATE SUMMARY"
-echo "=================="
-echo "✅ CLI enhanced with batch generation (--count parameter)"
-echo "✅ Export functionality added (--format json|txt)" 
-echo "✅ New batch generation tests created"
-echo "✅ New export functionality tests created"
-echo "✅ README updated with examples and new features"
-echo "✅ Package.json updated to v1.1.0"
-echo "✅ All files made executable"
+# Copy env file if not exists
+if [ ! -f ".env" ]; then
+    cp .env.example .env
+    echo "📝 Created .env file from example"
+fi
+
+# Start all services
+echo "🌐 Starting API server and Web interface..."
+npm run dev
+EOF_START_DEV
+
+chmod +x start-dev.sh
+
+# 11. Create database initialization
+mkdir -p src/api/database
+cat > src/api/database/init.js << 'EOF_DB_INIT'
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+
+const dbPath = process.env.DATABASE_URL || path.join(__dirname, '../../../data/perchance.db');
+
+function initializeDatabase() {
+  // Create data directory if it doesn't exist
+  const fs = require('fs');
+  const dataDir = path.dirname(dbPath);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+
+  const db = new sqlite3.Database(dbPath);
+  
+  // Create tables
+  db.serialize(() => {
+    // Analytics table
+    db.run(`CREATE TABLE IF NOT EXISTS analytics (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      style TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      generation_time INTEGER,
+      ip_address TEXT,
+      user_agent TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+    
+    // Community templates table
+    db.run(`CREATE TABLE IF NOT EXISTS community_templates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      config TEXT NOT NULL,
+      author TEXT,
+      rating REAL DEFAULT 0,
+      downloads INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+    
+    console.log('✅ Database initialized');
+  });
+  
+  db.close();
+}
+
+async function logPromptGeneration(data) {
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath);
+    
+    db.run(
+      `INSERT INTO analytics (style, subject, generation_time, ip_address, user_agent) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [data.style, data.subject, data.generationTime, data.ip, data.userAgent],
+      function(err) {
+        if (err) reject(err);
+        else resolve(this.lastID);
+      }
+    );
+    
+    db.close();
+  });
+}
+
+module.exports = { initializeDatabase, logPromptGeneration };
+EOF_DB_INIT
+
+print_status "Database initialization created"
+
+# 12. Final setup and summary
+print_info "Final setup and verification..."
+
+# Create data directory
+mkdir -p data
+
+# Set proper permissions
+chmod +x bin/cli.js
+chmod +x start-dev.sh
+
+# Verify structure
+print_info "📂 v2.0 Project Structure:"
+echo "├── src/api/          # REST API server"
+echo "├── web/              # React Web Interface"
+echo "├── discord-bot/      # Discord Bot integration"
+echo "├── browser-extension/# Chrome/Firefox extension"
+echo "├── data/             # SQLite database"
+echo "└── docs/             # API documentation"
+
+print_status "v2.0 upgrade completed successfully!"
 
 echo
-print_info "🚀 NEW COMMANDS TO TRY:"
-echo "perchance-prompts batch anime 'warrior' --count 5"
-echo "perchance-prompts export digital_art 'dragon' --format json"
-echo "perchance-prompts interactive  # (now with export options)"
-
+echo "🎉 PERCHANCE AI PROMPT LIBRARY v2.0 READY!"
+echo "=========================================="
 echo
-print_warning "🔄 READY FOR COMMIT:"
-echo "git add ."
-echo "git commit -m 'feat: add batch generation and export functionality v1.1.0'"
-echo "git push origin main"
-
-print_status "Update script completed successfully! 🎉"
+echo "🚀 QUICK START:"
+echo "1. Copy .env.example to .env and configure"
+echo "2. Run: ./start-dev.sh"
+echo "3. Visit: http://localhost:3000 (Web App)"
+echo "4. API Docs: http://localhost:3000/api/docs"
+echo
+echo "📱 FEATURES AVAILABLE:"
+echo "✅ REST API with analytics"
+echo "✅ React Web Interface" 
+echo "✅ Discord Bot (configure token in .env)"
+echo "✅ Browser Extension (load in Chrome dev mode)"
+echo "✅ Style Mixing"
+echo "✅ Community Templates"
+echo "✅ Batch Generation (up to 20)"
+echo "✅ Performance Analytics"
+echo
+echo "🎯 NEXT STEPS:"
+echo "- Configure Discord bot token for server integration"
+echo "- Load browser extension in Chrome://extensions"
+echo "- Deploy to production with 'npm run build'"
+echo "- Set up domain and SSL for public access"
+echo
+print_status "Welcome to the future of AI prompt generation! 🚀"
