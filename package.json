@@ -12,15 +12,21 @@
     "dev": "node src/index.js --dev",
     "generate": "node bin/cli.js"
   },
-  "keywords": ["perchance", "ai", "prompt", "generator", "image-generation"],
+  "keywords": [
+    "perchance",
+    "ai",
+    "prompt",
+    "generator",
+    "image-generation"
+  ],
   "author": "AI Research Team",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^4.1.2",
     "commander": "^9.4.1",
-    "inquirer": "^9.1.4",
-    "chalk": "^5.2.0",
-    "figlet": "^1.5.2",
-    "fs-extra": "^11.1.0"
+    "figlet": "^1.8.2",
+    "fs-extra": "^11.1.0",
+    "inquirer": "^8.2.6"
   },
   "devDependencies": {
     "jest": "^29.3.1"
