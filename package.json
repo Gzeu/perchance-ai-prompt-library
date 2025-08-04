@@ -1,6 +1,6 @@
 {
   "name": "perchance-ai-prompt-library",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Complete prompt library and generator for Perchance AI tools",
   "main": "src/index.js",
   "bin": {
@@ -10,14 +10,21 @@
     "start": "node src/index.js",
     "test": "jest",
     "dev": "node src/index.js --dev",
-    "generate": "node bin/cli.js"
+    "generate": "node bin/cli.js",
+    "batch": "node bin/cli.js batch",
+    "export": "node bin/cli.js export",
+    "test:batch": "jest tests/batch-generation.test.js",
+    "test:export": "jest tests/export-functionality.test.js"
   },
   "keywords": [
     "perchance",
     "ai",
     "prompt",
     "generator",
-    "image-generation"
+    "image-generation",
+    "batch-generation",
+    "export",
+    "variations"
   ],
   "author": "AI Research Team",
   "license": "MIT",
