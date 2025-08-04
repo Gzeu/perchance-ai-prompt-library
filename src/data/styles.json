@@ -1,0 +1,49 @@
+{
+  "anime": {
+    "name": "Anime/Manga Style",
+    "description": "Japanese animation style with clean lines and vibrant colors",
+    "category": "artistic",
+    "difficulty": "beginner",
+    "formula": "Beautiful soft anime style, [subject], a stunning [age] year old anime [gender] with [hair_description], striking [eye_color] eyes, [body_type], two dimensional anime style, wearing [clothing], [setting], [position], good realistic body proportions with [stature], high-quality hands with perfect digits, crisp clothing free of artifacts, best possible image quality masterpiece, [expression]",
+    "negative_prompt": "bad anatomy, bad hands, three hands, three legs, missing limbs, extra limbs, poorly drawn face, bad face, fused face, cloned face, worst face, extra fingers, missing fingers, ugly fingers, long fingers, extra eyes, huge eyes, realistic photo, 3d render, cartoon style mixing, blurry, low quality, watermark, signature",
+    "variables": {
+      "subject": ["magical girl", "warrior princess", "school student", "young hero", "mystical sorceress", "brave knight"],
+      "age": ["18", "22", "25", "30", "teenager", "young adult"],
+      "gender": ["woman", "man", "girl", "boy", "person"],
+      "hair_description": ["long flowing silver hair", "short spiky blue hair", "messy dark purple hair", "braided golden hair"],
+      "eye_color": ["emerald green", "sapphire blue", "amber", "violet", "crimson red"],
+      "body_type": ["slender figure", "athletic build", "petite frame", "tall and graceful"],
+      "clothing": ["flowing white summer dress", "school uniform", "magical robes", "warrior armor"],
+      "setting": ["cherry blossom garden", "magical forest", "school courtyard", "ancient temple"],
+      "position": ["standing gracefully", "sitting peacefully", "in dynamic pose", "battle stance"],
+      "stature": ["petite", "tall", "average height"],
+      "expression": ["gentle smile", "determined look", "mysterious gaze", "cheerful expression"]
+    },
+    "quality_modifiers": ["masterpiece", "best quality", "ultra detailed"],
+    "best_for": ["characters", "portraits", "fantasy", "gaming"],
+    "examples": [
+      "Beautiful soft anime style, magical girl, a stunning 18 year old anime woman with long flowing silver hair, striking emerald green eyes, slender figure, two dimensional anime style, wearing magical robes, magical forest, standing gracefully, good realistic body proportions with petite stature, masterpiece"
+    ]
+  },
+  "cinematic": {
+    "name": "Cinematic/Film Style",
+    "description": "Movie-like scenes with dramatic lighting",
+    "category": "photography",
+    "difficulty": "intermediate",
+    "formula": "Cinematic [scene_type], [subject] [action], [lighting_style], cinematic 4K footage, professional film quality, [camera_angle], [mood], movie still",
+    "negative_prompt": "amateur photography, low quality, blurry, bad lighting",
+    "variables": {
+      "subject": ["detective", "mysterious woman", "explorer", "businessman"],
+      "scene_type": ["thriller scene", "drama scene", "action scene"],
+      "action": ["walking down street", "sitting in café", "standing on cliff"],
+      "lighting_style": ["film noir lighting", "golden hour lighting", "dramatic lighting"],
+      "camera_angle": ["tracking shot", "close-up", "wide shot"],
+      "mood": ["moody atmosphere", "mysterious atmosphere", "epic atmosphere"]
+    },
+    "quality_modifiers": ["cinematic 4K", "professional film quality", "movie still"],
+    "best_for": ["storytelling", "drama", "professional"],
+    "examples": [
+      "Cinematic thriller scene, detective walking down street, film noir lighting, cinematic 4K footage, professional film quality, tracking shot, moody atmosphere, movie still"
+    ]
+  }
+}
