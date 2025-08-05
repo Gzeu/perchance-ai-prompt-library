@@ -278,59 +278,147 @@ class AdvancedCLI {
     }
   }
 
-  // Advanced prompt generation
+  // UPGRADED: Advanced prompt generation with style-specific intelligence
   generateAdvancedPrompt(style, subject, options = {}) {
-    const qualityTerms = {
-      10: 'masterpiece, ultra-detailed, photorealistic, 8K resolution',
-      9: 'high quality, detailed, professional artwork',
-      8: 'good quality, well-detailed, artistic',
-      7: 'decent quality, moderate detail',
-      6: 'standard quality, basic detail'
+    // Style-specific enhancement dictionaries
+    const styleEnhancers = {
+      'anime': [
+        'cel-shaded perfection', 'studio-quality animation', 'sharp clean lines',
+        'vibrant anime colors', 'detailed character design', 'professional manga style',
+        'Japanese animation masterpiece', 'crisp vector art', 'award-winning anime'
+      ],
+      'photorealistic': [
+        'ultra-realistic detail', '8K HDR photography', 'professional DSLR quality',
+        'cinematic depth of field', 'ray-traced lighting', 'hyperrealistic textures',
+        'magazine-quality photography', 'studio lighting perfection', 'commercial grade imagery'
+      ],
+      'digital art': [
+        'digital painting masterpiece', 'concept art excellence', 'matte painting quality',
+        'digital illustration perfection', 'professional concept design', 'artistic digital rendering',
+        'commercial art quality', 'game art excellence', 'digital media mastery'
+      ],
+      'oil painting': [
+        'classical oil painting technique', 'renaissance art quality', 'museum-worthy brushwork',
+        'traditional painting mastery', 'oil on canvas excellence', 'fine art gallery quality',
+        'classical artistic technique', 'painterly perfection', 'traditional art mastery'
+      ]
     };
 
-    const moodTerms = {
-      dramatic: 'dramatic lighting, intense atmosphere, powerful composition',
-      epic: 'epic scale, heroic pose, grandiose setting',
-      peaceful: 'serene atmosphere, soft lighting, tranquil mood',
-      vibrant: 'vibrant colors, energetic composition, dynamic lighting',
-      mysterious: 'mysterious atmosphere, dark mood, enigmatic lighting'
+    // Subject-specific contextual expansions
+    const subjectExpansions = {
+      'cyberpunk city': [
+        'neon-lit dystopian metropolis', 'towering megastructures with holographic advertisements',
+        'rain-slicked streets reflecting neon colors', 'flying vehicles between skyscrapers',
+        'cybernetic architecture with digital displays', 'futuristic urban sprawl at night'
+      ],
+      'warrior': [
+        'battle-hardened champion in detailed armor', 'legendary fighter with mystical weapons',
+        'heroic defender with intricate battle gear', 'seasoned combatant with weathered equipment',
+        'valiant protector in ceremonial war attire', 'skilled warrior with enchanted armaments'
+      ],
+      'dragon': [
+        'majestic ancient dragon with iridescent scales', 'powerful wyrm with ethereal breath',
+        'legendary beast with crystalline horns', 'mythical serpent with elemental magic',
+        'colossal dragon with jeweled hide', 'primordial creature with otherworldly presence'
+      ],
+      'portrait': [
+        'intimate character study with emotional depth', 'detailed facial features with perfect lighting',
+        'expressive portrait capturing inner essence', 'masterful character depiction with soul',
+        'compelling human study with artistic vision', 'powerful character portrait with presence'
+      ],
+      'city': [
+        'sprawling urban landscape with architectural grandeur', 'metropolitan skyline with gleaming towers',
+        'bustling cityscape with dynamic street life', 'modern urban environment with striking geometry',
+        'cosmopolitan hub with diverse architectural styles', 'vibrant urban center with cultural richness'
+      ]
     };
 
-    const enhancers = [
-      'professional composition',
-      'stunning visual impact',
-      'award-winning photography',
-      'cinematic lighting',
-      'artistic masterpiece',
-      'breathtaking detail',
-      'premium quality',
-      'gallery-worthy artwork'
+    // Enhanced quality terms based on level
+    const qualityEnhancers = {
+      10: 'absolute perfection, museum-quality masterpiece, legendary artistic achievement, transcendent visual experience',
+      9: 'near-perfect execution, gallery-worthy excellence, professional mastery, stunning visual impact',
+      8: 'exceptional quality, artistic brilliance, professional-grade perfection, remarkable visual clarity',
+      7: 'high-end quality, skilled craftsmanship, impressive detail work, strong artistic vision',
+      6: 'solid quality, competent execution, good attention to detail, reliable artistic work',
+      5: 'standard quality, acceptable craftsmanship, decent visual appeal, functional artistic piece'
+    };
+
+    // Mood-specific atmospheric terms
+    const moodAtmospheres = {
+      dramatic: 'intense chiaroscuro lighting, powerful emotional impact, striking visual drama, bold compositional choices',
+      epic: 'grandiose scale, heroic magnificence, legendary proportions, awe-inspiring grandeur',
+      peaceful: 'serene tranquility, harmonious balance, gentle ethereal glow, meditative calmness',
+      vibrant: 'explosive color palette, energetic visual rhythm, dynamic chromatic harmony, pulsating life force',
+      mysterious: 'enigmatic shadows, cryptic atmospheric depth, haunting visual poetry, otherworldly ambiance'
+    };
+
+    // Technical enhancement terms
+    const technicalSpecs = [
+      'perfect composition following rule of thirds',
+      'professional color grading with cinematic look',
+      'optimal contrast and saturation balance',
+      'sharp focus with artistic bokeh effects',
+      'expertly calibrated lighting setup',
+      'advanced post-processing perfection'
     ];
 
-    let prompt = `Beautiful ${style} style artwork of ${subject}`;
+    // Find best matching style and subject
+    const matchedStyle = Object.keys(styleEnhancers).find(s => 
+      style.toLowerCase().includes(s) || s.includes(style.toLowerCase())
+    ) || 'photorealistic';
     
-    if (options.quality) {
-      prompt += `, ${qualityTerms[options.quality] || qualityTerms[7]}`;
+    const matchedSubject = Object.keys(subjectExpansions).find(s => 
+      subject.toLowerCase().includes(s) || s.includes(subject.toLowerCase())
+    );
+
+    // Build enhanced prompt components
+    const styleTerms = styleEnhancers[matchedStyle] || styleEnhancers['photorealistic'];
+    const subjectExpansion = matchedSubject ? 
+      subjectExpansions[matchedSubject][Math.floor(Math.random() * subjectExpansions[matchedSubject].length)] : 
+      subject;
+    
+    const quality = Math.min(10, Math.max(6, options.quality || 8));
+    const qualityTerms = qualityEnhancers[quality] || qualityEnhancers[8];
+    
+    const styleEnhancer = styleTerms[Math.floor(Math.random() * styleTerms.length)];
+    const technicalSpec = technicalSpecs[Math.floor(Math.random() * technicalSpecs.length)];
+    
+    let prompt = `Magnificent ${matchedStyle} masterpiece featuring ${subjectExpansion}, ${qualityTerms}, ${styleEnhancer}, ${technicalSpec}`;
+    
+    // Add mood atmosphere if specified
+    if (options.mood && moodAtmospheres[options.mood]) {
+      prompt += `, ${moodAtmospheres[options.mood]}`;
     }
     
-    if (options.mood) {
-      prompt += `, ${moodTerms[options.mood] || ''}`;
+    // Add variation suffix for batch generation
+    if (options.variation > 1) {
+      const variationTerms = [
+        'alternative artistic interpretation',
+        'unique creative perspective',
+        'distinctive visual approach',
+        'innovative artistic vision',
+        'creative reimagining'
+      ];
+      const variationTerm = variationTerms[Math.floor(Math.random() * variationTerms.length)];
+      prompt += `, ${variationTerm}`;
     }
-    
-    if (options.enhancer !== false) {
-      const randomEnhancer = enhancers[Math.floor(Math.random() * enhancers.length)];
-      prompt += `, ${randomEnhancer}`;
-    }
+
+    // Calculate realistic quality score based on prompt complexity
+    const wordCount = prompt.split(' ').length;
+    const complexityScore = Math.min(10, Math.floor(wordCount / 8) + quality - 3);
+    const finalQuality = Math.max(6, Math.min(10, complexityScore));
 
     return {
       text: prompt,
       metadata: {
-        wordCount: prompt.split(' ').length,
+        wordCount,
         characterCount: prompt.length,
-        style,
-        subject,
+        style: matchedStyle,
+        subject: subjectExpansion,
+        quality: finalQuality,
         options,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        enhancementLevel: 'advanced'
       }
     };
   }
@@ -390,12 +478,13 @@ class AdvancedCLI {
       console.log(this.createBox(result.text, { borderColor: 'white', padding: 1 }));
 
       if (result.metadata && options.verbose) {
-        const quality = Math.min(10, Math.floor(result.metadata.wordCount / 5) + Math.floor(Math.random() * 3));
+        const quality = result.metadata.quality || 8;
         const qualityBar = '█'.repeat(quality) + '░'.repeat(10 - quality);
         const qualityColor = quality >= 8 ? 'green' : quality >= 6 ? 'yellow' : 'red';
         
         console.log(chalk.gray(`📊 ${result.metadata.wordCount} words • ${result.metadata.characterCount} characters`));
         console.log(`🎯 Quality: ${chalk[qualityColor](qualityBar)} ${quality}/10`);
+        console.log(chalk.cyan(`🎨 Style: ${result.metadata.style} | Enhancement: ${result.metadata.enhancementLevel}`));
       }
     });
 
@@ -606,9 +695,6 @@ program
     }
   });
 
-// Continue with other commands...
-// [This would continue with all other enhanced commands: subjects, artists, themes, batch, interactive, stats, config, etc.]
-
 // Enhanced batch command
 program
   .command('batch')
@@ -654,6 +740,130 @@ program
         console.log(chalk.gray(`\n... and ${count - 3} more variations generated!`));
       }
     }
+  });
+
+// Enhanced subjects command
+program
+  .command('subjects')
+  .alias('sub')
+  .description('🎯 Browse subjects')
+  .option('-s, --search <term>', 'Search subjects')
+  .option('-e, --export <format>', 'Export data (json)')
+  .action((options) => {
+    console.log(chalk.cyan('\n🎯 Subject Encyclopedia\n'));
+    
+    if (options.export === 'json') {
+      console.log(JSON.stringify(subjects, null, 2));
+      return;
+    }
+    
+    const table = new Table({
+      head: [chalk.cyan('Category'), chalk.yellow('Subjects'), chalk.green('Total')],
+      colWidths: [20, 50, 10]
+    });
+    
+    let totalSubjects = 0;
+    subjects.forEach(category => {
+      const subjectCount = category.subjects?.length || 0;
+      totalSubjects += subjectCount;
+      
+      const subjectNames = category.subjects?.slice(0, 3).map(s => s.name).join(', ') || 'No subjects';
+      const displayText = subjectCount > 3 ? subjectNames + '...' : subjectNames;
+      
+      table.push([
+        chalk.cyan(category.category || 'Unknown'),
+        chalk.white(displayText),
+        chalk.green(subjectCount.toString())
+      ]);
+    });
+    
+    console.log(table.toString());
+    console.log(chalk.blue(`\n📊 Total: ${totalSubjects} subjects in ${subjects.length} categories`));
+  });
+
+// Enhanced artists command
+program
+  .command('artists')
+  .alias('art')
+  .description('👨‍🎨 Browse famous artists')
+  .option('-s, --search <term>', 'Search artists')
+  .option('-e, --export <format>', 'Export data (json)')
+  .action((options) => {
+    console.log(chalk.cyan('\n👨‍🎨 Famous Artists Database\n'));
+    
+    if (options.export === 'json') {
+      console.log(JSON.stringify(artists, null, 2));
+      return;
+    }
+    
+    let filteredArtists = artists;
+    if (options.search) {
+      filteredArtists = artists.filter(a => 
+        a.name.toLowerCase().includes(options.search.toLowerCase()) ||
+        (a.keywords || []).some(k => k.toLowerCase().includes(options.search.toLowerCase()))
+      );
+      console.log(chalk.yellow(`Found ${filteredArtists.length} artists matching "${options.search}"\n`));
+    }
+    
+    const table = new Table({
+      head: [chalk.cyan('Artist'), chalk.yellow('Period'), chalk.green('Country'), chalk.magenta('Popularity')],
+      colWidths: [25, 20, 15, 12]
+    });
+    
+    filteredArtists.forEach(artist => {
+      table.push([
+        chalk.cyan(artist.name || 'Unknown'),
+        chalk.white(artist.period || 'Unknown'),
+        chalk.yellow(artist.country || 'Unknown'),
+        chalk.green(`${artist.popularity || 0}%`)
+      ]);
+    });
+    
+    console.log(table.toString());
+    console.log(chalk.blue(`\n📊 Total: ${filteredArtists.length} famous artists`));
+    console.log(chalk.gray('💡 Use artist names in prompts: "in the style of Vincent van Gogh"'));
+  });
+
+// Enhanced themes command
+program
+  .command('themes')
+  .alias('th')
+  .description('🌟 Browse themes')
+  .option('-s, --search <term>', 'Search themes')
+  .option('-e, --export <format>', 'Export data (json)')
+  .action((options) => {
+    console.log(chalk.cyan('\n🌟 Theme Encyclopedia\n'));
+    
+    if (options.export === 'json') {
+      console.log(JSON.stringify(themes, null, 2));
+      return;
+    }
+    
+    let filteredThemes = themes;
+    if (options.search) {
+      filteredThemes = themes.filter(t => 
+        t.name.toLowerCase().includes(options.search.toLowerCase()) ||
+        t.description.toLowerCase().includes(options.search.toLowerCase())
+      );
+      console.log(chalk.yellow(`Found ${filteredThemes.length} themes matching "${options.search}"\n`));
+    }
+    
+    const table = new Table({
+      head: [chalk.cyan('Theme'), chalk.yellow('Description'), chalk.green('Category'), chalk.magenta('Age Group')],
+      colWidths: [20, 40, 15, 12]
+    });
+    
+    filteredThemes.forEach(theme => {
+      table.push([
+        chalk.cyan(theme.name || 'Unknown'),
+        chalk.white(theme.description || 'No description'),
+        chalk.yellow(theme.category || 'General'),
+        chalk.green(theme.ageGroup || 'All')
+      ]);
+    });
+    
+    console.log(table.toString());
+    console.log(chalk.blue(`\n📊 Total: ${filteredThemes.length} themes available`));
   });
 
 // Configuration command
