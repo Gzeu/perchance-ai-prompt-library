@@ -1,129 +1,30 @@
-{
-  "anime": {
+[
+  {
+    "key": "anime",
     "name": "Anime/Manga Style",
     "description": "Japanese animation style with clean lines and vibrant colors",
-    "category": "artistic",
-    "difficulty": "beginner",
-    "formula": "Beautiful soft anime style, [subject], a stunning [age] year old anime [gender] with [hair_description], striking [eye_color] eyes, [body_type], two dimensional anime style, wearing [clothing], [setting], [position], good realistic body proportions with [stature], high-quality hands with perfect digits, crisp clothing free of artifacts, best possible image quality masterpiece, [expression]",
-    "negative_prompt": "bad anatomy, bad hands, three hands, three legs, missing limbs, extra limbs, poorly drawn face, bad face, fused face, cloned face, worst face, extra fingers, missing fingers, ugly fingers, long fingers, extra eyes, huge eyes, realistic photo, 3d render, cartoon style mixing, blurry, low quality, watermark, signature",
-    "variables": {
-      "subject": ["magical girl", "warrior princess", "school student", "young hero", "mystical sorceress", "brave knight"],
-      "age": ["18", "22", "25", "30", "teenager", "young adult"],
-      "gender": ["woman", "man", "girl", "boy", "person"],
-      "hair_description": ["long flowing silver hair", "short spiky blue hair", "messy dark purple hair", "braided golden hair"],
-      "eye_color": ["emerald green", "sapphire blue", "amber", "violet", "crimson red"],
-      "body_type": ["slender figure", "athletic build", "petite frame", "tall and graceful"],
-      "clothing": ["flowing white summer dress", "school uniform", "magical robes", "warrior armor"],
-      "setting": ["cherry blossom garden", "magical forest", "school courtyard", "ancient temple"],
-      "position": ["standing gracefully", "sitting peacefully", "in dynamic pose", "battle stance"],
-      "stature": ["petite", "tall", "average height"],
-      "expression": ["gentle smile", "determined look", "mysterious gaze", "cheerful expression"]
-    },
-    "quality_modifiers": ["masterpiece", "best quality", "ultra detailed"],
-    "best_for": ["characters", "portraits", "fantasy", "gaming"],
-    "examples": [
-      "Beautiful soft anime style, magical girl, a stunning 18 year old anime woman with long flowing silver hair, striking emerald green eyes, slender figure, two dimensional anime style, wearing magical robes, magical forest, standing gracefully, good realistic body proportions with petite stature, masterpiece"
-    ]
+    "category": "Animation",
+    "tags": ["japan", "manga", "animation", "colorful", "2d"],
+    "variables": ["character pose", "hair style", "eye color", "clothing"],
+    "artists": ["Hayao Miyazaki", "Akira Toriyama"],
+    "examples": ["magical girl", "mecha pilot"],
+    "popularity": 95,
+    "recommended": true,
+    "negativePrompts": ["3d render", "photorealistic"],
+    "variableCount": 4
   },
-  "cinematic": {
-    "name": "Cinematic/Film Style",
-    "description": "Movie-like scenes with dramatic lighting",
-    "category": "photography",
-    "difficulty": "intermediate",
-    "formula": "Cinematic [scene_type], [subject] [action], [lighting_style], cinematic 4K footage, professional film quality, [camera_angle], [mood], movie still",
-    "negative_prompt": "amateur photography, low quality, blurry, bad lighting",
-    "variables": {
-      "subject": ["detective", "mysterious woman", "explorer", "businessman"],
-      "scene_type": ["thriller scene", "drama scene", "action scene"],
-      "action": ["walking down street", "sitting in café", "standing on cliff"],
-      "lighting_style": ["film noir lighting", "golden hour lighting", "dramatic lighting"],
-      "camera_angle": ["tracking shot", "close-up", "wide shot"],
-      "mood": ["moody atmosphere", "mysterious atmosphere", "epic atmosphere"]
-    },
-    "quality_modifiers": ["cinematic 4K", "professional film quality", "movie still"],
-    "best_for": ["storytelling", "drama", "professional"],
-    "examples": [
-      "Cinematic thriller scene, detective walking down street, film noir lighting, cinematic 4K footage, professional film quality, tracking shot, moody atmosphere, movie still"
-    ]
-  },
-  "photorealistic": {
-    "name": "Photorealistic Style",
-    "description": "Photo-quality realistic images with natural lighting and authentic details",
-    "category": "photography",
-    "difficulty": "beginner",
-    "formula": "Professional photography, photorealistic [subject], [physical_details], [realistic_clothing], [natural_setting], [photography_lighting], high resolution, sharp focus, detailed skin texture, natural lighting, [camera_specs]",
-    "negative_prompt": "cartoon, anime, 3d render, painting, illustration, sketch, drawing, digital art, unrealistic, fantasy elements, stylized, artistic interpretation, non-photographic, amateur photography, blurry, low quality",
-    "variables": {
-      "subject": ["portrait of a professional woman", "young businessman", "elderly craftsman", "teenage student", "middle-aged teacher", "child playing"],
-      "physical_details": ["natural auburn hair in sleek bob", "salt and pepper beard", "freckled complexion", "athletic build", "expressive brown eyes", "weathered hands"],
-      "realistic_clothing": ["crisp white business shirt", "casual denim jacket", "vintage leather coat", "summer sundress", "professional suit", "cozy sweater"],
-      "natural_setting": ["modern office", "busy urban street", "home studio", "outdoor café", "city park", "library"],
-      "photography_lighting": ["soft window lighting", "natural daylight", "golden hour light", "studio lighting", "overcast lighting", "warm indoor lighting"],
-      "camera_specs": ["85mm lens", "35mm perspective", "50mm portrait lens", "wide-angle lens", "macro lens detail", "telephoto compression"]
-    },
-    "quality_modifiers": ["high resolution", "sharp focus", "professional photography", "detailed skin texture", "natural lighting", "DSLR quality"],
-    "best_for": ["portraits", "commercial", "stock photography", "professional headshots", "lifestyle", "documentary"],
-    "examples": [
-      "Professional photography, photorealistic portrait of a professional woman, natural auburn hair in sleek bob, crisp white business shirt, modern office, soft window lighting, high resolution, sharp focus, detailed skin texture, natural lighting, 85mm lens"
-    ]
-  },
-  "digital_art": {
-    "name": "Digital Art/Concept Art",
-    "description": "Modern digital painting techniques with artistic flair and creative elements",
-    "category": "artistic",
-    "difficulty": "intermediate",
-    "formula": "Digital concept art, [fantasy_subject], [creative_elements], [color_palette], digital painting style, [artist_inspiration], detailed artwork, [digital_techniques], concept art quality",
-    "negative_prompt": "photography, realistic photo, amateur digital art, low quality painting, pixelated, blurry, unfinished sketch, poor composition, flat colors, bad anatomy, watermark",
-    "variables": {
-      "fantasy_subject": ["mystical elven warrior", "futuristic cyberpunk cityscape", "majestic dragon", "alien landscape", "magical floating castle", "steampunk inventor"],
-      "creative_elements": ["glowing blue tattoos", "flying vehicles", "shimmering scales", "bioluminescent plants", "floating crystals", "mechanical wings"],
-      "color_palette": ["vibrant blue and silver", "electric blue and magenta", "warm gold and deep red", "purple and teal", "earth tones with gold highlights", "neon colors"],
-      "artist_inspiration": ["inspired by fantasy game art", "in the style of concept artists", "reminiscent of sci-fi illustration", "fantasy book cover style", "video game concept art", "digital matte painting"],
-      "digital_techniques": ["soft brush techniques", "hard brush techniques", "textured brushwork", "smooth gradients", "detailed line work", "painterly strokes"]
-    },
-    "quality_modifiers": ["concept art quality", "detailed artwork", "professional digital painting", "high resolution concept art", "masterpiece digital art"],
-    "best_for": ["concept art", "fantasy", "gaming", "book covers", "creative projects", "sci-fi"],
-    "examples": [
-      "Digital concept art, mystical elven warrior, glowing blue tattoos, vibrant blue and silver color palette, digital painting style, inspired by fantasy game art, detailed artwork, soft brush techniques, concept art quality"
-    ]
-  },
-  "comic": {
-    "name": "Comic Book/Cartoon Style",
-    "description": "Bold lines and vibrant colors in comic book aesthetic with dynamic compositions",
-    "category": "illustration",
-    "difficulty": "beginner",
-    "formula": "Comic book style, [character_type] in [action_pose], bold line art, [coloring_style], [panel_composition], comic book aesthetic, [comic_influence], dynamic illustration",
-    "negative_prompt": "realistic photo, photorealistic, 3d render, blurry lines, muddy colors, poor line quality, amateur cartoon, watercolor, oil painting, sketch, unfinished drawing",
-    "variables": {
-      "character_type": ["heroic superhero", "determined young warrior", "mysterious detective", "brave space explorer", "magical sorceress", "villainous mastermind"],
-      "action_pose": ["dynamic flying pose", "battle stance", "running motion", "heroic standing pose", "casting spell gesture", "dramatic pointing"],
-      "coloring_style": ["vibrant primary colors", "cel shading", "flat colors", "gradient shading", "retro comic colors", "noir black and white"],
-      "panel_composition": ["dramatic panel composition", "action panel layout", "close-up panel", "wide panel view", "dynamic angle", "bird's eye view"],
-      "comic_influence": ["inspired by Marvel style", "DC Comics aesthetic", "manga style", "indie comic style", "classic comic book", "graphic novel art"]
-    },
-    "quality_modifiers": ["bold line art", "vibrant colors", "clean comic style", "professional comic art", "dynamic composition"],
-    "best_for": ["characters", "action scenes", "storytelling", "illustrations", "animation", "graphic novels"],
-    "examples": [
-      "Comic book style, heroic superhero in dynamic flying pose, bold line art, vibrant primary colors, dramatic panel composition, comic book aesthetic, inspired by Marvel style, dynamic illustration"
-    ]
-  },
-  "pixel_art": {
-    "name": "Pixel Art Style",
-    "description": "Retro gaming aesthetic with crisp pixel definition and nostalgic charm",
-    "category": "digital",
-    "difficulty": "advanced",
-    "formula": "Pixel art style, [pixel_subject], [pixel_dimensions], retro gaming aesthetic, [color_palette], crisp pixel definition, [gaming_era], pixelated illustration",
-    "negative_prompt": "anti-aliasing, smooth edges, blurry, realistic, photographic, high resolution, modern graphics, gradients, soft shading, vector graphics",
-    "variables": {
-      "pixel_subject": ["brave knight character", "fantasy tavern interior", "space ship battle", "magical forest scene", "cyberpunk street", "medieval castle"],
-      "pixel_dimensions": ["16x16 pixel", "32x32 pixel", "64x64 pixel", "8-bit style", "16-bit style", "128x128 pixel"],
-      "color_palette": ["limited 16-color palette", "NES color palette", "Game Boy green palette", "SNES colors", "CGA 4-color", "Commodore 64 palette"],
-      "gaming_era": ["classic NES style", "SNES RPG style", "Game Boy aesthetic", "arcade game style", "indie pixel game", "Commodore 64 style"]
-    },
-    "quality_modifiers": ["crisp pixel definition", "retro gaming aesthetic", "pixel perfect", "classic game art", "nostalgic style"],
-    "best_for": ["game sprites", "retro games", "icons", "indie games", "nostalgic art", "UI elements"],
-    "examples": [
-      "Pixel art style, brave knight character, 32x32 pixel, retro gaming aesthetic, limited 16-color palette, crisp pixel definition, classic NES style, pixelated illustration"
-    ]
+  {
+    "key": "photorealistic",
+    "name": "Photorealistic Photography",
+    "description": "Ultra-realistic photography style with natural lighting",
+    "category": "Photography",
+    "tags": ["realistic", "photography", "detailed", "natural"],
+    "variables": ["lighting setup", "camera angle", "composition"],
+    "artists": ["Annie Leibovitz", "Steve McCurry"],
+    "examples": ["portrait", "landscape", "street photography"],
+    "popularity": 90,
+    "recommended": true,
+    "negativePrompts": ["cartoon", "anime", "painting"],
+    "variableCount": 3
   }
-}
+]

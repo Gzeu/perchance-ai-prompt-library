@@ -1,0 +1,15 @@
+{
+  "universal": [
+    "blurry", "low quality", "worst quality", "bad anatomy", 
+    "bad hands", "watermark", "signature", "text"
+  ],
+  "anime": [
+    "3d", "photorealistic", "western cartoon", "realistic"
+  ],
+  "photorealistic": [
+    "anime", "cartoon", "painting", "drawn", "sketch"
+  ],
+  "fantasy": [
+    "modern clothing", "cars", "phones", "contemporary"
+  ]
+}

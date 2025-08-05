@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Epic Fantasy Portrait",
+    "description": "Professional fantasy character portrait template",
+    "style": "fantasy",
+    "components": {
+      "qualityModifiers": ["masterpiece", "best quality", "8k"],
+      "styleModifiers": ["fantasy art", "digital painting"],
+      "lightingSetup": ["dramatic lighting", "cinematic lighting"],
+      "composition": ["dynamic pose", "heroic stance"]
+    },
+    "negativePrompts": ["blurry", "low quality", "modern"],
+    "difficulty": "advanced",
+    "category": "Character"
+  },
+  {
+    "name": "Anime Character Standard",
+    "description": "High-quality anime character template",
+    "style": "anime",
+    "components": {
+      "qualityModifiers": ["masterpiece", "best quality"],
+      "styleModifiers": ["anime style", "2d"],
+      "characterDetails": ["detailed face", "beautiful eyes"],
+      "composition": ["centered", "portrait"]
+    },
+    "negativePrompts": ["3d", "realistic", "blurry"],
+    "difficulty": "beginner",
+    "category": "Character"
+  }
+]

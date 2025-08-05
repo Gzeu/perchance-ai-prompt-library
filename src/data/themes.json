@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Epic Adventure",
+    "description": "Grand heroic journeys and legendary quests",
+    "category": "Action",
+    "keywords": ["heroic", "quest", "adventure"],
+    "ageGroup": "10+",
+    "popularity": 94,
+    "compatibleStyles": ["cinematic", "fantasy"]
+  },
+  {
+    "name": "Peaceful Nature",
+    "description": "Serene natural environments and tranquil scenes",
+    "category": "Nature",
+    "keywords": ["peaceful", "serene", "natural"],
+    "ageGroup": "all",
+    "popularity": 88,
+    "compatibleStyles": ["impressionist", "photorealistic"]
+  },
+  {
+    "name": "Dark Mystery",
+    "description": "Gothic and mysterious atmospheric themes",
+    "category": "Mystery",
+    "keywords": ["dark", "mysterious", "gothic"],
+    "ageGroup": "13+",
+    "popularity": 82,
+    "compatibleStyles": ["gothic", "dark_fantasy"]
+  }
+]

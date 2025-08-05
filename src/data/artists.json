@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Leonardo da Vinci",
+    "period": "Renaissance",
+    "years": "1452-1519",
+    "country": "Italy",
+    "keywords": ["classical", "sfumato", "detailed"],
+    "styles": ["renaissance", "classical"],
+    "famousWorks": ["Mona Lisa", "The Last Supper"],
+    "techniques": ["sfumato", "chiaroscuro"],
+    "popularity": 98
+  },
+  {
+    "name": "Vincent van Gogh",
+    "period": "Post-Impressionism",
+    "years": "1853-1890",
+    "country": "Netherlands",
+    "keywords": ["swirling", "vibrant", "emotional"],
+    "styles": ["impressionist", "expressive"],
+    "famousWorks": ["Starry Night", "Sunflowers"],
+    "techniques": ["impasto", "bold brushstrokes"],
+    "popularity": 97
+  },
+  {
+    "name": "Hayao Miyazaki",
+    "period": "Contemporary Animation",
+    "years": "1941-present",
+    "country": "Japan",
+    "keywords": ["studio ghibli", "whimsical", "detailed"],
+    "styles": ["anime", "animation"],
+    "famousWorks": ["Spirited Away", "My Neighbor Totoro"],
+    "techniques": ["hand-drawn animation"],
+    "popularity": 95
+  }
+]

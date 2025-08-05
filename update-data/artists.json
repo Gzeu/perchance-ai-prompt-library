@@ -1,0 +1,85 @@
+[
+  {
+    "period": "Renaissance",
+    "techniques": [
+      "sfumato",
+      "chiaroscuro",
+      "detailed realism"
+    ],
+    "popularity": 98,
+    "styles": [
+      "renaissance",
+      "classical",
+      "photorealistic"
+    ],
+    "name": "Leonardo da Vinci",
+    "years": "1452-1519",
+    "country": "Italy",
+    "famousWorks": [
+      "Mona Lisa",
+      "The Last Supper",
+      "Vitruvian Man"
+    ],
+    "keywords": [
+      "sfumato",
+      "detailed",
+      "classical",
+      "renaissance"
+    ]
+  },
+  {
+    "period": "Post-Impressionism",
+    "techniques": [
+      "impasto",
+      "bold brushstrokes",
+      "complementary colors"
+    ],
+    "popularity": 97,
+    "styles": [
+      "impressionist",
+      "expressive",
+      "painterly"
+    ],
+    "name": "Vincent van Gogh",
+    "years": "1853-1890",
+    "country": "Netherlands",
+    "famousWorks": [
+      "Starry Night",
+      "Sunflowers",
+      "Self-Portrait"
+    ],
+    "keywords": [
+      "swirling",
+      "vibrant",
+      "emotional",
+      "expressive"
+    ]
+  },
+  {
+    "period": "Contemporary Animation",
+    "techniques": [
+      "hand-drawn animation",
+      "detailed backgrounds"
+    ],
+    "popularity": 95,
+    "styles": [
+      "anime",
+      "animation",
+      "fantasy"
+    ],
+    "name": "Hayao Miyazaki",
+    "years": "1941-present",
+    "country": "Japan",
+    "famousWorks": [
+      "Spirited Away",
+      "My Neighbor Totoro",
+      "Princess Mononoke"
+    ],
+    "keywords": [
+      "studio ghibli",
+      "whimsical",
+      "detailed",
+      "nature"
+    ]
+  }
+]

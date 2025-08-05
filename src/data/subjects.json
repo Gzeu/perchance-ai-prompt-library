@@ -1,0 +1,33 @@
+[
+  {
+    "category": "Fantasy Characters",
+    "subjects": [
+      {
+        "name": "Dragon Knight",
+        "tags": ["fantasy", "warrior", "dragon", "armor"],
+        "popularity": 96,
+        "compatibleStyles": ["fantasy", "digital_art"],
+        "variations": ["armored knight", "dragon rider"]
+      },
+      {
+        "name": "Magical Witch",
+        "tags": ["fantasy", "magic", "spell", "mystical"],
+        "popularity": 94,
+        "compatibleStyles": ["fantasy", "anime"],
+        "variations": ["young witch", "elder sorceress"]
+      }
+    ]
+  },
+  {
+    "category": "Sci-Fi Characters",
+    "subjects": [
+      {
+        "name": "Space Marine",
+        "tags": ["sci-fi", "warrior", "space", "armor"],
+        "popularity": 85,
+        "compatibleStyles": ["sci-fi", "digital_art"],
+        "variations": ["power armor", "space trooper"]
+      }
+    ]
+  }
+]

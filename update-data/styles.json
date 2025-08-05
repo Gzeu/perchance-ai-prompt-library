@@ -1,0 +1,78 @@
+[
+  {
+    "description": "Japanese animation style with clean lines and vibrant colors",
+    "variables": [
+      "character pose",
+      "hair style",
+      "eye color",
+      "clothing style"
+    ],
+    "artists": [
+      "Hayao Miyazaki",
+      "Akira Toriyama",
+      "Makoto Shinkai"
+    ],
+    "name": "Anime/Manga Style",
+    "examples": [
+      "magical girl",
+      "mecha pilot",
+      "school student"
+    ],
+    "key": "anime",
+    "tags": [
+      "japan",
+      "manga",
+      "animation",
+      "colorful",
+      "2d"
+    ],
+    "negativePrompts": [
+      "3d render",
+      "photorealistic",
+      "realistic"
+    ],
+    "variableCount": 4,
+    "popularity": 95,
+    "category": "Animation",
+    "recommended": true
+  },
+  {
+    "description": "Hyper-realistic photography style with natural lighting",
+    "variables": [
+      "lighting setup",
+      "camera angle",
+      "depth of field",
+      "composition"
+    ],
+    "artists": [
+      "Annie Leibovitz",
+      "Steve McCurry",
+      "Ansel Adams"
+    ],
+    "name": "Photorealistic Photography",
+    "examples": [
+      "portrait",
+      "landscape",
+      "street photography",
+      "macro"
+    ],
+    "key": "photorealistic",
+    "tags": [
+      "realistic",
+      "photography",
+      "detailed",
+      "natural",
+      "sharp"
+    ],
+    "negativePrompts": [
+      "cartoon",
+      "anime",
+      "painting",
+      "sketch"
+    ],
+    "variableCount": 4,
+    "popularity": 90,
+    "category": "Photography",
+    "recommended": true
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "universal": [
+    "blurry",
+    "low quality",
+    "worst quality",
+    "bad anatomy",
+    "bad hands"
+  ],
+  "fantasy": [
+    "modern clothing",
+    "cars",
+    "phones",
+    "contemporary"
+  ],
+  "photorealistic": [
+    "anime",
+    "cartoon",
+    "painting",
+    "drawn",
+    "sketch"
+  ],
+  "anime": [
+    "3d",
+    "photorealistic",
+    "western cartoon",
+    "realistic"
+  ]
+}

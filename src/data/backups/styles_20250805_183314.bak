@@ -1,0 +1,31 @@
+{
+  "description": "Japanese animation style with clean lines and vibrant colors",
+  "variables": [
+    "character pose",
+    "hair style",
+    "eye color"
+  ],
+  "artists": [
+    "Hayao Miyazaki",
+    "Akira Toriyama"
+  ],
+  "name": "Anime/Manga Style",
+  "examples": [
+    "magical girl",
+    "mecha pilot"
+  ],
+  "key": "anime",
+  "tags": [
+    "japan",
+    "manga",
+    "animation",
+    "colorful"
+  ],
+  "negativePrompts": [
+    "3d render",
+    "photorealistic"
+  ],
+  "popularity": 95,
+  "category": "Animation",
+  "recommended": true
+}
