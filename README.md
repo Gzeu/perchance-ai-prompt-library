@@ -1,4 +1,4 @@
-# 🎨 Perchance AI Prompt Library v2.1.0
+# 🎨 Perchance AI Prompt Library v2.1.1
 
 [![NPM Version](https://img.shields.io/npm/v/perchance-ai-prompt-library)](https://npmjs.com/package/perchance-ai-prompt-library) [![Downloads](https://img.shields.io/npm/dm/perchance-ai-prompt-library)](https://npmjs.com/package/perchance-ai-prompt-library) [![Coverage](https://img.shields.io/codecov/c/github/Gzeu/perchance-ai-prompt-library)](https://codecov.io/gh/Gzeu/perchance-ai-prompt-library) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub Stars](https://img.shields.io/github/stars/Gzeu/perchance-ai-prompt-library)](https://github.com/Gzeu/perchance-ai-prompt-library)
 
