@@ -1,6 +1,6 @@
 {
   "name": "perchance-ai-prompt-library",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "🎨 Complete AI prompt library and generator with advanced CLI, batch processing, analytics, and multi-format export capabilities",
   "main": "src/index.js",
   "bin": {
