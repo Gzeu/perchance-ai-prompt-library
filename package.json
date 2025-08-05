@@ -23,9 +23,7 @@
     "test:cli": "npm run test:generate && npm run test:batch",
     "test:generate": "node bin/cli.js generate anime \"test warrior\" -c 2",
     "test:batch": "node bin/cli.js batch photorealistic \"test city\" -c 5",
-    "lint": "eslint bin/ src/",
-    "docs": "node scripts/generate-docs.js",
-    "release": "npm version patch && git push origin main --tags",
+    "release": "npm version patch && git push origin main --tags"
   },
   "keywords": [
     "ai",
@@ -51,12 +49,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/perchance-ai/prompt-library.git"
+    "url": "https://github.com/Gzeu/perchance-ai-prompt-library.git"
   },
   "bugs": {
-    "url": "https://github.com/perchance-ai/prompt-library/issues"
+    "url": "https://github.com/Gzeu/perchance-ai-prompt-library/issues"
   },
-  "homepage": "https://github.com/perchance-ai/prompt-library#readme",
+  "homepage": "https://github.com/Gzeu/perchance-ai-prompt-library#readme",
   "dependencies": {
     "axios": "^1.11.0",
     "chalk": "^4.1.2",
