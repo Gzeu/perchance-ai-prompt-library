@@ -3,8 +3,8 @@
 const { Command } = require('commander');
 const chalk = require('chalk');
 const figlet = require('figlet');
-const boxen = require('boxen').default || require('boxen');
-const ora = require('ora').default || require('ora');
+const boxen = require('boxen');
+const ora = require('ora');
 const Table = require('cli-table3');
 const inquirer = require('inquirer');
 const fs = require('fs-extra');
@@ -21,7 +21,6 @@ const program = new Command();
 const CONFIG_DIR = path.join(os.homedir(), '.perchance');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 const METRICS_FILE = path.join(CONFIG_DIR, 'metrics.log');
-const CACHE_FILE = path.join(CONFIG_DIR, 'cache.json');
 
 // Extended databases for encyclopedia features
 const EXTENDED_SUBJECTS = [
@@ -47,66 +46,7 @@ const FAMOUS_ARTISTS = [
   { name: 'Craig Mullins', period: 'Digital Art', keywords: ['concept art', 'atmospheric', 'digital painting'], styles: ['digital_art'] }
 ];
 
-const STORY_THEMES = [
-  { name: 'Friendship', ageGroup: '3-12', description: 'Stories about bonds and loyalty', keywords: ['bonds', 'loyalty', 'support'] },
-  { name: 'Adventure', ageGroup: '6-16', description: 'Exciting journeys and discoveries', keywords: ['journey', 'exploration', 'discovery'] },
-  { name: 'Courage', ageGroup: '5-14', description: 'Overcoming fears and challenges', keywords: ['bravery', 'fear', 'challenge'] },
-  { name: 'Family', ageGroup: '3-10', description: 'Family bonds and relationships', keywords: ['parents', 'siblings', 'love'] },
-  { name: 'Mystery', ageGroup: '8-16', description: 'Solving puzzles and uncovering secrets', keywords: ['detective', 'clues', 'investigation'] }
-];
-
-// User configuration management
-class UserConfig {
-  constructor() {
-    this.defaults = {
-      defaultStyle: 'anime',
-      defaultCount: 1,
-      outputFormat: 'console',
-      verboseMode: false,
-      colorScheme: 'default',
-      saveHistory: true,
-      autoBackup: true
-    };
-  }
-
-  async load() {
-    try {
-      await fs.ensureDir(CONFIG_DIR);
-      if (await fs.pathExists(CONFIG_FILE)) {
-        const config = await fs.readJson(CONFIG_FILE);
-        return { ...this.defaults, ...config };
-      }
-      return this.defaults;
-    } catch (error) {
-      console.error(chalk.yellow('Warning: Could not load config, using defaults'));
-      return this.defaults;
-    }
-  }
-
-  async save(config) {
-    try {
-      await fs.ensureDir(CONFIG_DIR);
-      await fs.writeJson(CONFIG_FILE, config, { spaces: 2 });
-      return true;
-    } catch (error) {
-      console.error(chalk.red('Error saving configuration:', error.message));
-      return false;
-    }
-  }
-
-  async set(key, value) {
-    const config = await this.load();
-    config[key] = value;
-    return await this.save(config);
-  }
-
-  async get(key) {
-    const config = await this.load();
-    return config[key];
-  }
-}
-
-// Metrics and logging system
+// Metrics logging system
 class MetricsLogger {
   async log(action, data = {}) {
     try {
@@ -168,7 +108,6 @@ class FuzzySearch {
 }
 
 // Initialize utilities
-const userConfig = new UserConfig();
 const metricsLogger = new MetricsLogger();
 
 // Enhanced banner with dynamic stats
@@ -230,94 +169,22 @@ function displayEnhancedResults(results, options = {}) {
       const qualityBar = '█'.repeat(quality) + '░'.repeat(10 - quality);
       const qualityColor = quality >= 8 ? chalk.green : quality >= 6 ? chalk.yellow : chalk.red;
       
-      console.log(chalk.gray(`📊 ${result.metadata.wordCount} words • ${result.metadata.characterCount} chars`));
+      console.log(chalk.gray(`📊 ${result.metadata.wordCount} words • ${result.metadata.characterCount} characters`));
       console.log(`🎯 Quality: ${qualityColor(qualityBar)} ${quality}/10`);
     }
     
-    // Negative prompts if available
-    if (result.negativePrompt) {
-      console.log(chalk.red(`🚫 Avoid: ${chalk.dim(result.negativePrompt)}`));
+    // Negative prompts
+    if (result.negativePrompt || options.verbose) {
+      console.log(chalk.red(`🚫 Avoid: ${chalk.dim('blurry, low quality, amateur, bad anatomy, watermark, signature')}`));
     }
   });
-}
-
-// Advanced export functionality
-async function exportResults(results, format, options = {}) {
-  try {
-    await fs.ensureDir(CONFIG_DIR);
-    const timestamp = Date.now();
-    const filename = options.filename || `export_${timestamp}.${format}`;
-    
-    let content;
-    switch (format.toLowerCase()) {
-      case 'json':
-        content = JSON.stringify({
-          exported: new Date().toISOString(),
-          count: results.length,
-          prompts: results
-        }, null, 2);
-        break;
-        
-      case 'csv':
-        const headers = ['Index', 'Text', 'Style', 'Word Count', 'Quality'];
-        const rows = results.map((r, i) => [
-          i + 1,
-          `"${(r.text || '').replace(/"/g, '""')}"`,
-          r.style || 'unknown',
-          r.metadata?.wordCount || 0,
-          Math.floor(Math.random() * 3) + 7
-        ]);
-        content = [headers, ...rows].map(row => row.join(',')).join('\n');
-        break;
-        
-      case 'html':
-        content = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Perchance AI Prompts Export</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .prompt { border: 1px solid #ddd; margin: 20px 0; padding: 15px; border-radius: 8px; }
-        .metadata { color: #666; font-size: 0.9em; margin-top: 10px; }
-    </style>
-</head>
-<body>
-    <h1>🎨 Perchance AI Prompts Export</h1>
-    <p>Generated on: ${new Date().toLocaleString()}</p>
-    ${results.map((r, i) => `
-    <div class="prompt">
-        <h3>Prompt ${i + 1}</h3>
-        <p>${r.text}</p>
-        <div class="metadata">
-            Words: ${r.metadata?.wordCount || 0} | Characters: ${r.metadata?.characterCount || 0}
-        </div>
-    </div>
-    `).join('')}
-</body>
-</html>`;
-        break;
-        
-      default:
-        content = results.map((r, i) => `Prompt ${i + 1}:\n${r.text}\n\n`).join('');
-    }
-    
-    const filepath = path.join(CONFIG_DIR, filename);
-    await fs.writeFile(filepath, content);
-    console.log(chalk.blue(`💾 Exported to: ${filepath}`));
-    return filepath;
-    
-  } catch (error) {
-    console.error(chalk.red(`❌ Export failed: ${error.message}`));
-    return null;
-  }
 }
 
 // Setup main program
 program
   .name('perchance-prompts')
   .description('🎨 Ultra-Advanced AI Prompt Library & Encyclopedia')
-  .version('2.2.0');
+  .version('2.1.3');
 
 // Enhanced generate command with fuzzy search
 program
@@ -329,7 +196,6 @@ program
   .option('-c, --count <number>', 'Number of variations', '1')
   .option('-m, --mood <mood>', 'Mood variation')
   .option('-q, --quality <level>', 'Quality level (1-10)', '7')
-  .option('-e, --export <format>', 'Export format (json|csv|html|txt)')
   .option('-v, --verbose', 'Detailed output with metadata')
   .option('--search', 'Interactive fuzzy search mode')
   .action(async (style, subject, options) => {
@@ -340,29 +206,32 @@ program
       const fuzzyStyles = new FuzzySearch(library.listStyles(), ['name', 'description']);
       const fuzzySubjects = new FuzzySearch(EXTENDED_SUBJECTS, ['name', 'category', 'tags']);
       
-      const answers = await inquirer.prompt([
-        {
-          type: 'autocomplete',
-          name: 'style',
-          message: '🎨 Search and select art style:',
-          source: async (answersSoFar, input) => {
-            const results = fuzzyStyles.search(input || '', 8);
-            return results.map(s => ({ name: `${s.name} - ${s.description}`, value: s.key }));
+      try {
+        const answers = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'style',
+            message: '🎨 Choose art style:',
+            choices: fuzzyStyles.search('', 8).map(s => ({ name: `${s.name} - ${s.description}`, value: s.key }))
+          },
+          {
+            type: 'input',
+            name: 'subject',
+            message: '🎯 Enter subject:',
+            validate: input => input.length > 0 || 'Subject is required'
           }
-        },
-        {
-          type: 'autocomplete', 
-          name: 'subject',
-          message: '🎯 Search and select subject:',
-          source: async (answersSoFar, input) => {
-            const results = fuzzySubjects.search(input || '', 8);
-            return results.map(s => ({ name: `${s.name} (${s.category})`, value: s.name }));
-          }
-        }
-      ]);
-      
-      style = answers.style;
-      subject = answers.subject;
+        ]);
+        
+        style = answers.style;
+        subject = answers.subject;
+      } catch (error) {
+        console.log(boxen(
+          chalk.red.bold('❌ Interactive mode cancelled\n') +
+          chalk.white('Usage: perchance-prompts generate <style> "<subject>"'),
+          { padding: 1, borderColor: 'red', borderStyle: 'round' }
+        ));
+        return;
+      }
     }
     
     if (!style || !subject) {
@@ -401,11 +270,6 @@ program
       
       displayEnhancedResults(results, options);
       
-      // Auto-export if requested
-      if (options.export) {
-        await exportResults(results, options.export);
-      }
-      
     } catch (error) {
       spinner.fail('Generation failed');
       console.error(chalk.red(`❌ Error: ${error.message}`));
@@ -420,7 +284,6 @@ program
   .option('-s, --search <term>', 'Fuzzy search styles')
   .option('-a, --artist <name>', 'Filter by artist influence')
   .option('--detailed', 'Show detailed information')
-  .option('--export', 'Export styles database')
   .action(async (options) => {
     console.log(chalk.cyan('\n🎨 Art Style Encyclopedia\n'));
     
@@ -451,21 +314,21 @@ program
     
     console.log(table.toString());
     
-    if (options.detailed) {
-      console.log(chalk.cyan('\n📋 Detailed Style Information:\n'));
-      styles.slice(0, 3).forEach(style => {
-        console.log(boxen(
-          chalk.white.bold(style.name) + '\n' +
-          chalk.gray(style.description) + '\n\n' +
-          chalk.yellow('Best for: ') + chalk.white('portraits, landscapes, characters') + '\n' +
-          chalk.red('Avoid: ') + chalk.dim('abstract concepts, text, logos'),
-          { padding: 1, borderColor: 'cyan', margin: 1 }
-        ));
-      });
-    }
-    
     console.log(chalk.gray('\n💡 Usage: perchance-prompts generate <style> "<subject>"'));
     console.log(chalk.gray('🔍 Search: perchance-prompts styles --search "photo"'));
+  });
+
+// List command (alias for styles)
+program
+  .command('list')
+  .alias('l')
+  .description('📋 List all available art styles')
+  .action(() => {
+    // Execute styles command
+    const stylesCommand = program.commands.find(cmd => cmd.name() === 'styles');
+    if (stylesCommand) {
+      stylesCommand.action({});
+    }
   });
 
 // New subjects encyclopedia command
@@ -562,7 +425,6 @@ program
     await showSpectacularBanner();
     
     try {
-      const config = await userConfig.load();
       const styles = library.listStyles();
       
       console.log(chalk.yellow('🎯 Advanced Interactive Prompt Builder\n'));
@@ -575,16 +437,14 @@ program
           choices: [
             { name: '⚡ Quick Generate - Fast single prompt', value: 'quick' },
             { name: '🎨 Creative Mode - Multiple variations with mood', value: 'creative' },
-            { name: '📚 Encyclopedia Mode - Browse and select', value: 'encyclopedia' },
-            { name: '🎯 Recipe Builder - Custom advanced prompts', value: 'recipe' }
+            { name: '📚 Encyclopedia Mode - Browse and select', value: 'encyclopedia' }
           ]
         },
         {
           type: 'list',
           name: 'style',
           message: '🎨 Select art style:',
-          choices: styles.map(s => ({ name: `${s.name} - ${s.description}`, value: s.key })),
-          default: config.defaultStyle
+          choices: styles.map(s => ({ name: `${s.name} - ${s.description}`, value: s.key }))
         },
         {
           type: 'input',
@@ -621,26 +481,6 @@ program
         additionalOptions = creativeAnswers;
       }
       
-      if (answers.mode === 'recipe') {
-        const recipeAnswers = await inquirer.prompt([
-          {
-            type: 'checkbox',
-            name: 'qualityModifiers',
-            message: '✨ Quality enhancers:',
-            choices: [
-              'masterpiece', 'ultra detailed', 'trending on artstation', 
-              '8k resolution', 'award winning', 'professional photography'
-            ]
-          },
-          {
-            type: 'input',
-            name: 'customModifiers',
-            message: '🎨 Custom style modifiers (comma separated):'
-          }
-        ]);
-        additionalOptions = recipeAnswers;
-      }
-      
       // Generate based on mode
       const count = additionalOptions.count || 1;
       const spinner = ora(chalk.cyan(`🎨 Generating ${answers.mode} prompts...`)).start();
@@ -656,9 +496,7 @@ program
       results = results.map(result => ({
         ...result,
         mode: answers.mode,
-        mood: additionalOptions.mood,
-        customModifiers: additionalOptions.customModifiers,
-        qualityModifiers: additionalOptions.qualityModifiers
+        mood: additionalOptions.mood
       }));
       
       spinner.succeed(chalk.green(`Generated ${count} ${answers.mode} prompt${count > 1 ? 's' : ''}!`));
@@ -682,7 +520,6 @@ program
   .argument('<subject>', 'Subject')
   .option('-c, --count <number>', 'Number of variations', '5')
   .option('-p, --parallel <threads>', 'Parallel threads', '3')
-  .option('-e, --export <format>', 'Auto-export format')
   .option('--progress', 'Show detailed progress')
   .action(async (style, subject, options) => {
     const count = parseInt(options.count) || 5;
@@ -708,7 +545,7 @@ program
         masterSpinner.text = chalk.cyan(`Processing chunk ${chunk + 1}/${chunks} (${chunkSize} prompts)...`);
         
         // Simulate parallel processing
-        await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
+        await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
         
         const chunkResults = library.generateVariations(style, { subject }, chunkSize);
         results.push(...chunkResults);
@@ -730,13 +567,6 @@ program
         console.log(chalk.gray(`\n... and ${count - 3} more variations generated!`));
       }
       
-      // Auto-export if requested
-      if (options.export) {
-        await exportResults(results, options.export, { 
-          filename: `batch_${style}_${subject.replace(/\s+/g, '_')}_${Date.now()}.${options.export}`
-        });
-      }
-      
       await metricsLogger.log('batch', { style, subject, count, parallel });
       
     } catch (error) {
@@ -745,101 +575,29 @@ program
     }
   });
 
-// Configuration management command
-program
-  .command('config')
-  .alias('cfg')
-  .description('⚙️ Manage user configuration and preferences')
-  .option('-l, --list', 'List current configuration')
-  .option('-s, --set <key=value>', 'Set configuration value')
-  .option('-r, --reset', 'Reset to defaults')
-  .option('--export', 'Export configuration to file')
-  .action(async (options) => {
-    if (options.list) {
-      const config = await userConfig.load();
-      console.log(chalk.cyan('\n⚙️ Current Configuration:\n'));
-      
-      const table = new Table({
-        head: [chalk.cyan('Setting'), chalk.yellow('Value'), chalk.green('Description')],
-        wordWrap: true
-      });
-      
-      Object.entries(config).forEach(([key, value]) => {
-        const descriptions = {
-          defaultStyle: 'Default art style for generation',
-          defaultCount: 'Default number of variations',
-          outputFormat: 'Default export format',
-          verboseMode: 'Show detailed output by default',
-          colorScheme: 'Terminal color scheme',
-          saveHistory: 'Save generation history',
-          autoBackup: 'Automatically backup exports'
-        };
-        
-        table.push([
-          chalk.white(key),
-          chalk.yellow(typeof value === 'boolean' ? (value ? 'enabled' : 'disabled') : value),
-          chalk.gray(descriptions[key] || 'Custom setting')
-        ]);
-      });
-      
-      console.log(table.toString());
-    }
-    
-    if (options.set) {
-      const [key, ...valueParts] = options.set.split('=');
-      const value = valueParts.join('=');
-      
-      if (key && value) {
-        // Parse boolean values
-        const parsedValue = value === 'true' ? true : value === 'false' ? false : 
-                           !isNaN(value) ? Number(value) : value;
-        
-        const success = await userConfig.set(key.trim(), parsedValue);
-        if (success) {
-          console.log(chalk.green(`✅ Set ${key} = ${parsedValue}`));
-        } else {
-          console.log(chalk.red(`❌ Failed to set ${key}`));
-        }
-      } else {
-        console.log(chalk.red('❌ Invalid format. Use: --set key=value'));
-      }
-    }
-    
-    if (options.reset) {
-      const confirmed = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'resetConfirm',
-        message: '⚠️ Reset all settings to defaults?',
-        default: false
-      }]);
-      
-      if (confirmed.resetConfirm) {
-        const success = await userConfig.save(userConfig.defaults);
-        if (success) {
-          console.log(chalk.green('✅ Configuration reset to defaults'));
-        }
-      }
-    }
-  });
-
 // Metrics and analytics command
 program
-  .command('metrics')
-  .alias('stats')
+  .command('stats')
+  .alias('metrics')
   .description('📊 View detailed usage statistics and analytics')
   .option('--clear', 'Clear all metrics')
   .action(async (options) => {
     if (options.clear) {
-      const confirmed = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'clearConfirm',
-        message: '⚠️ Clear all metrics data?',
-        default: false
-      }]);
-      
-      if (confirmed.clearConfirm) {
-        await fs.remove(METRICS_FILE);
-        console.log(chalk.green('✅ Metrics cleared'));
+      try {
+        const confirmed = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'clearConfirm',
+          message: '⚠️ Clear all metrics data?',
+          default: false
+        }]);
+        
+        if (confirmed.clearConfirm) {
+          await fs.remove(METRICS_FILE);
+          console.log(chalk.green('✅ Metrics cleared'));
+          return;
+        }
+      } catch (error) {
+        console.log(chalk.yellow('Clear operation cancelled'));
         return;
       }
     }
@@ -870,69 +628,53 @@ program
     }
   });
 
-// Export command
-program
-  .command('export')
-  .alias('e')
-  .description('💾 Export data and configurations')
-  .option('--config', 'Export configuration')
-  .option('--metrics', 'Export metrics data')
-  .option('--format <format>', 'Export format', 'json')
-  .action(async (options) => {
-    const timestamp = Date.now();
-    
-    if (options.config) {
-      const config = await userConfig.load();
-      const filename = `config_export_${timestamp}.${options.format}`;
-      await exportResults([{ config }], options.format, { filename });
-    }
-    
-    if (options.metrics) {
-      const stats = await metricsLogger.getStats();
-      const filename = `metrics_export_${timestamp}.${options.format}`;
-      await exportResults([{ metrics: stats }], options.format, { filename });
-    }
-    
-    if (!options.config && !options.metrics) {
-      console.log(chalk.yellow('Please specify --config or --metrics to export'));
-    }
-  });
-
-// Help command with advanced features
+// Help command universal - FIX PENTRU HELP
 program
   .command('help')
+  .alias('h')
   .argument('[command]', 'Command to get help for')
-  .description('📚 Get detailed help and examples')
+  .description('📚 Show help information')
   .action(async (command) => {
     if (command) {
       const cmd = program.commands.find(c => c.name() === command || c.aliases().includes(command));
       if (cmd) {
         console.log(chalk.cyan(`\n📖 Help for "${command}":\n`));
         console.log(chalk.white(cmd.description()));
-        if (cmd.usage) {
-          console.log(chalk.yellow('\nUsage:'), chalk.white(cmd.usage()));
+        console.log(chalk.yellow('\nUsage:'));
+        console.log(chalk.white(`  perchance-prompts ${cmd.name()} ${cmd.usage || ''}`));
+        
+        // Show options if available
+        if (cmd.options && cmd.options.length > 0) {
+          console.log(chalk.yellow('\nOptions:'));
+          cmd.options.forEach(option => {
+            console.log(chalk.white(`  ${option.flags.padEnd(25)} ${option.description}`));
+          });
         }
       } else {
         console.log(chalk.red(`❌ Unknown command: ${command}`));
+        await showSpectacularBanner();
+        program.outputHelp();
       }
     } else {
       await showSpectacularBanner();
-      program.help();
+      program.outputHelp();
     }
   });
 
-// Configure help and error handling
+// Configure help and error handling - FIX PENTRU --help
 program.helpOption('-h, --help', 'Display help information');
 program.showHelpAfterError();
 
-// Enhanced unknown command handler
+// Enhanced unknown command handler - TREBUIE SA FIE ULTIMUL
 program.on('command:*', function() {
   const unknownCommand = program.args.join(' ');
   
   // Suggest similar commands using fuzzy search
   const availableCommands = program.commands.map(cmd => cmd.name());
-  const fuzzySearch = new FuzzySearch(availableCommands.map(name => ({ name })), ['name']);
-  const suggestions = fuzzySearch.search(unknownCommand.split(' ')[0], 3).map(r => r.name);
+  const suggestions = availableCommands.filter(cmd => 
+    cmd.toLowerCase().includes(unknownCommand.toLowerCase()) ||
+    unknownCommand.toLowerCase().includes(cmd.toLowerCase())
+  ).slice(0, 3);
   
   console.log(boxen(
     chalk.red.bold(`❌ Unknown command: ${unknownCommand}\n\n`) +
@@ -959,13 +701,12 @@ program.on('--help', async () => {
   console.log(chalk.cyan('\n🌟 ADVANCED FEATURES:\n'));
   console.log(chalk.gray('  • Fuzzy search across styles, subjects, and artists'));
   console.log(chalk.gray('  • Advanced batch processing with parallelism'));
-  console.log(chalk.gray('  • Multiple export formats (JSON, CSV, HTML)'));
-  console.log(chalk.gray('  • User configuration and metrics tracking'));
   console.log(chalk.gray('  • Interactive mode with guided prompts'));
-  console.log(chalk.gray('  • Comprehensive encyclopedia databases'));
+  console.log(chalk.gray('  • Usage analytics and metrics tracking'));
+  console.log(chalk.gray('  • Professional ASCII art and table formatting'));
   
   console.log(chalk.magenta('\n💎 PRO TIPS:\n'));
-  console.log(chalk.gray('  • Use config command to set your defaults'));
+  console.log(chalk.gray('  • Use interactive mode for best experience'));
   console.log(chalk.gray('  • Try --search flag for fuzzy finding'));
   console.log(chalk.gray('  • Batch mode supports up to 5 parallel threads'));
   console.log(chalk.gray('  • All data is stored locally in ~/.perchance/'));
