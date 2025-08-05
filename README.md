@@ -1,4 +1,4 @@
-# 🎨 Perchance AI Prompt Library v2.2.0
+# 🎨 Perchance AI Prompt Library v2.2.3
 
 [![npm version](https://badge.fury.io/js/perchance-ai-prompt-library.svg)](https://www.npmjs.com/package/perchance-ai-prompt-library)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

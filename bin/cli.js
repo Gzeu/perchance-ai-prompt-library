@@ -11,7 +11,7 @@ const os = require('os');
 // Advanced CLI utilities
 class AdvancedCLI {
   constructor() {
-    this.version = '2.2.2';
+    this.version = '2.2.3';
     this.configDir = path.join(os.homedir(), '.perchance');
     this.configFile = path.join(this.configDir, 'config.json');
     this.metricsFile = path.join(this.configDir, 'metrics.log');
