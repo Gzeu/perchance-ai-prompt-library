@@ -1,6 +1,6 @@
 {
   "name": "perchance-ai-prompt-library",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Complete prompt library and generator for Perchance AI tools, with API, Web, Discord, and browser extension integration (v2.0)",
   "main": "src/index.js",
   "bin": {
