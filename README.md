@@ -1,390 +1,215 @@
-# Perchance AI Prompt Library v2.0 🎨
+# 🎨 Perchance AI Prompt Library v2.1.0
 
-> **Complete AI prompt generation platform with REST API, CLI, and style mixing technology**
+[![NPM Version](https://img.shields.io/npm/v/perchance-ai-prompt-library)](https://npmjs.com/package/perchance-ai-prompt-library) [![Downloads](https://img.shields.io/npm/dm/perchance-ai-prompt-library)](https://npmjs.com/package/perchance-ai-prompt-library) [![Coverage](https://img.shields.io/codecov/c/github/Gzeu/perchance-ai-prompt-library)](https://codecov.io/gh/Gzeu/perchance-ai-prompt-library) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![GitHub Stars](https://img.shields.io/github/stars/Gzeu/perchance-ai-prompt-library)](https://github.com/Gzeu/perchance-ai-prompt-library)
 
-[![npm version](https://img.shields.io/badge/npm-v2.0.0-blue.svg)](https://npmjs.org/package/perchance-ai-prompt-library)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![API Status](https://img.shields.io/badge/API-Live-brightgreen.svg)](http://localhost:3000/api/health)
-[![Tests](https://img.shields.io/badge/tests-12%2F12%20passing-brightgreen.svg)](https://github.com/Gzeu/perchance-ai-prompt-library)
+> Complete prompt library and generator for Perchance AI tools, with CLI, API, Web, and Discord integration - 100% free and open source
 
-**🔥 MAJOR UPDATE v2.0**: Evolved from CLI tool to **complete REST API platform** with style mixing technology and enterprise-grade features.
+## 🚀 Quick Start
 
----
-
-## ⚡ **What's New in v2.0**
-
-### 🌐 **REST API Server (NEW!)**
-Professional API server with 5 core endpoints:
-
-Health & Status
-GET /api/health # Server status and version
-GET /api/styles # List all 6 art styles
-
-Prompt Generation
-POST /api/prompts/generate # Single prompt generation
-POST /api/prompts/batch # Batch generation (1-20 variations)
-POST /api/prompts/mix # Style mixing (NEW v2.0 feature!)
-
-
-### 🎨 **Style Mixing Technology (NEW!)**
-Combine multiple art styles for unique prompts:
-// Mix anime + cinematic styles
-{
-"styles": ["anime", "cinematic"],
-"subject": "space warrior"
-}
-// Result: Cinematic composition with anime character design
-
-
-
-### ⚡ **Enhanced Performance**
-- **<50ms** batch generation for 5 variations
-- **Up to 20 variations** in single API call
-- **Cross-platform** Windows/Mac/Linux support
-- **Production-ready** with rate limiting and error handling
-
----
-
-## 🚀 **Quick Start**
-
-### Option 1: CLI Usage (v1.1 features)
 Install globally
 npm install -g perchance-ai-prompt-library
+
+Generate your first prompt
+perchance-prompts generate anime "space warrior"
+
+Batch generation with export
+perchance-prompts batch cinematic "detective" --count 5 --export json
+
+
+## 🎯 Features
+
+- [x] **CLI Prompt Generation** - 6+ professional art styles
+- [x] **Batch Processing** - Generate multiple variations instantly
+- [x] **REST API Server** - OpenAPI compliant with full documentation
+- [x] **Web Interface** - React/Material-UI dashboard with live preview
+- [x] **Discord Bot Integration** - Slash commands with AI image generation
+- [x] **Unlimited AI Art** - Free image generation via Pollinations AI
+- [x] **Professional Export** - PDF, JSON, CSV, TXT formats
+- [x] **100% Cost-Free** - No API keys, no quotas, no hidden fees
+- [x] **Open Source** - MIT license, community-driven development
+
+## 🛠️ Usage
+
+### CLI Examples
+Single prompt generation
+perchance-prompts generate photorealistic "sunset landscape" --export pdf
+
+Batch generation with variations
+perchance-prompts batch anime "magical girl" --count 3 --output ./results
 
 Interactive mode
 perchance-prompts interactive
 
-Batch generation
-perchance-prompts batch anime "warrior princess" --count 5
+List all available styles
+perchance-prompts list
 
 
-### Option 2: API Server (v2.0 NEW!)
-Start API server
-npm run api
-
-Test generation (Windows PowerShell)
-$body = '{"style":"anime","subject":"warrior"}'
-Invoke-RestMethod -Uri http://localhost:3000/api/prompts/generate -Method Post -ContentType 'application/json' -Body $body
-
-Test style mixing
-$body = '{"styles":["anime","cinematic"],"subject":"dragon rider"}'
-Invoke-RestMethod -Uri http://localhost:3000/api/prompts/mix -Method Post -ContentType 'application/json' -Body $body
-
-
-
-### Option 3: Programmatic Usage
-const { PerchancePromptLibrary } = require('perchance-ai-prompt-library');
-const library = new PerchancePromptLibrary();
-
-// Generate single prompt
-const result = library.generate({
-style: 'anime',
-subject: 'magical sorceress'
-});
-
-// Generate batch variations
-const variations = library.generateVariations('cinematic', {
-subject: 'detective story'
-}, 5);
-
-
-
----
-
-## 🎯 **API Reference v2.0**
-
-### **POST /api/prompts/generate**
-Generate a single AI art prompt.
-
-// Request
-{
-"style": "anime",
-"subject": "space warrior",
-"age": "22",
-"clothing": "futuristic armor"
-}
-
-// Response
-{
-"success": true,
-"data": {
-"text": "Beautiful soft anime style, space warrior, a stunning 22 year old anime woman with long flowing silver hair, striking emerald green eyes...",
-"style": "anime",
-"metadata": {
-"wordCount": 65,
-"characterCount": 475
-},
-"negativePrompt": "bad anatomy, bad hands, realistic photo..."
-}
-}
-
-
-
-### **POST /api/prompts/batch**
-Generate multiple variations of the same prompt.
-
-// Request
-{
-"style": "cinematic",
-"subject": "detective",
-"count": 3
-}
-
-// Response
-{
-"success": true,
-"data": {
-"results": [
-{"text": "Variation 1 prompt...", "variationNumber": 1},
-{"text": "Variation 2 prompt...", "variationNumber": 2},
-{"text": "Variation 3 prompt...", "variationNumber": 3}
-],
-"batch": {
-"count": 3,
-"style": "cinematic",
-"subject": "detective"
-}
-}
-}
-
-
-
-### **POST /api/prompts/mix** ⭐ NEW!
-Mix multiple art styles for unique combinations.
-
-// Request
-{
-"styles": ["anime", "photorealistic"],
-"subject": "magical forest"
-}
-
-// Response
-{
-"success": true,
-"data": {
-"text": "Mixed style prompt combining anime and photorealistic elements...",
-"mixedStyles": ["anime", "photorealistic"],
-"subject": "magical forest"
-}
-}
-
-
----
-
-## 🎨 **Available Art Styles**
-
-| Style | Description | Variables | Best For |
-|-------|-------------|-----------|----------|
-| **anime** | Japanese animation with clean lines | 11 categories | Characters, fan art |
-| **cinematic** | Movie-quality dramatic scenes | 6 categories | Storytelling, professional |
-| **photorealistic** | Photo-quality realistic images | 6 categories | Commercial, portraits |
-| **digital_art** | Modern digital painting techniques | 5 categories | Concept art, fantasy |
-| **comic** | Bold comic book aesthetics | 5 categories | Action scenes, illustrations |
-| **pixel_art** | Retro gaming aesthetics | 4 categories | Game sprites, nostalgia |
-
-Each style includes optimized formulas, negative prompts, and quality modifiers for professional results.
-
----
-
-## 🛠️ **Development Setup**
-
-### Prerequisites
-- Node.js 14+ 
-- npm 6+
-
-### Installation
-Clone repository
-git clone https://github.com/Gzeu/perchance-ai-prompt-library.git
-cd perchance-ai-prompt-library
-
-Install dependencies
-npm install
-
-Run tests
-npm test
-
-Start API development server
-npm run api:dev
-
-
-### Testing API Endpoints
-Health check
-curl http://localhost:3000/api/health
-
-List styles
-curl http://localhost:3000/api/styles
-
-Test generation (Unix/Linux/Mac)
+### API Examples
+Generate single prompt
 curl -X POST http://localhost:3000/api/prompts/generate
 -H "Content-Type: application/json"
--d '{"style":"anime","subject":"warrior"}'
+-d '{"style":"anime","subject":"dragon warrior"}'
 
-Test on Windows (PowerShell recommended)
-$body = '{"style":"anime","subject":"warrior"}'
-Invoke-RestMethod -Uri http://localhost:3000/api/prompts/generate -Method Post -ContentType 'application/json' -Body $body
-
-
----
-
-## 📊 **Performance & Reliability**
-
-### Benchmarks
-- **Single Generation**: <10ms
-- **Batch (5 prompts)**: <50ms  
-- **Style Mixing**: <25ms
-- **API Response Time**: <100ms average
-- **Memory Usage**: <10MB peak
-
-### Testing Coverage
-- ✅ **12/12 tests passing**
-- ✅ **90%+ code coverage**
-- ✅ **All API endpoints verified**
-- ✅ **Cross-platform compatibility confirmed**
-- ✅ **Production load tested**
-
----
-
-## 🗺️ **Platform Roadmap**
-
-### ✅ **v2.0 - COMPLETED**
-- REST API with 5 endpoints
-- Style mixing technology
-- Enhanced batch processing
-- Professional error handling
-- Cross-platform compatibility
-
-### 🚧 **v2.1 - IN PROGRESS**
-- **Web Interface** (React + Material-UI)
-- **Discord Bot** with slash commands
-- **Browser Extension** for universal access
-- **Community Templates** with sharing
-
-### 🔮 **v2.2 - PLANNED**
-- **Mobile App** (React Native)
-- **Advanced Analytics** dashboard
-- **AI-Powered Optimization** suggestions
-- **Enterprise Features** (teams, SSO)
-
----
-
-## 🤝 **Contributing**
-
-We welcome contributions! Here's how to get started:
-
-### Quick Contribution Setup
-git clone https://github.com/Gzeu/perchance-ai-prompt-library.git
-cd perchance-ai-prompt-library
-npm install && npm test
+Batch generation
+curl -X POST http://localhost:3000/api/prompts/batch
+-H "Content-Type: application/json"
+-d '{"style":"cinematic","subject":"space battle","count":5}'
 
 
-### Ways to Contribute
-- 🎨 **Add new art styles** to expand the library
-- 🐛 **Report bugs** via GitHub Issues
-- 💡 **Suggest features** in Discussions
-- 🔧 **Improve API endpoints** with new functionality
-- 📚 **Enhance documentation** and examples
-- 🌐 **Build frontend interfaces** (Web, mobile, desktop)
-
-### Adding a New Art Style
-{
-"your_style": {
-"name": "Your Style Name",
-"description": "Brief description",
-"category": "artistic|photography|digital",
-"formula": "Your [variable1] formula with [variable2]",
-"variables": {
-"variable1": ["option1", "option2"],
-"variable2": ["option1", "option2"]
-},
-"negative_prompt": "things to avoid",
-"quality_modifiers": ["quality", "terms"],
-"best_for": ["use", "cases"]
-}
-}
+### Discord Bot
+/generate anime "space warrior" image:true mood:epic
+/batch cinematic "detective story" count:3
 
 
----
+### Web Interface
+Start the development server and visit: `http://localhost:5173`
 
-## 🏆 **Why Choose This Library?**
+cd web && npm run dev
 
-### **🔥 Advantages Over Competition**
-- **⚡ Faster**: <50ms vs seconds for online tools
-- **🎨 More Styles**: 6 professional styles vs 1-2 competitors
-- **💰 Free**: $0 vs $10-20/month for alternatives  
-- **🔄 Smarter**: Batch + mixing vs manual single generation
-- **🌐 Accessible**: API + CLI + Web vs single interface
-- **🔧 Extensible**: Open source vs proprietary black box
 
-### **🎯 Perfect For**
-- **🎬 Content Creators** - YouTube thumbnails, social media
-- **🎮 Game Developers** - Concept art and character design
-- **🎨 Digital Artists** - Inspiration and baseline prompts
-- **📈 Marketing Teams** - Visual campaign assets
-- **🏫 Educators** - Teaching materials and presentations
-- **🔬 Researchers** - AI prompt engineering studies
+## 🗂️ Available Styles
 
----
+| Style | Description | Example Prompt |
+|-------|-------------|----------------|
+| `anime` | Japanese animation style with vibrant colors | "warrior princess" |
+| `cinematic` | Movie-quality dramatic compositions | "epic space battle" |
+| `photorealistic` | Hyper-realistic photography style | "sunset landscape" |
+| `digital_art` | Modern digital painting techniques | "fantasy castle" |
+| `comic` | Comic book illustration style | "superhero action" |
+| `pixel_art` | 8-bit retro gaming aesthetic | "retro game hero" |
 
-## 📈 **Usage Statistics**
+## ⚡ Why is it 100% Free?
 
-### **Global Adoption**
-- **📦 NPM Downloads**: 1,000+ and growing
-- **⭐ GitHub Stars**: Community-driven development
-- **🌍 Countries**: Used in 15+ countries
-- **🎨 Prompts Generated**: 10,000+ successful generations
+- **No External Dependencies** - Self-hosted, no paid APIs required
+- **Open Source Libraries** - Built with OSS tools and Pollinations AI (unlimited)
+- **Community Driven** - NPM distribution, zero vendor lock-in
+- **Educational Focus** - Designed to democratize AI art prompt generation
 
-### **Performance Metrics**
-- **🚀 Uptime**: 99.9% API availability
-- **⚡ Speed**: Average 47ms response time
-- **📊 Success Rate**: 99.8% successful generations
-- **🔧 Error Rate**: <0.2% with detailed error messages
+## 🤖 Who is this for?
 
----
+- [x] **AI Artists & Prompt Engineers** - Professional prompt generation tools
+- [x] **CLI Power Users** - Terminal-based workflow integration
+- [x] **API Integrators** - Node.js, Python, or any HTTP client
+- [x] **Discord Communities** - Server owners and bot builders
+- [x] **Educators & Teachers** - Story generation tools (coming in v2.2)
+- [x] **Content Creators** - Batch processing for social media
 
-## 💬 **Community & Support**
+## ❓ FAQ
+
+**Q: How do I add a new art style?**  
+A: Add an entry to `src/data/styles.json` and run `node deploy-commands.js` for Discord Bot.
+
+**Q: How can I change the default export directory?**  
+A: Use `perchance-prompts config --set outputDirectory=/custom/path`
+
+**Q: Do I ever need API keys?**  
+A: No! All core functionality is 100% free with no quotas or hidden costs.
+
+**Q: Can I use this commercially?**  
+A: Yes, it's released under MIT license with no restrictions.
+
+**Q: How do I contribute new templates?**  
+A: Fork the repo, add templates to the appropriate directory, and submit a PR.
+
+## 🛡️ Security
+
+- **No Secrets Required** - Zero API keys for core functionality
+- **Privacy First** - All processing happens locally or on your infrastructure
+- **Zero Vendor Lock-in** - Complete control over your data and workflows
+- **Safe Examples** - All documentation uses placeholder values only
+
+## 🛤️ Roadmap & Planned Features
+
+### ✅ **Completed (v2.1.0)**
+- [x] CLI Prompt Generation with 6+ art styles
+- [x] Discord Bot with AI image generation
+- [x] Professional export formats (PDF/JSON/CSV)
+- [x] Web interface with Material-UI
+- [x] REST API with OpenAPI documentation
+- [x] Enhanced prompt templates with mood variations
+
+### 🚧 **In Development (v2.2.0)**
+- [ ] **Interactive Story Generation** - Children's story creation tools
+- [ ] **Character & World Builders** - Detailed narrative components
+- [ ] **Multi-language Support** - Prompts in multiple languages
+- [ ] **Plugin API** - Custom style extensions
+- [ ] **Advanced Export** - ePub format with illustrations
+
+### 💡 **Future Considerations**
+- [ ] Browser extension for universal access
+- [ ] Mobile PWA support
+- [ ] Community template marketplace
+- [ ] Advanced AI integrations (optional)
+
+## 📦 Changelog
+
+### [2.1.0] - 2025-08-05
+- ✨ Enhanced prompt generation with professional templates
+- 🖼️ Real AI image generation via Pollinations.ai integration
+- 🤖 Discord Bot with mood variations and metadata embeds
+- 🛡️ Comprehensive security improvements and .env protection
+- 📚 Complete documentation overhaul with examples
+
+### [2.0.1] - 2025-08-04
+- 🌐 Web interface improvements and batch gallery
+- 🔄 API enhancements with better error handling
+- 📊 Performance optimizations for CLI operations
+
+### [1.1.0] - 2025-08-03
+- 🚀 Initial NPM release with CLI functionality
+- 🎨 6 professional art styles implementation
+- 📁 Export functionality for generated prompts
+
+## 🤝 How to Contribute
+
+We welcome contributions from the community! Here's how you can help:
+
+### **Getting Started**
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and test thoroughly
+4. Commit with descriptive messages: `git commit -m 'Add amazing feature'`
+5. Push to your branch: `git push origin feature/amazing-feature`
+6. Open a Pull Request with detailed description
+
+### **Development Guidelines**
+- Follow existing code style and use Prettier for formatting
+- Add tests for new functionality
+- Update documentation for any API changes
+- Ensure all CI checks pass before submitting PR
+
+### **Types of Contributions**
+- 🐛 Bug fixes and issue reports
+- ✨ New features and enhancements
+- 📚 Documentation improvements
+- 🎨 New art style templates
+- 🌍 Translations and localization
+- 🧪 Test coverage improvements
+
+## 📞 Support & Community
 
 ### **Get Help**
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/Gzeu/perchance-ai-prompt-library/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/Gzeu/perchance-ai-prompt-library/discussions)
-- 📧 **Questions**: [Create an Issue](https://github.com/Gzeu/perchance-ai-prompt-library/issues/new)
-- 📚 **Documentation**: [API Docs](http://localhost:3000/api)
+- 📋 **Issues**: [GitHub Issues](https://github.com/Gzeu/perchance-ai-prompt-library/issues) for bug reports and feature requests
+- 📧 **Email**: pricopgeorge@gmail.com for direct support
+- 💬 **Discord**: Join our community (link in repository)
 
-### **Stay Connected**
-- ⭐ **Star this repository** for updates
-- 👀 **Watch releases** for new features
-- 🔔 **Follow development** in Issues and PRs
-- 🎯 **Join discussions** about AI prompt engineering
+### **Stay Updated**
+- ⭐ Star the repository for updates
+- 👀 Watch releases for new versions
+- 🐦 Follow development updates
 
 ---
 
-## 📄 **License**
+## 📄 License
 
-MIT © [Gzeu](https://github.com/Gzeu) - See [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 **Acknowledgments**
-
-Special thanks to:
-- **AI Art Community** for inspiration and feedback
-- **Open Source Contributors** who make projects like this possible
-- **Prompt Engineers** pushing the boundaries of AI creativity
-- **Beta Testers** who helped refine the platform
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
 
-### **⭐ If this library helps your AI art projects, please star the repository! ⭐**
+**[⬆ Back to Top](#-perchance-ai-prompt-library)**
 
-### **🔥 Built with ❤️ for the global AI art community 🔥**
-
-**Transform your prompts. Transform your art. Transform your workflow.**
-
-[**🚀 Get Started**](#-quick-start) | [**📖 API Docs**](#-api-reference-v20) | [**🤝 Contribute**](#-contributing) | [**💬 Community**](#-community--support)
+Made with ❤️ by the open source community
 
 </div>
-
----
-
-*Last updated: January 5, 2025 - v2.0.0*
