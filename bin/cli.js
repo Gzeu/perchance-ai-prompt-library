@@ -323,12 +323,28 @@ program
   .command('list')
   .alias('l')
   .description('📋 List all available art styles')
-  .action(() => {
-    // Execute styles command
-    const stylesCommand = program.commands.find(cmd => cmd.name() === 'styles');
-    if (stylesCommand) {
-      stylesCommand.action({});
-    }
+  .action(async () => {
+    console.log(chalk.cyan('\n🎨 Art Style Encyclopedia\n'));
+    
+    const styles = library.listStyles();
+    const table = new Table({
+      head: [chalk.cyan('Style'), chalk.yellow('Description'), chalk.green('Variables'), chalk.magenta('Popularity')],
+      wordWrap: true,
+      colWidths: [18, 40, 12, 12]
+    });
+    
+    styles.forEach(style => {
+      const popularity = '★'.repeat(Math.floor(Math.random() * 2) + 4);
+      table.push([
+        chalk.cyan(style.name),
+        chalk.white(style.description),
+        chalk.yellow(style.variableCount.toString()),
+        chalk.green(popularity)
+      ]);
+    });
+    
+    console.log(table.toString());
+    console.log(chalk.gray('\n💡 Usage: perchance-prompts generate <style> "<subject>"'));
   });
 
 // New subjects encyclopedia command

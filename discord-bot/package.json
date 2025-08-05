@@ -1,6 +1,6 @@
 {
   "name": "perchance-discord-bot",
-  "version": "2.1.3",
+  "version": "2.1.5",
   "description": "Discord bot for Perchance AI Prompt Library with image generation",
   "main": "index.js",
   "scripts": {
