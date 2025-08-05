@@ -1,7 +1,38 @@
-node_modules/
-coverage/
-*.log
+# Environment Variables (CRITICAL)
 .env
+.env.*
+*.env
+*.env.*
+discord-bot/.env
+discord-bot/.env.*
+src/.env
+data/.env
+
+# Database & Logs
+data/*.db
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime
+node_modules/
+.npm
+.cache/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
-templates/*.json
-!templates/.gitkeep
+Thumbs.db
+
+# Secrets & Keys
+secrets/
+keys/
+*.pem
+*.key
+.envrc

@@ -40,9 +40,12 @@
   "author": "AI Research Team",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.11.0",
+    "canvas": "^3.1.2",
     "chalk": "^4.1.2",
     "commander": "^9.4.1",
     "cors": "^2.8.5",
+    "discord.js": "^14.21.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
@@ -50,6 +53,9 @@
     "fs-extra": "^11.1.0",
     "helmet": "^8.1.0",
     "inquirer": "^8.2.6",
+    "jimp": "^1.6.0",
+    "openai": "^5.11.0",
+    "replicate": "^1.0.1",
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
