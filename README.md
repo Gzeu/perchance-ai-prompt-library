@@ -4,7 +4,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
 
-> **The ultimate AI prompt library and generator with advanced CLI, batch processing, analytics, and professional-quality output**
+> **The ultimate AI prompt library and generator with advanced CLI, batch processing, Discord bot, web interface, and professional-quality output**
+
+## 🏗️ **System Components**
+
+1. **Backend API** - Node.js server that handles prompt generation
+2. **Web Interface** - React-based frontend for easy interaction
+3. **Discord Bot** - Integration for Discord servers
+4. **CLI Tool** - Command-line interface for power users
 
 ## ✨ **Features**
 
@@ -26,29 +33,66 @@
 
 ## 🚀 **Quick Start**
 
-### Installation
-Install globally
+### 📥 Installation
+```bash
+# Install globally
 npm install -g perchance-ai-prompt-library
 
-Or install locally
+# Or install locally
 npm install perchance-ai-prompt-library
+```
 
-text
+### 🚦 Starting the Application
 
-### Basic Usage
-Generate a single prompt
-perchance-prompts generate anime "space warrior"
+1. **Start the Backend Server**
+   ```bash
+   # From the project root directory
+   npm start
+   ```
 
-Generate multiple variations
-perchance-prompts generate photorealistic "cyberpunk city" -c 5 -q 10
+2. **Start the Web Interface** (in a new terminal)
+   ```bash
+   cd web
+   npm run dev
+   # Access the web interface at http://localhost:5173
+   ```
 
-Browse available styles
-perchance-prompts styles
+3. **Start the Discord Bot** (in a new terminal)
+   ```bash
+   cd discord-bot
+   npm start
+   # Make sure to set up your Discord bot token in .env file
+   ```
 
-Batch processing
-perchance-prompts batch anime "dragon" -c 20 -p 5
+4. **Use the CLI** (in a new terminal)
+   ```bash
+   # From the project root directory
+   node bin/cli.js --help
+   ```
 
-text
+### 🖥️ Basic CLI Usage
+
+```bash
+# Generate a single prompt
+node bin/cli.js generate anime "space warrior"
+
+# Generate multiple variations
+node bin/cli.js generate photorealistic "cyberpunk city" -c 5 -q 10
+
+# Browse available styles
+node bin/cli.js styles
+
+# Batch processing
+node bin/cli.js batch anime "dragon" -c 20 -p 5
+```
+
+### 🤖 Discord Bot Commands
+```
+/batch <style> <subject> [count] [quality] [mood]
+```
+
+### 🌐 Web Interface
+Access the web interface at `http://localhost:5173` after starting the web server.
 
 ## 📖 **Complete Documentation**
 
@@ -65,7 +109,7 @@ Options:
 --save Save to history
 --negative Include negative prompt suggestions
 
-text
+
 
 **Examples:**
 High-quality single prompt
@@ -77,7 +121,6 @@ perchance-prompts generate photorealistic "sunset landscape" -c 3 -m peaceful --
 Save to history with negative prompts
 perchance-prompts generate "oil painting" "portrait" --save --negative
 
-text
 
 #### ⚡ **Batch Processing**
 perchance-prompts batch <style> "<subject>" [options]
@@ -89,7 +132,7 @@ Options:
 --progress Show detailed progress
 --export <format> Export: json|txt|csv
 
-text
+
 
 **Examples:**
 Large batch with progress tracking
@@ -98,7 +141,6 @@ perchance-prompts batch anime "mecha robot" -c 50 -p 5 --progress
 Export batch results
 perchance-prompts batch photorealistic "nature scene" -c 20 --export csv
 
-text
 
 #### 🎨 **Browse Encyclopedia**
 Browse art styles
@@ -113,7 +155,6 @@ perchance-prompts artists [-s search] [--period era]
 Browse themes
 perchance-prompts themes [-s search] [--category cat]
 
-text
 
 **Examples:**
 Search and export styles
@@ -125,14 +166,12 @@ perchance-prompts artists --detailed
 Filter themes by category
 perchance-prompts themes --category "action"
 
-text
 
 ### **Analytics & Management**
 
 #### 📊 **Statistics**
 perchance-prompts stats [--export format]
 
-text
 
 **Features:**
 - Total generations and commands
@@ -152,7 +191,6 @@ perchance-prompts config --set qualityLevel=9
 Reset to defaults
 perchance-prompts config --reset
 
-text
 
 #### 📚 **History Management**
 View history
@@ -161,7 +199,6 @@ perchance-prompts history [-n 20]
 Clear history
 perchance-prompts history --clear
 
-text
 
 ## 🎯 **Advanced Usage Examples**
 
@@ -180,7 +217,6 @@ perchance-prompts batch photorealistic "architectural photography" -c 100 -p 5 -
 perchance-prompts stats
 perchance-prompts history -n 10
 
-text
 
 ### **Creative Exploration**
 Explore different moods
@@ -192,7 +228,6 @@ Mix styles with artists
 perchance-prompts artists -s "van gogh"
 perchance-prompts generate "van gogh style" "starry cityscape" -q 9
 
-text
 
 ## 📁 **Project Structure**
 
@@ -215,7 +250,6 @@ perchance-ai-prompt-library/
 ├── CHANGELOG.md # Version history
 └── package.json # Package configuration
 
-text
 
 ## 🔧 **Development**
 
@@ -234,7 +268,6 @@ Run tests
 npm test
 npm run test:cli
 
-text
 
 ### **Available Scripts**
 npm run dev # Development mode
@@ -244,7 +277,6 @@ npm run lint # Code linting
 npm run docs # Generate documentation
 npm run release # Create release
 
-text
 
 ## 📊 **Performance & Scale**
 

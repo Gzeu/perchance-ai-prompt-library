@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.5] - 2025-08-06
+
+### 🧹 Code Cleanup & Maintenance
+- **Repository Cleanup**: Removed unnecessary and temporary files
+- **Documentation Update**: Enhanced README with detailed setup instructions
+- **Dependency Updates**: Ensured all dependencies are up-to-date
+- **Bug Fixes**: Addressed minor issues in the web interface and API
+
+### 🛠️ Developer Experience
+- **Improved Build Process**: Streamlined development and production builds
+- **Better Error Handling**: Enhanced error messages and logging
+- **Code Organization**: Improved project structure and file organization
+
+
 ## [2.2.0] - 2025-01-05
 
 ### 🚀 Major Features Added

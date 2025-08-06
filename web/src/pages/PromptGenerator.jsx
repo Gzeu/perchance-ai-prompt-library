@@ -30,7 +30,7 @@ import { promptApi } from '../services/api';
 const PromptGenerator = () => {
   const [styles, setStyles] = useState([]);
   const [formData, setFormData] = useState({
-    style: 'anime',
+    style: '0', // Default to first style key from API
     subject: '',
     age: '',
     gender: '',
@@ -40,6 +40,25 @@ const PromptGenerator = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Reset error when user makes changes
+    if (error) {
+      setError(null);
+    }
+  };
+
+  // Get the current style name for display
+  const getCurrentStyleName = () => {
+    const style = styles.find(s => s.key === formData.style);
+    return style ? style.name : 'Unknown Style';
+  };
 
   useEffect(() => {
     const fetchStyles = async () => {
@@ -53,20 +72,28 @@ const PromptGenerator = () => {
     fetchStyles();
   }, []);
 
-  const handleGenerate = async () => {
-    if (!formData.subject.trim()) {
-      setError('Subject is required');
-      return;
-    }
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const response = await promptApi.generate(formData);
-      setResult(response.data.data);
+      // Ensure we're sending the correct data format expected by the API
+      const apiData = {
+        style: formData.style, // Already using the correct key from the API
+        subject: formData.subject,
+        // Only include additional fields if they have values
+        ...(formData.age && { age: formData.age }),
+        ...(formData.gender && { gender: formData.gender }),
+        ...(formData.clothing && { clothing: formData.clothing }),
+        ...(formData.setting && { setting: formData.setting }),
+      };
+      
+      const response = await promptApi.generate(apiData);
+      setResult(response.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to generate prompt');
+      console.error('Error generating prompt:', err);
+      setError(err.response?.data?.error || 'Failed to generate prompt. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -106,12 +133,16 @@ const PromptGenerator = () => {
 
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Art Style</InputLabel>
+                  <FormControl fullWidth margin="normal">
+                    <InputLabel id="style-label">Art Style</InputLabel>
                     <Select
+                      labelId="style-label"
+                      id="style"
+                      name="style"
                       value={formData.style}
+                      onChange={handleChange}
                       label="Art Style"
-                      onChange={(e) => setFormData({ ...formData, style: e.target.value })}
+                      disabled={loading || styles.length === 0}
                     >
                       {styles.map((style) => (
                         <MenuItem key={style.key} value={style.key}>
@@ -127,7 +158,8 @@ const PromptGenerator = () => {
                     fullWidth
                     label="Subject"
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    onChange={handleChange}
+                    name="subject"
                     placeholder="e.g., magical sorceress, space warrior, ancient wizard"
                     required
                   />
@@ -138,7 +170,8 @@ const PromptGenerator = () => {
                     fullWidth
                     label="Age (optional)"
                     value={formData.age}
-                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                    onChange={handleChange}
+                    name="age"
                     placeholder="e.g., 22, teenager"
                   />
                 </Grid>
@@ -148,7 +181,8 @@ const PromptGenerator = () => {
                     fullWidth
                     label="Gender (optional)"
                     value={formData.gender}
-                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                    onChange={handleChange}
+                    name="gender"
                     placeholder="e.g., woman, man, person"
                   />
                 </Grid>
@@ -158,7 +192,8 @@ const PromptGenerator = () => {
                     fullWidth
                     label="Clothing (optional)"
                     value={formData.clothing}
-                    onChange={(e) => setFormData({ ...formData, clothing: e.target.value })}
+                    onChange={handleChange}
+                    name="clothing"
                     placeholder="e.g., flowing robes, armor, casual outfit"
                   />
                 </Grid>
@@ -168,7 +203,8 @@ const PromptGenerator = () => {
                     fullWidth
                     label="Setting (optional)"
                     value={formData.setting}
-                    onChange={(e) => setFormData({ ...formData, setting: e.target.value })}
+                    onChange={handleChange}
+                    name="setting"
                     placeholder="e.g., magical forest, cyberpunk city, ancient temple"
                   />
                 </Grid>
@@ -178,7 +214,7 @@ const PromptGenerator = () => {
                     fullWidth
                     variant="contained"
                     color="primary"
-                    onClick={handleGenerate}
+                    onClick={handleSubmit}
                     disabled={loading}
                     startIcon={loading ? <CircularProgress size={20} /> : <PlayArrow />}
                     size="large"
@@ -189,8 +225,13 @@ const PromptGenerator = () => {
               </Grid>
 
               {error && (
-                <Alert severity="error" sx={{ mt: 2 }}>
+                <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
                   {error}
+                </Alert>
+              )}
+              {styles.length === 0 && !loading && !error && (
+                <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
+                  No styles available. Please check if the API server is running.
                 </Alert>
               )}
             </CardContent>
