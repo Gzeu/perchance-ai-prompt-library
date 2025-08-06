@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.1] - 2025-08-06
+
+### 🔒 Security
+- **API Key Security**: Removed hardcoded Pollinations.ai API key from source code
+- **Environment Variables**: All sensitive data now loaded from `.env` file only
+- **Documentation**: Updated README with environment setup instructions
+
+### 🐛 Bug Fixes
+- Fixed issue with API key validation in PollinationsService
+- Updated Swagger documentation to remove example API keys
+
 ## [2.3.0] - 2025-08-06
 
 ### 🚀 New Features
