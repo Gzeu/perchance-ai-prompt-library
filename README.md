@@ -1,4 +1,4 @@
-# 🎨 Perchance AI Prompt Library v2.2.3
+# 🎨 Perchance AI Prompt Library v2.3.0
 
 [![npm version](https://badge.fury.io/js/perchance-ai-prompt-library.svg)](https://www.npmjs.com/package/perchance-ai-prompt-library)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -22,6 +22,7 @@
 - **📊 Analytics & Metrics**: Detailed usage statistics, popular styles tracking, daily usage patterns
 - **💾 Multi-format Export**: JSON, CSV, TXT export for all data and generated prompts
 - **🎯 Quality Control**: 10-level quality system with professional enhancement terms
+- **🖼️ AI Image Generation**: Generate AI images directly from prompts using Pollinations AI integration
 
 ### 🛠 **Advanced Features**
 - **🔍 Fuzzy Search**: Intelligent search across styles, artists, subjects, and themes  
@@ -44,15 +45,75 @@ npm install perchance-ai-prompt-library
 
 ### 🚦 Starting the Application
 
-1. **Start the Backend Server**
+### 🏃‍♂️ Quick Start (Windows)
+
+1. **Using the Batch File (Recommended)**
    ```bash
-   # From the project root directory
+   # Double-click on start_services.bat
+   # OR run from command line:
+   .\start_services.bat
+   ```
+   This will start all services in separate command windows.
+
+2. **Manual Start**
+   ```bash
+   # 1. Start the Backend Server
+   node src/api/server.js
+   
+   # 2. In a new terminal, start the Web Interface
+   cd web
+   npm start
+   
+   # 3. (Optional) In another terminal, start the Discord Bot
+   node src/bot/bot.js
+   ```
+
+### 🧹 Cleanup
+
+To remove temporary and unnecessary files:
+```bash
+.\cleanup.bat
+```
+
+### 🔍 Accessing the Services
+
+- **Web Interface**: http://localhost:3001
+- **API Documentation**: http://localhost:3000/api-docs
+- **API Endpoint**: http://localhost:3000/api
+
+### 🛠 Development
+
+1. **Install Dependencies**
+   ```bash
+   npm install
+   cd web
+   npm install
+   cd ..
+   ```
+
+2. **Environment Variables**
+   - Copy `.env.example` to `.env` and update the values
+   - For Discord bot, update the token in `.env`
+
+3. **Available Scripts**
+   ```bash
+   # Start API server in development mode
+   npm run dev
+   
+   # Start web interface
+   cd web
+   npm start
+   
+   # Run tests
+   npm test
+   ```
    npm start
    ```
 
 2. **Start the Web Interface** (in a new terminal)
    ```bash
    cd web
+   npm install
    npm run dev
    # Access the web interface at http://localhost:5173
    ```

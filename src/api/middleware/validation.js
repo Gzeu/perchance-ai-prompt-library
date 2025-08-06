@@ -1,3 +1,6 @@
+// Import styles dynamically
+const styles = require('../../data/styles.json');
+
 const validatePromptRequest = (req, res, next) => {
   const { style, subject } = req.body;
   
@@ -17,12 +20,13 @@ const validatePromptRequest = (req, res, next) => {
     });
   }
   
-  const validStyles = ['anime', 'cinematic', 'photorealistic', 'digital_art', 'comic', 'pixel_art'];
+  const validStyles = styles.map(s => s.key);
   if (!validStyles.includes(style)) {
     return res.status(400).json({
       success: false,
       error: `Invalid style. Valid styles: ${validStyles.join(', ')}`,
-      code: 'INVALID_STYLE'
+      code: 'INVALID_STYLE',
+      availableStyles: validStyles
     });
   }
   

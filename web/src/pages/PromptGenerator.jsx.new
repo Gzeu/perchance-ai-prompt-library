@@ -36,7 +36,7 @@ import ImageGenerator from '../components/ImageGenerator';
 const PromptGenerator = () => {
   const [styles, setStyles] = useState([]);
   const [formData, setFormData] = useState({
-    style: '', // Will be set when styles are loaded
+    style: '0', // Default to first style key from API
     subject: '',
     age: '',
     gender: '',
@@ -72,40 +72,22 @@ const PromptGenerator = () => {
     const fetchStyles = async () => {
       try {
         const response = await promptApi.getStyles();
-        const loadedStyles = response.data.data || [];
-        setStyles(loadedStyles);
-        
-        // Set the first style as default if not already set
-        if (loadedStyles.length > 0 && !formData.style) {
-          setFormData(prev => ({
-            ...prev,
-            style: loadedStyles[0].key // Use the actual style key
-          }));
-        }
+        setStyles(response.data.data || []);
       } catch (err) {
-        console.error('Error loading styles:', err);
         setError('Failed to load styles');
       }
     };
     fetchStyles();
-  }, [formData.style]); // Add formData.style to dependencies to prevent infinite loop
+  }, []);
 
   const generatePrompt = useCallback(async (data) => {
     setLoading(true);
     setError(null);
 
     try {
-      // Validate required fields
-      if (!data.subject) {
-        throw new Error('Subject is required');
-      }
-      if (!data.style) {
-        throw new Error('Please select a style');
-      }
-
       // Ensure we're sending the correct data format expected by the API
       const apiData = {
-        style: data.style, // This should be the style key (e.g., "0", "1")
+        style: data.style,
         subject: data.subject,
         ...(data.age && { age: data.age }),
         ...(data.gender && { gender: data.gender }),
@@ -113,17 +95,9 @@ const PromptGenerator = () => {
         ...(data.setting && { setting: data.setting }),
       };
       
-      console.log('Sending API request with data:', apiData);
       const response = await promptApi.generate(apiData);
-      console.log('API response:', response.data);
-      
-      if (!response.data || !response.data.data) {
-        throw new Error('Invalid response from the server');
-      }
-      
-      // The backend returns { success: true, data: { text: '...', ... } }
-      setResult(response.data.data);
-      return response.data.data.text; // Return the generated prompt for image generation
+      setResult(response.data);
+      return response.data.text; // Return the generated prompt for image generation
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to generate prompt');
       console.error('Error generating prompt:', err);

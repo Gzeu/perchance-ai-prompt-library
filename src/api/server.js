@@ -2,7 +2,15 @@
 
 const express = require('express');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const path = require('path');
+const swaggerSpec = require('./config/swagger');
 const { PerchancePromptLibrary } = require('../index');
+
+// Import route files
+const healthRoutes = require('./routes/health');
+const promptsRoutes = require('./routes/prompts');
+const stylesRoutes = require('./routes/styles');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +19,31 @@ const library = new PerchancePromptLibrary();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from public directory
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
+
+// API Routes
+app.use('/api/health', healthRoutes);
+app.use('/api/prompts', promptsRoutes);
+app.use('/api/styles', stylesRoutes);
+
+// Serve API documentation
+app.use('/api-docs', 
+  swaggerUi.serve, 
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Perchance AI Prompt Library API',
+    customfavIcon: '/favicon.ico'
+  })
+);
+
+// Root route - serve index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
 
 // Health check
 app.get('/api/health', (req, res) => {

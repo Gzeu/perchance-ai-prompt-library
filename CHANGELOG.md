@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2025-08-06
+
+### 🚀 New Features
+- **API Documentation**: Added Swagger/OpenAPI documentation at `/api-docs`
+- **Landing Page**: Created a professional landing page for the API
+- **New Art Styles**: Added 10+ new art styles to the library
+- **Batch Scripts**: Added `start_services.bat` and `cleanup.bat` for easier development
+
+### 🛠️ Developer Experience
+- **Code Organization**: Refactored API into modular route files
+- **Error Handling**: Improved error messages and validation
+- **Documentation**: Enhanced API documentation with examples
+- **Versioning**: Updated version to 2.3.0 for the new release
+
+### 🧹 Maintenance
+- **Dependencies**: Updated all npm packages to latest versions
+- **Cleanup**: Removed unnecessary files and improved project structure
+- **Performance**: Optimized prompt generation and style handling
+
 ## [2.2.5] - 2025-08-06
 
 ### 🧹 Code Cleanup & Maintenance

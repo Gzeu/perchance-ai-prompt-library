@@ -111,12 +111,40 @@ router.post('/generate', generateLimiter, validatePromptRequest, (req, res) => {
  *                 type: string
  *               count:
  *                 type: integer
- *                 minimum: 1
- *                 maximum: 10
  *                 default: 3
+ *                 description: Number of variations to generate
+ *               age:
+ *                 type: string
+ *                 example: young
+ *               gender:
+ *                 type: string
+ *                 example: female
+ *               clothing:
+ *                 type: string
+ *                 example: school uniform
+ *               setting:
+ *                 type: string
+ *                 example: magical forest
  *     responses:
  *       200:
- *         description: Successfully generated batch of prompts
+ *         description: Successfully generated prompts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/PromptResponse'
+ *                 count:
+ *                   type: integer
+ *                   example: 3
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
  */
 router.post('/batch', generateLimiter, validateBatchRequest, (req, res) => {
   try {

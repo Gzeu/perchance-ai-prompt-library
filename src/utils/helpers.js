@@ -5,16 +5,35 @@ function randomChoice(array) {
 
 function replacePlaceholders(template, variables) {
   let result = template;
+  
+  // Process each variable
   Object.keys(variables).forEach(key => {
-    const placeholder = `[${key}]`;
-    if (result.includes(placeholder)) {
-      const value = variables[key] || '';
+    const value = variables[key] || '';
+    
+    // Replace {{key}} placeholders
+    const curlyPlaceholder = `{{${key}}}`;
+    if (result.includes(curlyPlaceholder)) {
+      result = result.replace(new RegExp(curlyPlaceholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
+    }
+    
+    // Also replace [key] placeholders for backward compatibility
+    const bracketPlaceholder = `[${key}]`;
+    if (result.includes(bracketPlaceholder)) {
       result = result.replace(new RegExp(`\\[${key}\\]`, 'g'), value);
     }
   });
-  result = result.replace(/\[[\w_]+\]/g, '');
-  result = result.replace(/,\s*,/g, ',').replace(/,\s*$/, '').replace(/^\s*,/, '');
-  return result.replace(/\s+/g, ' ').trim();
+  
+  // Clean up any remaining placeholders
+  result = result.replace(/\{\{[^}]+\}\}/g, '');  // Remove any remaining {{...}}
+  result = result.replace(/\[[^\]]+\]/g, '');      // Remove any remaining [...]
+  
+  // Clean up any double commas or trailing/leading commas
+  result = result.replace(/,\s*,/g, ',')
+                .replace(/^\s*,\s*|\s*,\s*$/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+                
+  return result;
 }
 
 function validateConfig(config) {

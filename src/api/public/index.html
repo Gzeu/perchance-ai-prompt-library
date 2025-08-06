@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perchance AI Prompt Library</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 1px solid #e1e4e8;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .endpoints {
+            margin-top: 2rem;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3498db;
+        }
+        .endpoint h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .method {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+        .path {
+            font-family: monospace;
+            color: #2c3e50;
+        }
+        .description {
+            color: #7f8c8d;
+            margin: 0.5rem 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e1e4e8;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        .btn {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-container {
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .feature {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .feature h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .feature p {
+            color: #7f8c8d;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Perchance AI Prompt Library</h1>
+            <p class="subtitle">A powerful API for generating AI art prompts and managing art styles</p>
+        </header>
+
+        <div class="card">
+            <h2>Welcome to the Perchance AI Prompt Library</h2>
+            <p>This API provides a comprehensive collection of art styles and tools for generating creative prompts for AI art generation.</p>
+            
+            <div class="btn-container">
+                <a href="/api-docs" class="btn">View API Documentation</a>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <h3>Multiple Art Styles</h3>
+                    <p>Access a growing collection of art styles including anime, photorealistic, cyberpunk, and more.</p>
+                </div>
+                <div class="feature">
+                    <h3>Easy Integration</h3>
+                    <p>Simple RESTful API that works with any programming language or framework.</p>
+                </div>
+                <div class="feature">
+                    <h3>Powerful Generation</h3>
+                    <p>Generate creative prompts with customizable parameters for your AI art projects.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="endpoints">
+            <h2>Available Endpoints</h2>
+            
+            <div class="endpoint">
+                <h3><span class="method">GET</span> <span class="path">/api/health</span></h3>
+                <p class="description">Check if the API is running and healthy.</p>
+            </div>
+            
+            <div class="endpoint">
+                <h3><span class="method">GET</span> <span class="path">/api/styles</span></h3>
+                <p class="description">Get a list of all available art styles.</p>
+            </div>
+            
+            <div class="endpoint">
+                <h3><span class="method">POST</span> <span class="path">/api/prompts/generate</span></h3>
+                <p class="description">Generate a new AI art prompt based on the selected style and parameters.</p>
+            </div>
+            
+            <div class="endpoint">
+                <h3><span class="method">GET</span> <span class="path">/api-docs</span></h3>
+                <p class="description">Interactive API documentation with Swagger UI.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Perchance AI Prompt Library &copy; 2025 | Version 2.2.5</p>
+        </div>
+    </div>
+</body>
+</html>

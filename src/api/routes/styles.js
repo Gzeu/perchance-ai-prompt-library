@@ -9,10 +9,23 @@ const library = new PerchancePromptLibrary();
  * /api/styles:
  *   get:
  *     summary: Get all available art styles
+ *     description: Returns a list of all available art styles with their basic information
  *     tags: [Styles]
  *     responses:
  *       200:
- *         description: List of all styles
+ *         description: Successfully retrieved styles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Style'
  */
 router.get('/', (req, res) => {
   try {
@@ -35,16 +48,18 @@ router.get('/', (req, res) => {
 
 /**
  * @swagger
- * /api/styles/{styleName}:
+ * /api/styles/{styleKey}:
  *   get:
  *     summary: Get detailed information about a specific style
+ *     description: Returns detailed information about a specific art style including its variables and examples
  *     tags: [Styles]
  *     parameters:
  *       - in: path
- *         name: styleName
+ *         name: styleKey
  *         required: true
  *         schema:
  *           type: string
+ *         description: The key of the style to retrieve
  *     responses:
  *       200:
  *         description: Detailed style information
