@@ -5,7 +5,10 @@ const logger = require('../utils/logger');
 class PollinationsService {
   constructor() {
     this.apiUrl = 'https://image.pollinations.ai';
-    this.token = process.env.POLLINATIONS_TOKEN || '6D0dhLAm9hV_5-6b';
+    if (!process.env.POLLINATIONS_TOKEN) {
+      throw new Error('POLLINATIONS_TOKEN environment variable is not set');
+    }
+    this.token = process.env.POLLINATIONS_TOKEN;
     this.cache = new Map();
     this.rateLimits = {
       remaining: 100,

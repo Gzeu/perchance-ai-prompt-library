@@ -35,7 +35,7 @@ const options = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'Use the API token for authentication. Example: `Bearer 6D0dhLAm9hV_5-6b`',
+          description: 'Use the API token for authentication. Example: `Bearer your_pollinations_token_here`',
         },
       },
       

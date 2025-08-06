@@ -8,6 +8,26 @@
 
 > **The ultimate AI prompt library and generator with advanced CLI, batch processing, Discord bot, web interface, and professional-quality output**
 
+## 🔑 **Environment Setup**
+
+Create a `.env` file in the project root with the following variables:
+
+```env
+# Required for AI Image Generation
+POLLINATIONS_TOKEN=your_pollinations_ai_token_here
+
+# Optional: Configure logging level (default: 'info')
+LOG_LEVEL=info
+
+# Optional: Configure API port (default: 3000)
+PORT=3000
+
+# Optional: Database configuration (if using SQLite)
+DB_PATH=./data/prompts.db
+```
+
+> **Note**: The `.env` file is in `.gitignore` by default to prevent committing sensitive information.
+
 ## 🏗️ **System Components**
 
 1. **Backend API** - Node.js server that handles prompt generation
