@@ -1,5 +1,14 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 const packageJson = require('../../../package.json');
+const path = require('path');
+
+// Import image schemas
+let imageSchemas = { components: { schemas: {} } };
+try {
+  imageSchemas = require('../schemas/image.schemas');
+} catch (err) {
+  console.warn('Warning: Could not load image schemas. API documentation will be limited.');
+}
 
 const options = {
   definition: {
@@ -20,14 +29,20 @@ const options = {
       },
     ],
     components: {
+      // Security schemes
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
+          description: 'Use the API token for authentication. Example: `Bearer 6D0dhLAm9hV_5-6b`',
         },
       },
+      
+      // Common schemas
       schemas: {
+        // Import image-related schemas if available
+        ...(imageSchemas?.components?.schemas || {}),
         Error: {
           type: 'object',
           properties: {

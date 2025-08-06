@@ -1,4 +1,6 @@
-# 🎨 Perchance AI Prompt Library v2.3.0
+# 🎨 Perchance AI Prompt Library v2.4.0
+
+> **Now with AI Image Generation powered by Pollinations.ai!**
 
 [![npm version](https://badge.fury.io/js/perchance-ai-prompt-library.svg)](https://www.npmjs.com/package/perchance-ai-prompt-library)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -23,6 +25,11 @@
 - **💾 Multi-format Export**: JSON, CSV, TXT export for all data and generated prompts
 - **🎯 Quality Control**: 10-level quality system with professional enhancement terms
 - **🖼️ AI Image Generation**: Generate AI images directly from prompts using Pollinations AI integration
+  - Multiple artistic styles (photorealistic, digital art, anime, etc.)
+  - Advanced generation parameters (steps, guidance scale, seed, etc.)
+  - Web interface with real-time preview
+  - Command-line interface for automation
+  - Caching for improved performance
 
 ### 🛠 **Advanced Features**
 - **🔍 Fuzzy Search**: Intelligent search across styles, artists, subjects, and themes  
@@ -43,7 +50,50 @@ npm install -g perchance-ai-prompt-library
 npm install perchance-ai-prompt-library
 ```
 
-### 🚦 Starting the Application
+### 🖼️ AI Image Generation with Pollinations.ai
+
+### Web Interface
+```bash
+# Start the development server
+npm run dev
+
+# Then open http://localhost:3000 in your browser
+```
+
+### CLI Usage
+```bash
+# Generate an image from a prompt
+npx perchance generate-image -p "A beautiful sunset over mountains"
+
+# Generate with specific style and size
+npx perchance generate-image -p "A cyberpunk city" -s cyberpunk --width 768 --height 512
+
+# List available styles
+npx perchance generate-image --list-styles
+```
+
+### API Integration
+```javascript
+const { PollinationsService } = require('perchance-ai-prompt-library');
+
+const pollinations = new PollinationsService('your-api-key');
+
+// Generate an image
+const imageBuffer = await pollinations.generateImage({
+  prompt: 'A beautiful sunset over mountains, photorealistic style',
+  width: 512,
+  height: 512,
+  steps: 50,
+  guidance_scale: 7.5
+});
+
+// Save the image
+await fs.writeFile('output.png', imageBuffer);
+```
+
+For detailed documentation, see [POLLINATIONS-INTEGRATION.md](docs/POLLINATIONS-INTEGRATION.md)
+
+## 🚦 Starting the Application
 
 ### 🏃‍♂️ Quick Start (Windows)
 
