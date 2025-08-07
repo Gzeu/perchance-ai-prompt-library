@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.2] - 2025-08-08
+
+### 🚀 New Features
+- **Server Enhancements**: Updated server.js with improved error handling and logging
+- **PollinationsService**: Added new features and optimizations to the image generation service
+
+### 🐛 Bug Fixes
+- Fixed issues in PollinationsService.js related to image generation
+- Resolved server configuration issues in server.js
+
 ## [2.3.1] - 2025-08-06
 
 ### 🔒 Security
