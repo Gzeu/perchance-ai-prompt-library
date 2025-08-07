@@ -4,16 +4,15 @@ const logger = require('../utils/logger');
 
 class PollinationsService {
   constructor() {
-    this.apiUrl = 'https://image.pollinations.ai';
-    if (!process.env.POLLINATIONS_TOKEN) {
-      throw new Error('POLLINATIONS_TOKEN environment variable is not set');
-    }
-    this.token = process.env.POLLINATIONS_TOKEN;
+    this.apiUrl = 'https://pollinations.ai';
     this.cache = new Map();
     this.rateLimits = {
       remaining: 100,
       resetTime: null
     };
+    
+    // Log API URL for debugging
+    logger.debug(`PollinationsService initialized with API URL: ${this.apiUrl}`);
   }
 
   /**
@@ -36,24 +35,55 @@ class PollinationsService {
     await this._checkRateLimit();
 
     try {
-      const params = new URLSearchParams({
-        prompt: this._enhancePrompt(prompt, options),
-        ...options
-      });
-
-      logger.info(`Generating image for prompt: ${prompt.substring(0, 50)}...`);
+      // Encode the prompt for URL
+      const encodedPrompt = encodeURIComponent(prompt);
+      const url = `${this.apiUrl}/p/${encodedPrompt}`;
       
-      const response = await axios.get(`${this.apiUrl}/text2image?${params.toString()}`, {
-        responseType: 'arraybuffer',
-        headers: {
-          'Authorization': `Bearer ${this.token}`,
-          'X-Request-ID': requestId
-        },
-        timeout: 30000 // 30 second timeout
-      });
+      logger.info(`Generating image for prompt: ${prompt.substring(0, 50)}...`);
+      logger.debug(`Sending request to Pollinations API: ${url}`);
+      
+      let response;
+      try {
+        response = await axios.get(url, {
+          responseType: 'arraybuffer',
+          headers: {
+            'User-Agent': 'PerchanceAIPromptLibrary/1.0',
+            'X-Request-ID': requestId
+          },
+          timeout: 30000, // 30 second timeout
+          validateStatus: (status) => true // Don't throw on HTTP error status codes
+        });
 
-      // Update rate limit info from headers if available
-      this._updateRateLimits(response.headers);
+        logger.debug(`Response status: ${response.status} ${response.statusText}`);
+        logger.debug(`Response headers: ${JSON.stringify(response.headers, null, 2)}`);
+        
+        if (response.status >= 400) {
+          const errorData = response.data ? response.data.toString() : 'No response body';
+          logger.error(`Pollinations API error (${response.status}): ${errorData}`);
+          throw new Error(`API error: ${response.status} - ${response.statusText}`);
+        }
+      } catch (error) {
+        logger.error('Error making request to Pollinations API:', {
+          message: error.message,
+          code: error.code,
+          stack: error.stack,
+          response: error.response ? {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            headers: error.response.headers,
+            data: error.response.data ? error.response.data.toString().substring(0, 500) + '...' : 'No response body'
+          } : 'No response',
+          request: {
+            method: error.config?.method,
+            url: error.config?.url,
+            headers: error.config?.headers
+          }
+        });
+        throw new Error(`API request failed: ${error.message}`);
+      }
+
+      // Update rate limits from response headers
+      this._updateRateLimits(response);
 
       // Cache the result
       this.cache.set(cacheKey, response.data);
@@ -161,13 +191,16 @@ class PollinationsService {
    * Update rate limit info from response headers
    * @private
    */
-  _updateRateLimits(headers) {
-    if (headers['x-ratelimit-remaining']) {
-      this.rateLimits.remaining = parseInt(headers['x-ratelimit-remaining'], 10);
-    }
+  _updateRateLimits(response) {
+    // Log response headers for debugging
+    logger.debug('Response headers:', JSON.stringify(response.headers, null, 2));
     
-    if (headers['x-ratelimit-reset']) {
-      this.rateLimits.resetTime = parseInt(headers['x-ratelimit-reset'], 10) * 1000;
+    // Update rate limit info if available
+    if (response.headers['x-ratelimit-remaining']) {
+      this.rateLimits.remaining = parseInt(response.headers['x-ratelimit-remaining'], 10);
+      this.rateLimits.resetTime = response.headers['x-ratelimit-reset'] 
+        ? new Date(parseInt(response.headers['x-ratelimit-reset'], 10) * 1000) 
+        : null;
     }
   }
 
