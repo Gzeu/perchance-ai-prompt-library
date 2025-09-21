@@ -71,7 +71,7 @@
     "react-markdown": "^10.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "term-size": "^3.0.2",
+    "term-size": "^4.0.0",
     "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "wrap-ansi": "^9.0.0"
