@@ -11,19 +11,35 @@
     "src/**/*",
     "README.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/**/*"
   ],
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/api/server.js",
+    "dev": "concurrently \"npm run api:dev\" \"npm run web:dev\"",
+    "api:dev": "nodemon src/api/server.js",
+    "web:dev": "cd web && npm run dev",
+    "build": "cd web && npm run build",
     "test": "jest",
-    "dev": "npm run api:dev",
-    "generate": "node bin/cli.js",
-    "batch": "node bin/cli.js batch",
-    "export": "node bin/cli.js export",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "test:cli": "npm run test:generate && npm run test:batch",
     "test:generate": "node bin/cli.js generate anime \"test warrior\" -c 2",
     "test:batch": "node bin/cli.js batch photorealistic \"test city\" -c 5",
-    "release": "npm version patch && git push origin main --tags"
+    "lint": "eslint src bin tests --ext .js",
+    "lint:fix": "eslint src bin tests --ext .js --fix",
+    "format": "prettier --write \"src/**/*.js\" \"bin/**/*.js\" \"tests/**/*.js\"",
+    "docs": "jsdoc -c jsdoc.config.json",
+    "validate": "node validate-encyclopedia.js",
+    "clean": "rimraf coverage dist logs/*.log",
+    "prepublishOnly": "npm run test && npm run lint && npm run build",
+    "postinstall": "node -e \"console.log('✅ Perchance AI Prompt Library installed successfully!')\"",
+    "release": "npm version patch && git push origin main --tags",
+    "release:minor": "npm version minor && git push origin main --tags",
+    "release:major": "npm version major && git push origin main --tags",
+    "docker:build": "docker build -t perchance-ai .",
+    "docker:run": "docker run -p 3000:3000 -p 5173:5173 perchance-ai",
+    "docker:prod": "docker-compose --profile production up -d"
   },
   "keywords": [
     "ai",
@@ -39,12 +55,17 @@
     "art-styles",
     "professional-quality",
     "advanced-features",
-    "v2"
+    "pollinations",
+    "discord-bot",
+    "web-interface",
+    "prompt-engineering",
+    "creative-tools",
+    "automation"
   ],
   "author": {
-    "name": "AI Research Team",
-    "email": "contact@perchance-ai.com",
-    "url": "https://github.com/perchance-ai/prompt-library"
+    "name": "George Pricop",
+    "email": "pricopgeorge@gmail.com",
+    "url": "https://github.com/Gzeu"
   },
   "license": "MIT",
   "repository": {
@@ -77,16 +98,32 @@
     "wrap-ansi": "^9.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.5",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "jest": "^29.3.1",
-    "nodemon": "^2.0.22"
+    "jsdoc": "^4.0.2",
+    "nodemon": "^2.0.22",
+    "prettier": "^3.0.3",
+    "rimraf": "^5.0.5",
+    "supertest": "^6.3.3"
   },
   "engines": {
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/Gzeu"
   }
 }
