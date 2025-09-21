@@ -1,0 +1,107 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint --if-present
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Test CLI functionality
+      run: npm run test:cli
+    
+    - name: Install web dependencies
+      run: |
+        cd web
+        npm ci
+    
+    - name: Build web interface
+      run: |
+        cd web
+        npm run build
+    
+    - name: Test global installation
+      run: |
+        npm pack
+        npm install -g ./perchance-ai-prompt-library-*.tgz
+        perchance-prompts --version
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == '18.x'
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run security audit
+      run: npm audit --audit-level moderate
+    
+    - name: Check for vulnerabilities
+      run: npm audit --audit-level high
+
+  publish:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build package
+      run: npm run build --if-present
+    
+    - name: Publish to NPM
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      if: ${{ !contains(github.event.head_commit.message, '[skip publish]') }}

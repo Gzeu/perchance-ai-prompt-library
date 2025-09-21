@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Main API service
+  api:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - LOG_LEVEL=info
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/web/node_modules
+    command: npm run dev
+    restart: unless-stopped
+    
+  # Web interface service
+  web:
+    build:
+      context: .
+      target: development
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./web:/app/web
+      - /app/web/node_modules
+    working_dir: /app/web
+    command: npm run dev
+    restart: unless-stopped
+    depends_on:
+      - api
+      
+  # Production service
+  prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - "8000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  node_modules:
+  web_node_modules:
