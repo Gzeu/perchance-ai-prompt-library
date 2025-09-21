@@ -1,460 +1,434 @@
-# 🎨 Perchance AI Prompt Library v2.4.0
+# 🎨 Perchance AI Prompt Library
 
-> **Now with AI Image Generation powered by Pollinations.ai!**
+<div align="center">
 
-[![npm version](https://badge.fury.io/js/perchance-ai-prompt-library.svg)](https://www.npmjs.com/package/perchance-ai-prompt-library)
+[![Version](https://img.shields.io/badge/version-2.3.2-blue.svg)](https://github.com/Gzeu/perchance-ai-prompt-library/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
+[![NPM](https://img.shields.io/badge/npm-%3E%3D6.0.0-red)](https://www.npmjs.com/)
+[![GitHub Stars](https://img.shields.io/github/stars/Gzeu/perchance-ai-prompt-library?style=social)](https://github.com/Gzeu/perchance-ai-prompt-library/stargazers)
 
-> **The ultimate AI prompt library and generator with advanced CLI, batch processing, Discord bot, web interface, and professional-quality output**
+**🚀 The Ultimate AI Prompt Generation Toolkit**
 
-## 🔑 **Environment Setup**
+*Professional-grade AI prompt library with advanced CLI, batch processing, Discord bot integration, web interface, and AI image generation powered by Pollinations.ai*
 
-Create a `.env` file in the project root with the following variables:
+[✨ Features](#-features) • [🚀 Quick Start](#-quick-start) • [📖 Documentation](#-complete-documentation) • [🔧 Development](#-development) • [🤝 Contributing](#-contributing)
+
+</div>
+
+---
+
+## 🌟 What's New in v2.3.2
+
+- 🖼️ **AI Image Generation** - Direct integration with Pollinations.ai
+- ⚡ **Enhanced Performance** - Optimized batch processing with up to 5 parallel threads
+- 🎯 **Advanced Quality Control** - 10-level quality system with mood variations
+- 📊 **Comprehensive Analytics** - Detailed usage statistics and metrics
+- 🔍 **Smart Search** - Fuzzy search across styles, artists, subjects, and themes
+- 💾 **Multi-Format Export** - JSON, CSV, TXT export capabilities
+
+## 🎯 Key Features
+
+### 🚀 **Core Capabilities**
+- **📚 Comprehensive Database**: 50+ art styles, 100+ subjects, 75+ famous artists, 200+ themes
+- **⚡ Lightning-Fast CLI**: Professional command-line interface with 600+ lines of optimized code
+- **🔄 Batch Processing**: Generate 1-1000+ prompts with parallel processing (up to 5 threads)
+- **📊 Advanced Analytics**: Real-time usage statistics, popular styles tracking, performance metrics
+- **💾 Smart Export**: Multi-format export (JSON, CSV, TXT) for seamless integration
+- **🎯 Quality Enhancement**: 10-level quality system with professional enhancement terms
+
+### 🖼️ **AI Image Generation**
+- **🎨 Pollinations.ai Integration**: Generate high-quality AI images directly from prompts
+- **🎭 Multiple Artistic Styles**: Photorealistic, digital art, anime, oil painting, watercolor, and more
+- **⚙️ Advanced Parameters**: Custom steps, guidance scale, seed control, aspect ratios
+- **🌐 Web Interface**: Real-time preview with intuitive controls
+- **⚡ CLI Automation**: Command-line interface for batch image generation
+- **💨 Smart Caching**: Optimized performance with intelligent caching system
+
+### 🛠 **Professional Tools**
+- **🔍 Intelligent Search**: Fuzzy search with advanced filtering across all data
+- **⚙️ Configuration Management**: Persistent settings with custom themes and preferences
+- **📚 History Tracking**: Complete command history with search and export capabilities
+- **🎭 Mood System**: 5 distinct mood variations (dramatic, epic, peaceful, vibrant, mysterious)
+- **💨 Performance Optimization**: Smart caching, progress indicators, error handling
+- **🎨 Beautiful UI**: ASCII art banners, colored tables, professional formatting
+
+### 🌐 **Multi-Platform Support**
+- **🖥️ Advanced CLI**: Full-featured command-line interface for power users
+- **🌐 Web Interface**: React-based frontend with real-time generation
+- **🤖 Discord Bot**: Server integration with slash commands
+- **📱 Cross-Platform**: Windows, macOS, Linux support
+
+## 🚀 Quick Start
+
+### 📦 Installation
+
+```bash
+# Install globally (recommended)
+npm install -g perchance-ai-prompt-library
+
+# Or install locally
+npm install perchance-ai-prompt-library
+
+# Verify installation
+perchance-prompts --version
+```
+
+### ⚙️ Environment Setup
+
+Create a `.env` file in your project root:
 
 ```env
 # Required for AI Image Generation
 POLLINATIONS_TOKEN=your_pollinations_ai_token_here
 
-# Optional: Configure logging level (default: 'info')
+# Optional Configuration
 LOG_LEVEL=info
-
-# Optional: Configure API port (default: 3000)
 PORT=3000
-
-# Optional: Database configuration (if using SQLite)
 DB_PATH=./data/prompts.db
 ```
 
-> **Note**: The `.env` file is in `.gitignore` by default to prevent committing sensitive information.
-
-## 🏗️ **System Components**
-
-1. **Backend API** - Node.js server that handles prompt generation
-2. **Web Interface** - React-based frontend for easy interaction
-3. **Discord Bot** - Integration for Discord servers
-4. **CLI Tool** - Command-line interface for power users
-
-## ✨ **Features**
-
-### 🚀 **Core Features**
-- **📚 Comprehensive Encyclopedia**: 2+ art styles, 3+ subjects categories, 3+ famous artists, 3+ themes
-- **⚡ Advanced CLI**: Professional command-line interface with 600+ lines of optimized code
-- **🔄 Batch Processing**: Generate 1-100+ prompts with parallel processing (up to 5 threads)
-- **📊 Analytics & Metrics**: Detailed usage statistics, popular styles tracking, daily usage patterns
-- **💾 Multi-format Export**: JSON, CSV, TXT export for all data and generated prompts
-- **🎯 Quality Control**: 10-level quality system with professional enhancement terms
-- **🖼️ AI Image Generation**: Generate AI images directly from prompts using Pollinations AI integration
-  - Multiple artistic styles (photorealistic, digital art, anime, etc.)
-  - Advanced generation parameters (steps, guidance scale, seed, etc.)
-  - Web interface with real-time preview
-  - Command-line interface for automation
-  - Caching for improved performance
-
-### 🛠 **Advanced Features**
-- **🔍 Fuzzy Search**: Intelligent search across styles, artists, subjects, and themes  
-- **⚙️ Configuration Management**: Persistent settings with custom themes and preferences
-- **📚 History Tracking**: Complete command history with export capabilities
-- **🎭 Mood Variations**: 5 mood types (dramatic, epic, peaceful, vibrant, mysterious)
-- **💨 Performance Optimization**: Intelligent caching and progress indicators
-- **🎨 Custom Styling**: Beautiful ASCII banners, colored tables, and professional formatting
-
-## 🚀 **Quick Start**
-
-### 📥 Installation
-```bash
-# Install globally
-npm install -g perchance-ai-prompt-library
-
-# Or install locally
-npm install perchance-ai-prompt-library
-```
-
-### 🖼️ AI Image Generation with Pollinations.ai
-
-### Web Interface
-```bash
-# Start the development server
-npm run dev
-
-# Then open http://localhost:3000 in your browser
-```
-
-### CLI Usage
-```bash
-# Generate an image from a prompt
-npx perchance generate-image -p "A beautiful sunset over mountains"
-
-# Generate with specific style and size
-npx perchance generate-image -p "A cyberpunk city" -s cyberpunk --width 768 --height 512
-
-# List available styles
-npx perchance generate-image --list-styles
-```
-
-### API Integration
-```javascript
-const { PollinationsService } = require('perchance-ai-prompt-library');
-
-const pollinations = new PollinationsService('your-api-key');
-
-// Generate an image
-const imageBuffer = await pollinations.generateImage({
-  prompt: 'A beautiful sunset over mountains, photorealistic style',
-  width: 512,
-  height: 512,
-  steps: 50,
-  guidance_scale: 7.5
-});
-
-// Save the image
-await fs.writeFile('output.png', imageBuffer);
-```
-
-For detailed documentation, see [POLLINATIONS-INTEGRATION.md](docs/POLLINATIONS-INTEGRATION.md)
-
-## 🚦 Starting the Application
-
-### 🏃‍♂️ Quick Start (Windows)
-
-1. **Using the Batch File (Recommended)**
-   ```bash
-   # Double-click on start_services.bat
-   # OR run from command line:
-   .\start_services.bat
-   ```
-   This will start all services in separate command windows.
-
-2. **Manual Start**
-   ```bash
-   # 1. Start the Backend Server
-   node src/api/server.js
-   
-   # 2. In a new terminal, start the Web Interface
-   cd web
-   npm start
-   
-   # 3. (Optional) In another terminal, start the Discord Bot
-   node src/bot/bot.js
-   ```
-
-### 🧹 Cleanup
-
-To remove temporary and unnecessary files:
-```bash
-.\cleanup.bat
-```
-
-### 🔍 Accessing the Services
-
-- **Web Interface**: http://localhost:3001
-- **API Documentation**: http://localhost:3000/api-docs
-- **API Endpoint**: http://localhost:3000/api
-
-### 🛠 Development
-
-1. **Install Dependencies**
-   ```bash
-   npm install
-   cd web
-   npm install
-   cd ..
-   ```
-
-2. **Environment Variables**
-   - Copy `.env.example` to `.env` and update the values
-   - For Discord bot, update the token in `.env`
-
-3. **Available Scripts**
-   ```bash
-   # Start API server in development mode
-   npm run dev
-   
-   # Start web interface
-   cd web
-   npm start
-   
-   # Run tests
-   npm test
-   ```
-   npm start
-   ```
-
-2. **Start the Web Interface** (in a new terminal)
-   ```bash
-   cd web
-   npm install
-   npm run dev
-   # Access the web interface at http://localhost:5173
-   ```
-
-3. **Start the Discord Bot** (in a new terminal)
-   ```bash
-   cd discord-bot
-   npm start
-   # Make sure to set up your Discord bot token in .env file
-   ```
-
-4. **Use the CLI** (in a new terminal)
-   ```bash
-   # From the project root directory
-   node bin/cli.js --help
-   ```
-
-### 🖥️ Basic CLI Usage
+### 🎨 Basic Usage
 
 ```bash
-# Generate a single prompt
-node bin/cli.js generate anime "space warrior"
+# Generate a single high-quality prompt
+perchance-prompts generate anime "cyberpunk warrior" -q 10
 
-# Generate multiple variations
-node bin/cli.js generate photorealistic "cyberpunk city" -c 5 -q 10
+# Create multiple variations with mood
+perchance-prompts generate photorealistic "sunset landscape" -c 5 -m epic
+
+# Batch process with analytics
+perchance-prompts batch "digital art" "space exploration" -c 20 -p 3 --progress
 
 # Browse available styles
-node bin/cli.js styles
+perchance-prompts styles --detailed
 
-# Batch processing
-node bin/cli.js batch anime "dragon" -c 20 -p 5
+# View usage statistics
+perchance-prompts stats --export json
 ```
 
-### 🤖 Discord Bot Commands
-```
-/batch <style> <subject> [count] [quality] [mood]
+### 🖼️ AI Image Generation
+
+```bash
+# Generate image from prompt
+perchance-prompts generate-image -p "Epic dragon in cyberpunk city, neon lights"
+
+# Custom style and dimensions
+perchance-prompts generate-image -p "Peaceful forest scene" -s photorealistic --width 1024 --height 768
+
+# List available styles
+perchance-prompts generate-image --list-styles
 ```
 
 ### 🌐 Web Interface
-Access the web interface at `http://localhost:5173` after starting the web server.
 
-## 📖 **Complete Documentation**
+```bash
+# Start development server
+npm run dev
 
-### **Core Commands**
+# Open browser to http://localhost:3000
+# Enjoy the intuitive web interface with real-time generation
+```
 
-#### 🎨 **Generate Command**
+## 🏗️ System Architecture
+
+```
+📦 Perchance AI Prompt Library
+├── 🖥️  Advanced CLI Tool          → Power user interface
+├── 🌐  React Web Interface       → Visual prompt generation
+├── 🤖  Discord Bot Integration   → Server automation
+├── ⚙️  Node.js API Server        → Backend processing
+├── 🖼️  AI Image Generation      → Pollinations.ai integration
+├── 📊  Analytics Engine          → Usage tracking & metrics
+├── 💾  Multi-format Export       → JSON, CSV, TXT support
+└── 🔍  Smart Search System       → Fuzzy search & filtering
+```
+
+## 📚 Complete Documentation
+
+### 🎨 **Core Commands**
+
+#### Generate Command
+```bash
 perchance-prompts generate <style> "<subject>" [options]
+```
 
-Options:
--c, --count <number> Number of variations (default: 1)
--q, --quality <level> Quality level 1-10 (default: 8)
--m, --mood <mood> Mood: dramatic|epic|peaceful|vibrant|mysterious
--v, --verbose Show detailed metadata
---save Save to history
---negative Include negative prompt suggestions
-
-
+**Options:**
+- `-c, --count <number>` - Number of variations (default: 1)
+- `-q, --quality <level>` - Quality level 1-10 (default: 8)
+- `-m, --mood <mood>` - Mood: dramatic|epic|peaceful|vibrant|mysterious
+- `-v, --verbose` - Show detailed metadata
+- `--save` - Save to history
+- `--negative` - Include negative prompt suggestions
 
 **Examples:**
-High-quality single prompt
+```bash
+# High-quality single prompt
 perchance-prompts generate anime "warrior princess" -q 10 -m epic
 
-Multiple variations with mood
+# Multiple variations with mood
 perchance-prompts generate photorealistic "sunset landscape" -c 3 -m peaceful --verbose
 
-Save to history with negative prompts
+# Save to history with negative prompts
 perchance-prompts generate "oil painting" "portrait" --save --negative
+```
 
-
-#### ⚡ **Batch Processing**
+#### Batch Processing
+```bash
 perchance-prompts batch <style> "<subject>" [options]
+```
 
-Options:
--c, --count <number> Number of variations (default: 10)
--p, --parallel <threads> Parallel threads 1-5 (default: 3)
--q, --quality <level> Quality level 1-10 (default: 8)
---progress Show detailed progress
---export <format> Export: json|txt|csv
-
-
+**Options:**
+- `-c, --count <number>` - Number of variations (default: 10)
+- `-p, --parallel <threads>` - Parallel threads 1-5 (default: 3)
+- `-q, --quality <level>` - Quality level 1-10 (default: 8)
+- `--progress` - Show detailed progress
+- `--export <format>` - Export: json|txt|csv
 
 **Examples:**
-Large batch with progress tracking
+```bash
+# Large batch with progress tracking
 perchance-prompts batch anime "mecha robot" -c 50 -p 5 --progress
 
-Export batch results
+# Export batch results
 perchance-prompts batch photorealistic "nature scene" -c 20 --export csv
+```
 
-
-#### 🎨 **Browse Encyclopedia**
-Browse art styles
+#### Browse Encyclopedia
+```bash
+# Browse art styles
 perchance-prompts styles [-s search] [-e export] [--detailed]
 
-Browse subjects
+# Browse subjects
 perchance-prompts subjects [-c category] [-s search]
 
-Browse famous artists
+# Browse famous artists
 perchance-prompts artists [-s search] [--period era]
 
-Browse themes
+# Browse themes
 perchance-prompts themes [-s search] [--category cat]
+```
 
+### 📊 **Analytics & Management**
 
-**Examples:**
-Search and export styles
-perchance-prompts styles -s "realistic" --export json
-
-Detailed artist information
-perchance-prompts artists --detailed
-
-Filter themes by category
-perchance-prompts themes --category "action"
-
-
-### **Analytics & Management**
-
-#### 📊 **Statistics**
+#### Statistics
+```bash
 perchance-prompts stats [--export format]
-
+```
 
 **Features:**
-- Total generations and commands
-- Popular styles ranking  
-- Daily usage patterns
-- Recent activity log
-- Export capabilities
+- Total generations and commands executed
+- Popular styles ranking and usage patterns
+- Daily/weekly/monthly usage analytics
+- Performance metrics and optimization insights
+- Export capabilities for external analysis
 
-#### ⚙️ **Configuration**
-Show current config
+#### Configuration
+```bash
+# View current configuration
 perchance-prompts config --show
 
-Set configuration
+# Set configuration options
 perchance-prompts config --set defaultStyle=anime
 perchance-prompts config --set qualityLevel=9
 
-Reset to defaults
+# Reset to defaults
 perchance-prompts config --reset
+```
 
-
-#### 📚 **History Management**
-View history
+#### History Management
+```bash
+# View command history
 perchance-prompts history [-n 20]
 
-Clear history
+# Clear history
 perchance-prompts history --clear
 
+# Export history
+perchance-prompts history --export json
+```
 
-## 🎯 **Advanced Usage Examples**
+## 🎯 Advanced Usage Examples
 
-### **Professional Workflow**
-1. Configure for optimal settings
+### 🏆 **Professional Workflow**
+```bash
+# 1. Configure optimal settings
 perchance-prompts config --set qualityLevel=10
 perchance-prompts config --set defaultStyle=photorealistic
 
-2. Generate high-quality prompts with analytics
+# 2. Generate high-quality prompts with analytics
 perchance-prompts generate anime "cyberpunk samurai" -c 5 -q 10 -m epic --save --verbose
 
-3. Batch process for production
+# 3. Batch process for production
 perchance-prompts batch photorealistic "architectural photography" -c 100 -p 5 --export csv
 
-4. Review analytics
-perchance-prompts stats
+# 4. Review analytics and performance
+perchance-prompts stats --export json
 perchance-prompts history -n 10
+```
 
-
-### **Creative Exploration**
-Explore different moods
+### 🎨 **Creative Exploration**
+```bash
+# Explore different moods
 perchance-prompts generate "oil painting" "forest scene" -m peaceful -c 3
 perchance-prompts generate "digital art" "space battle" -m dramatic -c 3
 perchance-prompts generate "watercolor" "flower garden" -m vibrant -c 3
 
-Mix styles with artists
+# Mix styles with famous artists
 perchance-prompts artists -s "van gogh"
 perchance-prompts generate "van gogh style" "starry cityscape" -q 9
+```
 
+### 🖼️ **AI Image Generation Workflow**
+```bash
+# Generate prompt and image in one workflow
+perchance-prompts generate anime "dragon warrior" -q 10 --save
+perchance-prompts generate-image -p "Epic dragon warrior, anime style, high detail" --width 1024 --height 1024
 
-## 📁 **Project Structure**
+# Batch image generation
+for i in {1..5}; do
+  perchance-prompts generate-image -p "Fantasy landscape $i" -s photorealistic
+done
+```
 
-perchance-ai-prompt-library/
-├── bin/
-│ └── cli.js # Advanced CLI (600+ lines)
-├── src/
-│ ├── index.js # Main library
-│ ├── data/ # Encyclopedia JSON files
-│ │ ├── styles.json # Art styles database
-│ │ ├── subjects.json # Subject categories
-│ │ ├── artists.json # Famous artists
-│ │ ├── themes.json # Thematic elements
-│ │ ├── negatives.json # Negative prompts
-│ │ └── recipes.json # Prompt recipes
-│ └── utils/ # Utility functions
-├── tests/ # Test suites
-├── docs/ # Documentation
-├── README.md # This file
-├── CHANGELOG.md # Version history
-└── package.json # Package configuration
+## 🔧 Development
 
+### 🛠️ **Setup Development Environment**
 
-## 🔧 **Development**
+```bash
+# Clone repository
+git clone https://github.com/Gzeu/perchance-ai-prompt-library.git
+cd perchance-ai-prompt-library
 
-### **Setup Development Environment**
-Clone repository
-git clone https://github.com/perchance-ai/prompt-library.git
-cd prompt-library
-
-Install dependencies
+# Install dependencies
 npm install
 
-Link for development
+# Install web dependencies
+cd web && npm install && cd ..
+
+# Link for development
 npm link
 
-Run tests
+# Run tests
 npm test
 npm run test:cli
+```
 
+### 📜 **Available Scripts**
 
-### **Available Scripts**
-npm run dev # Development mode
-npm run test # Run all tests
-npm run test:cli # Test CLI functionality
-npm run lint # Code linting
-npm run docs # Generate documentation
-npm run release # Create release
+```bash
+# Development
+npm run dev              # Start API server in development mode
+npm run start           # Start production server
 
+# Testing
+npm test                # Run all tests
+npm run test:cli        # Test CLI functionality
+npm run test:generate   # Test prompt generation
+npm run test:batch      # Test batch processing
 
-## 📊 **Performance & Scale**
+# Utilities
+npm run lint            # Code linting
+npm run docs            # Generate documentation
+npm run release         # Create release
+```
 
-- **⚡ Generation Speed**: 1-3 prompts/second
-- **🔄 Batch Capacity**: Up to 100 prompts with 5 parallel threads
-- **💾 Memory Usage**: ~50MB for full encyclopedia
-- **📱 Compatibility**: Node.js 14+ on Windows, macOS, Linux
-- **🌐 Network**: Offline-first, no external API dependencies
+### 🏗️ **Project Structure**
 
-## 🤝 **Contributing**
+```
+perchance-ai-prompt-library/
+├── 📁 bin/                    # CLI executable
+│   └── cli.js                # Advanced CLI (600+ lines)
+├── 📁 src/                   # Core library
+│   ├── index.js             # Main library entry
+│   ├── 📁 data/             # Encyclopedia JSON files
+│   │   ├── styles.json      # Art styles database
+│   │   ├── subjects.json    # Subject categories
+│   │   ├── artists.json     # Famous artists
+│   │   ├── themes.json      # Thematic elements
+│   │   ├── negatives.json   # Negative prompts
+│   │   └── recipes.json     # Prompt recipes
+│   ├── 📁 api/              # API server
+│   ├── 📁 utils/            # Utility functions
+│   └── 📁 services/         # Service integrations
+├── 📁 web/                   # React web interface
+├── 📁 discord-bot/           # Discord bot integration
+├── 📁 docs/                  # Documentation
+├── 📁 tests/                 # Test suites
+├── 📁 templates/             # Generation templates
+└── 📄 README.md             # This file
+```
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md).
+## 🚀 Performance & Scalability
 
-### **Ways to Contribute:**
-- 🎨 Add new art styles or artists
-- 📝 Improve documentation  
-- 🐛 Report bugs or request features
-- 💡 Suggest new CLI commands
-- 🧪 Add test cases
+| Metric | Performance |
+|--------|-------------|
+| ⚡ **Generation Speed** | 1-5 prompts/second |
+| 🔄 **Batch Capacity** | Up to 1000 prompts |
+| 🧵 **Parallel Threads** | 1-5 configurable |
+| 💾 **Memory Usage** | ~50MB for full encyclopedia |
+| 🌐 **Compatibility** | Node.js 14+ on all platforms |
+| 📡 **Network** | Offline-first, optional cloud features |
+| 🖼️ **Image Generation** | Pollinations.ai integration |
 
-## 📝 **License**
+## 🤝 Contributing
 
-MIT License - see [LICENSE](LICENSE) file for details.
+We welcome contributions from the community! Here's how you can help:
 
-## 🆕 **What's New in v2.2.0**
+### 🌟 **Ways to Contribute**
+- 🎨 **Add Content**: New art styles, artists, subjects, or themes
+- 📝 **Documentation**: Improve guides, examples, and API docs
+- 🐛 **Bug Reports**: Report issues with detailed reproduction steps
+- 💡 **Feature Requests**: Suggest new CLI commands or functionality
+- 🧪 **Testing**: Add test cases and improve coverage
+- 🔧 **Code**: Fix bugs, optimize performance, add features
 
-- ✨ **Advanced CLI**: Complete rewrite with 600+ lines of professional code
-- ⚡ **Batch Processing**: Parallel processing with progress tracking
-- 📊 **Analytics System**: Comprehensive usage statistics and metrics
-- 💾 **Export Capabilities**: Multi-format export (JSON, CSV, TXT)
-- 🎯 **Quality Control**: 10-level quality system with mood variations
-- ⚙️ **Configuration Management**: Persistent settings and preferences
-- 📚 **History Tracking**: Complete command history with search
-- 🔍 **Fuzzy Search**: Intelligent search across all data
-- 🎨 **Professional UI**: Beautiful formatting and ASCII art
-- 💨 **Performance**: Caching, optimization, and error handling
+### 📋 **Contribution Process**
+1. 🍴 Fork the repository
+2. 🌿 Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. ✅ Make your changes with tests
+4. 📝 Commit with conventional commits (`git commit -m 'feat: add amazing feature'`)
+5. 🚀 Push to your branch (`git push origin feature/amazing-feature`)
+6. 🔄 Open a Pull Request
 
-## 📞 **Support & Links**
+### 🧪 **Development Guidelines**
+- Write clean, well-documented code
+- Follow existing code style and patterns
+- Add tests for new functionality
+- Update documentation as needed
+- Test on multiple platforms when possible
 
-- 📖 **Documentation**: [Full Documentation](https://github.com/perchance-ai/prompt-library/wiki)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/perchance-ai/prompt-library/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/perchance-ai/prompt-library/discussions)
-- 📦 **NPM**: [npm package](https://www.npmjs.com/package/perchance-ai-prompt-library)
-- ⭐ **Star us**: [GitHub Repository](https://github.com/perchance-ai/prompt-library)
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- 🎨 **Pollinations.ai** - AI image generation capabilities
+- 🎯 **OpenAI Community** - Inspiration and best practices
+- 🌟 **Contributors** - Everyone who helped make this project better
+- 💡 **AI Art Community** - Feedback and feature suggestions
+
+## 📞 Support & Links
+
+<div align="center">
+
+| Resource | Link |
+|----------|------|
+| 📖 **Documentation** | [Full Docs](https://github.com/Gzeu/perchance-ai-prompt-library/wiki) |
+| 🐛 **Issues** | [GitHub Issues](https://github.com/Gzeu/perchance-ai-prompt-library/issues) |
+| 💬 **Discussions** | [GitHub Discussions](https://github.com/Gzeu/perchance-ai-prompt-library/discussions) |
+| 📦 **NPM Package** | [npm registry](https://www.npmjs.com/package/perchance-ai-prompt-library) |
+| ⭐ **Star the Repo** | [GitHub Repository](https://github.com/Gzeu/perchance-ai-prompt-library) |
+| 👨‍💻 **Author** | [George Pricop (@Gzeu)](https://github.com/Gzeu) |
 
 ---
 
-**Made with ❤️ by the AI Research Team**
+**Made with ❤️ by [George Pricop](https://github.com/Gzeu)**
 
-*Transform your AI image generation workflow with professional-grade prompts and advanced CLI tools.*
+*Transform your AI image generation workflow with professional-grade prompts and advanced automation tools.*
+
+[![GitHub followers](https://img.shields.io/github/followers/Gzeu?style=social)](https://github.com/Gzeu)
+[![Twitter Follow](https://img.shields.io/twitter/follow/GeorgePricop?style=social)](https://twitter.com/GeorgePricop)
+
+</div>
