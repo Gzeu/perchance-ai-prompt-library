@@ -429,6 +429,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 *Transform your AI image generation workflow with professional-grade prompts and advanced automation tools.*
 
 [![GitHub followers](https://img.shields.io/github/followers/Gzeu?style=social)](https://github.com/Gzeu)
-[![Twitter Follow](https://img.shields.io/twitter/follow/GeorgePricop?style=social)](https://twitter.com/GeorgePricop)
+[![X Follow](https://img.shields.io/twitter/follow/GeorgeP95539774?style=social&logo=x)](https://x.com/GeorgeP95539774)
 
 </div>
