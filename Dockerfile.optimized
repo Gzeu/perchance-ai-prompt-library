@@ -1,0 +1,116 @@
+# Optimized Multi-stage Dockerfile for Perchance AI Prompt Library
+# Production-ready with enhanced security and performance
+
+# Build stage for web interface
+FROM node:18-alpine AS web-builder
+
+# Set working directory
+WORKDIR /app/web
+
+# Copy web package files
+COPY web/package*.json ./
+
+# Install dependencies with npm ci for faster, reliable builds
+RUN npm ci --only=production --silent
+
+# Copy web source code
+COPY web/ .
+
+# Build web interface
+RUN npm run build
+
+# Main application build stage
+FROM node:18-alpine AS app-builder
+
+# Install system dependencies
+RUN apk add --no-cache \
+    dumb-init \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/cache/apk/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production --silent \
+    && npm cache clean --force
+
+# Copy source code
+COPY src/ ./src/
+COPY bin/ ./bin/
+COPY docs/ ./docs/
+COPY *.md ./
+COPY *.js ./
+COPY LICENSE ./
+
+# Copy built web interface from previous stage
+COPY --from=web-builder /app/web/dist ./web/dist
+
+# Development stage
+FROM app-builder AS development
+
+# Install all dependencies including dev
+RUN npm install --silent
+
+# Copy all source files
+COPY . .
+
+# Create logs directory
+RUN mkdir -p logs
+
+# Expose ports
+EXPOSE 3000 5173
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Development command
+CMD ["npm", "run", "dev"]
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Install system dependencies and dumb-init
+RUN apk add --no-cache dumb-init \
+    && rm -rf /var/cache/apk/*
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs \
+    && adduser -S perchance -u 1001 -G nodejs
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=app-builder --chown=perchance:nodejs /app ./
+
+# Create necessary directories
+RUN mkdir -p logs data \
+    && chown -R perchance:nodejs logs data
+
+# Switch to non-root user
+USER perchance
+
+# Expose port
+EXPOSE 3000
+
+# Add health check
+HEALTHCHEK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Production command
+CMD ["node", "src/api/server.js"]
+
+# Labels for better container management
+LABEL maintainer="George Pricop <pricopgeorge@gmail.com>" \
+      version="2.3.2" \
+      description="Perchance AI Prompt Library - Professional AI prompt generation toolkit" \
+      repository="https://github.com/Gzeu/perchance-ai-prompt-library"
