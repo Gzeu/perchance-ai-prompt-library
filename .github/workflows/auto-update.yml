@@ -1,0 +1,82 @@
+name: Auto Update Dependencies
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update dependencies
+        run: |
+          npm update
+          npm audit fix --force
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet package-lock.json; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies'
+          title: 'Auto-update dependencies'
+          body: |
+            This PR automatically updates project dependencies.
+            
+            Changes:
+            - Updated npm packages to latest compatible versions
+            - Applied security fixes
+            
+            Please review the changes before merging.
+          branch: auto-update-dependencies
+          delete-branch: true
+
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit --audit-level moderate
+
+      - name: Check for vulnerabilities
+        run: |
+          if npm audit --audit-level high --parseable | grep -q "high\|critical"; then
+            echo "High or critical vulnerabilities found!"
+            exit 1
+          fi
