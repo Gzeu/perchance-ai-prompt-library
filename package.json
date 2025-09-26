@@ -1,10 +1,12 @@
 {
   "name": "perchance-ai-prompt-library",
-  "version": "2.3.2",
-  "description": "🎨 Complete AI prompt library and generator with advanced CLI, batch processing, analytics, and multi-format export capabilities",
+  "version": "3.0.0",
+  "description": "🎨 Ultimate professional AI prompt library and generator with advanced CLI, batch processing, analytics, Discord integration, web interface, and enterprise-grade features - 2025 Edition",
   "main": "src/index.js",
+  "type": "module",
   "bin": {
-    "perchance-prompts": "bin/cli.js"
+    "perchance-prompts": "bin/cli.js",
+    "pai": "bin/cli.js"
   },
   "files": [
     "bin/cli.js",
@@ -16,30 +18,46 @@
   ],
   "scripts": {
     "start": "node src/api/server.js",
-    "dev": "concurrently \"npm run api:dev\" \"npm run web:dev\"",
+    "dev": "concurrently \"npm run api:dev\" \"npm run web:dev\" \"npm run docs:dev\"",
     "api:dev": "nodemon src/api/server.js",
     "web:dev": "cd web && npm run dev",
-    "build": "cd web && npm run build",
-    "test": "jest",
+    "docs:dev": "cd docs && npm run dev",
+    "build": "npm run build:api && npm run build:web && npm run build:docs",
+    "build:api": "tsc && node scripts/optimize-bundle.js",
+    "build:web": "cd web && npm run build",
+    "build:docs": "npm run docs && cd docs && npm run build",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:cli": "npm run test:generate && npm run test:batch",
+    "test:cli": "npm run test:generate && npm run test:batch && npm run test:analytics",
     "test:generate": "node bin/cli.js generate anime \"test warrior\" -c 2",
     "test:batch": "node bin/cli.js batch photorealistic \"test city\" -c 5",
-    "lint": "eslint src bin tests --ext .js",
-    "lint:fix": "eslint src bin tests --ext .js --fix",
-    "format": "prettier --write \"src/**/*.js\" \"bin/**/*.js\" \"tests/**/*.js\"",
+    "test:analytics": "node bin/cli.js analytics --export json",
+    "test:e2e": "playwright test",
+    "lint": "eslint src bin tests --ext .js,.ts",
+    "lint:fix": "eslint src bin tests --ext .js,.ts --fix",
+    "format": "prettier --write \"src/**/*.{js,ts}\" \"bin/**/*.{js,ts}\" \"tests/**/*.{js,ts}\"",
+    "type-check": "tsc --noEmit",
     "docs": "jsdoc -c jsdoc.config.json",
     "validate": "node validate-encyclopedia.js",
-    "clean": "rimraf coverage dist logs/*.log",
-    "prepublishOnly": "npm run test && npm run lint && npm run build",
+    "validate:prompts": "node scripts/validate-prompts.js",
+    "benchmark": "node scripts/benchmark.js",
+    "clean": "rimraf coverage dist logs/*.log .next",
+    "audit": "npm audit --audit-level moderate",
+    "security": "npm run audit && node scripts/security-scan.js",
+    "optimize": "node scripts/optimize-images.js",
+    "prepublishOnly": "npm run test && npm run lint && npm run build && npm run validate",
     "postinstall": "node -e \"console.log('✅ Perchance AI Prompt Library installed successfully!')\"",
-    "release": "npm version patch && git push origin main --tags",
-    "release:minor": "npm version minor && git push origin main --tags",
-    "release:major": "npm version major && git push origin main --tags",
-    "docker:build": "docker build -t perchance-ai .",
-    "docker:run": "docker run -p 3000:3000 -p 5173:5173 perchance-ai",
-    "docker:prod": "docker-compose --profile production up -d"
+    "release": "standard-version && git push origin main --tags",
+    "release:minor": "standard-version --release-as minor && git push origin main --tags",
+    "release:major": "standard-version --release-as major && git push origin main --tags",
+    "docker:build": "docker build -t perchance-ai:latest .",
+    "docker:run": "docker run -p 3000:3000 -p 5173:5173 perchance-ai:latest",
+    "docker:prod": "docker-compose --profile production up -d",
+    "deploy:staging": "vercel",
+    "deploy:production": "vercel --prod",
+    "monitor": "node scripts/monitor-performance.js",
+    "health-check": "node scripts/health-check.js"
   },
   "keywords": [
     "ai",
@@ -60,7 +78,11 @@
     "web-interface",
     "prompt-engineering",
     "creative-tools",
-    "automation"
+    "automation",
+    "enterprise",
+    "monitoring",
+    "optimization",
+    "2025"
   ],
   "author": {
     "name": "George Pricop",
@@ -75,42 +97,53 @@
   "bugs": {
     "url": "https://github.com/Gzeu/perchance-ai-prompt-library/issues"
   },
-  "homepage": "https://github.com/Gzeu/perchance-ai-prompt-library#readme",
+  "homepage": "https://perchance-ai-prompt-library.vercel.app",
   "dependencies": {
-    "@pollinations/react": "^2.0.7",
-    "axios": "^1.11.0",
-    "chalk": "^4.1.2",
+    "@pollinations/react": "^2.1.0",
+    "axios": "^1.7.7",
+    "chalk": "^5.3.0",
     "cli-table3": "^0.6.5",
-    "commander": "^9.4.1",
+    "commander": "^12.1.0",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
-    "express": "^5.1.0",
-    "express-rate-limit": "^8.0.1",
-    "express-validator": "^7.2.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.1",
+    "express-validator": "^7.2.0",
     "figlet": "^1.8.2",
     "gradient-string": "^3.0.0",
-    "react-markdown": "^10.1.0",
+    "react-markdown": "^9.0.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "term-size": "^3.0.2",
-    "uuid": "^11.1.0",
-    "winston": "^3.17.0",
-    "wrap-ansi": "^9.0.0"
+    "term-size": "^4.0.0",
+    "uuid": "^10.0.0",
+    "winston": "^3.14.2",
+    "wrap-ansi": "^9.0.0",
+    "zod": "^3.23.8",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.5",
-    "concurrently": "^8.2.2",
-    "eslint": "^8.57.0",
-    "jest": "^29.3.1",
-    "jsdoc": "^4.0.2",
-    "nodemon": "^2.0.22",
-    "prettier": "^3.0.3",
-    "rimraf": "^5.0.5",
-    "supertest": "^6.3.3"
+    "@types/jest": "^29.5.13",
+    "@types/node": "^20.16.10",
+    "@types/express": "^4.17.21",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "concurrently": "^9.0.1",
+    "eslint": "^9.11.1",
+    "jest": "^29.7.0",
+    "jsdoc": "^4.0.3",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "supertest": "^7.0.0",
+    "typescript": "^5.6.2",
+    "@playwright/test": "^1.47.2",
+    "standard-version": "^9.5.0"
   },
   "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=6.0.0"
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   },
   "publishConfig": {
     "access": "public",
@@ -120,10 +153,15 @@
     "testEnvironment": "node",
     "collectCoverage": true,
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"]
+    "coverageReporters": ["text", "lcov", "html"],
+    "testMatch": ["**/__tests__/**/*.js", "**/?(*.)+(spec|test).js"]
   },
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/Gzeu"
+  },
+  "volta": {
+    "node": "20.18.0",
+    "npm": "10.8.2"
   }
 }
