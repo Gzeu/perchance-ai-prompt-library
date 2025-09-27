@@ -1,5 +1,4 @@
 name: Publish to NPM
-
 on:
   push:
     branches:
@@ -11,7 +10,6 @@ on:
       - 'prompts/**'
   release:
     types: [published]
-
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -30,6 +28,9 @@ jobs:
           
       - name: Install dependencies
         run: npm ci
+        
+      - name: Clean previous builds
+        run: npm run clean --if-present
         
       - name: Run tests
         run: npm test --if-present
