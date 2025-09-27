@@ -1,4 +1,5 @@
 name: Publish to NPM
+
 on:
   push:
     branches:
@@ -6,31 +7,69 @@ on:
     paths:
       - 'package.json'
       - 'src/**'
+      - 'bin/**'
       - 'lib/**'
       - 'prompts/**'
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      force_publish:
+        description: 'Force publish even if version exists'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip publish]')"
+    
     permissions:
       contents: read
-      id-token: write # Required for OIDC
+      id-token: write # Required for OIDC authentication
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for version comparison
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+    
+      # Fix lockfile sync issues before dependency installation
+      - name: Validate and fix lockfile
+        run: |
+          echo "Checking lockfile consistency..."
+          if ! npm ci --dry-run > /dev/null 2>&1; then
+            echo "Lock file is out of sync with package.json. Regenerating..."
+            rm -f package-lock.json
+            npm install --package-lock-only
+            echo "Lockfile regenerated successfully"
+          else
+            echo "Lockfile is consistent with package.json"
+          fi
           
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
         
       - name: Clean previous builds
         run: npm run clean --if-present
+        
+      - name: Validate package structure
+        run: npm run validate --if-present
+        
+      - name: Run linting
+        run: npm run lint --if-present
         
       - name: Run tests
         run: npm test --if-present
@@ -38,23 +77,89 @@ jobs:
       - name: Build package
         run: npm run build --if-present
         
+      - name: Check package integrity
+        run: |
+          npm pack --dry-run
+          echo "Package structure validated successfully"
+        
       - name: Check if version changed
         id: version-check
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
           echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "package-name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          
+          echo "Current version: $CURRENT_VERSION"
+          echo "Package name: $PACKAGE_NAME"
           
           # Check if this version already exists on npm
-          if npm view perchance-ai-prompt-library@$CURRENT_VERSION version 2>/dev/null; then
+          if npm view $PACKAGE_NAME@$CURRENT_VERSION version 2>/dev/null; then
             echo "version-exists=true" >> $GITHUB_OUTPUT
-            echo "Version $CURRENT_VERSION already exists on npm"
+            echo "⚠️ Version $CURRENT_VERSION already exists on npm"
+            
+            # Check if force publish is requested
+            if [ "${{ github.event.inputs.force_publish }}" = "true" ]; then
+              echo "🔄 Force publish requested, will attempt to publish anyway"
+              echo "should-publish=true" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Skipping publish - version already exists"
+              echo "should-publish=false" >> $GITHUB_OUTPUT
+            fi
           else
             echo "version-exists=false" >> $GITHUB_OUTPUT
-            echo "Version $CURRENT_VERSION is new, proceeding with publish"
+            echo "should-publish=true" >> $GITHUB_OUTPUT
+            echo "✅ Version $CURRENT_VERSION is new, proceeding with publish"
           fi
           
+      - name: Pre-publish validation
+        if: steps.version-check.outputs.should-publish == 'true'
+        run: |
+          npm run prepublishOnly --if-present
+          echo "Pre-publish validation completed"
+          
       - name: Publish to NPM
-        if: steps.version-check.outputs.version-exists == 'false'
-        run: npm publish --provenance --access public
+        if: steps.version-check.outputs.should-publish == 'true'
+        run: |
+          echo "🚀 Publishing ${{ steps.version-check.outputs.package-name }}@${{ steps.version-check.outputs.current-version }} to NPM..."
+          npm publish --provenance --access public
+          echo "✅ Successfully published to NPM!"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Create GitHub Release
+        if: steps.version-check.outputs.should-publish == 'true' && steps.version-check.outputs.version-exists == 'false'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version-check.outputs.current-version }}
+          release_name: Release v${{ steps.version-check.outputs.current-version }}
+          body: |
+            🎉 New release of Perchance AI Prompt Library!
+            
+            **Version:** ${{ steps.version-check.outputs.current-version }}
+            **NPM Package:** https://www.npmjs.com/package/${{ steps.version-check.outputs.package-name }}
+            
+            ### Installation
+            ```bash
+            npm install -g ${{ steps.version-check.outputs.package-name }}
+            ```
+            
+            ### What's Changed
+            See the [CHANGELOG.md](https://github.com/Gzeu/perchance-ai-prompt-library/blob/main/CHANGELOG.md) for detailed changes.
+          draft: false
+          prerelease: false
+          
+      - name: Notify success
+        if: steps.version-check.outputs.should-publish == 'true'
+        run: |
+          echo "🎉 Package published successfully!"
+          echo "📦 NPM: https://www.npmjs.com/package/${{ steps.version-check.outputs.package-name }}"
+          echo "🏷️ Version: ${{ steps.version-check.outputs.current-version }}"
+          
+      - name: Notify skip
+        if: steps.version-check.outputs.should-publish == 'false'
+        run: |
+          echo "⏭️ Publishing skipped - version ${{ steps.version-check.outputs.current-version }} already exists"
+          echo "💡 To force publish, use the workflow_dispatch trigger with force_publish=true"
