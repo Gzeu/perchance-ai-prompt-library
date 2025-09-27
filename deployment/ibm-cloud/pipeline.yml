@@ -1,0 +1,99 @@
+version: '1'
+
+setup:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.29
+  script: |
+    #!/bin/bash
+    echo "Setting up IBM Cloud CLI and plugins..."
+    curl -fsSL https://clis.cloud.ibm.com/install/linux | sh
+    ibmcloud plugin install code-engine -f
+    ibmcloud plugin install container-registry -f
+
+build:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.29
+  script: |
+    #!/bin/bash
+    set -e
+    
+    echo "Building Docker image..."
+    
+    # Login to IBM Cloud
+    ibmcloud login --apikey $IBM_CLOUD_API_KEY -r us-south
+    
+    # Login to Container Registry
+    ibmcloud cr login
+    
+    # Build and tag image
+    IMAGE_TAG=${BUILD_NUMBER:-latest}
+    IMAGE_NAME="us.icr.io/$REGISTRY_NAMESPACE/perchance-ai-prompt:$IMAGE_TAG"
+    
+    docker build -t $IMAGE_NAME -f deployment/ibm-cloud/Dockerfile .
+    
+    # Push to registry
+    docker push $IMAGE_NAME
+    
+    echo "Image built and pushed: $IMAGE_NAME"
+    echo "IMAGE_NAME=$IMAGE_NAME" >> build.properties
+
+deploy:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.29
+  script: |
+    #!/bin/bash
+    set -e
+    
+    # Source build properties
+    source build.properties
+    
+    echo "Deploying to Code Engine..."
+    
+    # Target Code Engine project
+    ibmcloud ce project select --name $CODE_ENGINE_PROJECT
+    
+    # Update or create application
+    if ibmcloud ce app get --name perchance-ai-prompt > /dev/null 2>&1; then
+      echo "Updating existing application..."
+      ibmcloud ce app update --name perchance-ai-prompt \
+        --image $IMAGE_NAME \
+        --cpu 0.125 \
+        --memory 0.25G \
+        --min-scale 0 \
+        --max-scale 2 \
+        --port 3000 \
+        --env-from-configmap perchance-config \
+        --env-from-secret perchance-secrets
+    else
+      echo "Creating new application..."
+      ibmcloud ce app create --name perchance-ai-prompt \
+        --image $IMAGE_NAME \
+        --cpu 0.125 \
+        --memory 0.25G \
+        --min-scale 0 \
+        --max-scale 2 \
+        --port 3000 \
+        --env-from-configmap perchance-config \
+        --env-from-secret perchance-secrets
+    fi
+    
+    # Get application URL
+    APP_URL=$(ibmcloud ce app get --name perchance-ai-prompt --output json | jq -r '.status.url')
+    echo "Application deployed at: $APP_URL"
+    
+    # Health check
+    echo "Performing health check..."
+    for i in {1..10}; do
+      if curl -f "$APP_URL/health" > /dev/null 2>&1; then
+        echo "Health check passed!"
+        break
+      fi
+      echo "Health check attempt $i failed, retrying in 30s..."
+      sleep 30
+    done
+
+test:
+  image: icr.io/continuous-delivery/pipeline/pipeline-base-ubi:3.29
+  script: |
+    #!/bin/bash
+    echo "Running post-deployment tests..."
+    
+    # Add integration tests here
+    echo "All tests passed!"

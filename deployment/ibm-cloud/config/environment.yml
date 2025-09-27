@@ -1,0 +1,18 @@
+# IBM Cloud Environment Configuration
+# Create with: ibmcloud ce configmap create --name perchance-config --from-file environment.yml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: perchance-config
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  LOG_LEVEL: "info"
+  CLOUDANT_URL: "TO_BE_SET"
+  WATSON_NLU_URL: "https://api.us-south.natural-language-understanding.watson.cloud.ibm.com/instances/YOUR_INSTANCE_ID"
+  WATSON_ASSISTANT_URL: "https://api.us-south.assistant.watson.cloud.ibm.com/instances/YOUR_INSTANCE_ID"
+  CORS_ORIGIN: "*"
+  RATE_LIMIT_WINDOW: "900000"
+  RATE_LIMIT_MAX: "100"
+  CACHE_TTL: "3600"

@@ -1,0 +1,54 @@
+version: '2'
+template:
+  name: "Perchance AI Prompt Library - IBM Cloud Deployment"
+  description: "Automated CI/CD pipeline for Code Engine deployment"
+  required:
+    - repo
+    - code-engine
+  info:
+    git url: https://github.com/Gzeu/perchance-ai-prompt-library
+    git branch: main
+
+toolchain:
+  name: perchance-ai-deploy
+
+services:
+  repo:
+    service_id: githubconsolidated
+    parameters:
+      repo_name: perchance-ai-prompt-library
+      repo_url: https://github.com/Gzeu/perchance-ai-prompt-library
+      type: link
+      has_issues: true
+      enable_traceability: true
+
+  code-engine:
+    service_id: codeengine
+    parameters:
+      app-name: perchance-ai-prompt
+      cluster-namespace: default
+      cpu: 0.125
+      memory: 0.25G
+      min-scale: 0
+      max-scale: 2
+      port: 3000
+      env-from-configmaps: perchance-config
+      env-from-secrets: perchance-secrets
+
+  pipeline:
+    service_id: pipeline
+    parameters:
+      services:
+        - repo
+        - code-engine
+      name: perchance-pipeline
+      ui-pipeline: true
+      configuration:
+        content:
+          $text: pipeline.yml
+        env:
+          REPO: repo
+          APP_NAME: perchance-ai-prompt
+          CODE_ENGINE_PROJECT: gzeu-cloud-deployment
+          REGISTRY_NAMESPACE: gzeu-registry
+        execute: true
