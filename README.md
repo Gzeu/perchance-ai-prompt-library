@@ -2,10 +2,10 @@
 
 <div align="center">
 
-[![Version](https://img.shields.io/badge/version-2.3.2-blue.svg)](https://github.com/Gzeu/perchance-ai-prompt-library/releases)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/Gzeu/perchance-ai-prompt-library/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
-[![NPM](https://img.shields.io/badge/npm-%3E%3D6.0.0-red)](https://www.npmjs.com/)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
+[![NPM](https://img.shields.io/badge/npm-%3E%3D10.0.0-red)](https://www.npmjs.com/)
 [![GitHub Stars](https://img.shields.io/github/stars/Gzeu/perchance-ai-prompt-library?style=social)](https://github.com/Gzeu/perchance-ai-prompt-library/stargazers)
 
 **🚀 The Ultimate AI Prompt Generation Toolkit**
@@ -18,7 +18,7 @@
 
 ---
 
-## 🌟 What's New in v2.3.2
+## 🌟 What's New in v3.0.0
 
 - 🖼️ **AI Image Generation** - Direct integration with Pollinations.ai
 - ⚡ **Enhanced Performance** - Optimized batch processing with up to 5 parallel threads
@@ -26,6 +26,8 @@
 - 📊 **Comprehensive Analytics** - Detailed usage statistics and metrics
 - 🔍 **Smart Search** - Fuzzy search across styles, artists, subjects, and themes
 - 💾 **Multi-Format Export** - JSON, CSV, TXT export capabilities
+- 🌐 **Enterprise Features** - Docker support, monitoring, and health checks
+- 🔒 **Security Enhancements** - Improved validation and error handling
 
 ## 🎯 Key Features
 
@@ -58,6 +60,7 @@
 - **🌐 Web Interface**: React-based frontend with real-time generation
 - **🤖 Discord Bot**: Server integration with slash commands
 - **📱 Cross-Platform**: Windows, macOS, Linux support
+- **🐳 Docker Support**: Containerized deployment with Docker Compose
 
 ## 🚀 Quick Start
 
@@ -130,6 +133,17 @@ npm run dev
 # Enjoy the intuitive web interface with real-time generation
 ```
 
+### 🐳 Docker Deployment
+
+```bash
+# Build and run with Docker
+npm run docker:build
+npm run docker:run
+
+# Or use Docker Compose for production
+npm run docker:prod
+```
+
 ## 🏗️ System Architecture
 
 ```
@@ -141,7 +155,9 @@ npm run dev
 ├── 🖼️  AI Image Generation      → Pollinations.ai integration
 ├── 📊  Analytics Engine          → Usage tracking & metrics
 ├── 💾  Multi-format Export       → JSON, CSV, TXT support
-└── 🔍  Smart Search System       → Fuzzy search & filtering
+├── 🔍  Smart Search System       → Fuzzy search & filtering
+├── 🐳  Docker Support            → Containerized deployment
+└── 🔒  Security & Monitoring     → Health checks & validation
 ```
 
 ## 📚 Complete Documentation
@@ -331,6 +347,9 @@ npm run test:batch      # Test batch processing
 npm run lint            # Code linting
 npm run docs            # Generate documentation
 npm run release         # Create release
+npm run clean           # Clean build artifacts
+npm run audit           # Security audit
+npm run monitor         # Performance monitoring
 ```
 
 ### 🏗️ **Project Structure**
@@ -356,20 +375,24 @@ perchance-ai-prompt-library/
 ├── 📁 docs/                  # Documentation
 ├── 📁 tests/                 # Test suites
 ├── 📁 templates/             # Generation templates
+├── 📁 scripts/               # Build and deployment scripts
+├── 🐳 Dockerfile            # Docker configuration
+├── 🐳 docker-compose.yml    # Docker Compose setup
 └── 📄 README.md             # This file
 ```
 
 ## 🚀 Performance & Scalability
 
 | Metric | Performance |
-|--------|-------------|
+|--------|--------------|
 | ⚡ **Generation Speed** | 1-5 prompts/second |
 | 🔄 **Batch Capacity** | Up to 1000 prompts |
 | 🧵 **Parallel Threads** | 1-5 configurable |
 | 💾 **Memory Usage** | ~50MB for full encyclopedia |
-| 🌐 **Compatibility** | Node.js 14+ on all platforms |
+| 🌐 **Compatibility** | Node.js 20+ on all platforms |
 | 📡 **Network** | Offline-first, optional cloud features |
 | 🖼️ **Image Generation** | Pollinations.ai integration |
+| 🐳 **Docker Support** | Multi-stage builds, optimized images |
 
 ## 🤝 Contributing
 
@@ -414,7 +437,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 <div align="center">
 
 | Resource | Link |
-|----------|------|
+|----------|---------|
 | 📖 **Documentation** | [Full Docs](https://github.com/Gzeu/perchance-ai-prompt-library/wiki) |
 | 🐛 **Issues** | [GitHub Issues](https://github.com/Gzeu/perchance-ai-prompt-library/issues) |
 | 💬 **Discussions** | [GitHub Discussions](https://github.com/Gzeu/perchance-ai-prompt-library/discussions) |
