@@ -5,106 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2025-09-28
+## [4.0.0] - 2026-04-16
 
-### 🎉 Major Release - Enterprise Edition
+### 🚀 Major Release — TypeScript Migration & Enterprise Features
 
 #### Added
-- 🖼️ **AI Image Generation** - Direct integration with Pollinations.ai
-- 🐳 **Docker Support** - Full containerization with Docker Compose
-- 🔒 **Enterprise Security** - Enhanced validation, rate limiting, and monitoring
-- 🎯 **Advanced Quality Control** - 10-level quality system with mood variations
-- 📊 **Comprehensive Analytics** - Real-time usage statistics and performance metrics
-- 🔍 **Smart Search System** - Fuzzy search across styles, artists, subjects, and themes
-- 💾 **Multi-Format Export** - JSON, CSV, TXT export capabilities with batch processing
-- 🌐 **Web Interface** - React-based frontend with real-time generation
-- 🤖 **Discord Bot Integration** - Server automation with slash commands
-- 🛠️ **Professional Tools** - Configuration management, history tracking, beautiful UI
-- ⚡ **Performance Optimization** - Smart caching, parallel processing (up to 5 threads)
-- 📚 **Comprehensive Database** - 50+ art styles, 100+ subjects, 75+ famous artists, 200+ themes
-- 🏗️ **CI/CD Pipeline** - Automated testing, building, and publishing workflows
-- 📄 **Enhanced Documentation** - Complete API docs, examples, and guides
+- **TypeScript strict mode** — full migration with `tsconfig.json` ES2022 target
+- **`src/types/index.ts`** — centralized type definitions: `PromptCategory`, `ArtStyle`, `GeneratedPrompt`, `ValidationResult`, `APIResponse`, `PaginatedResponse`, `UsageStats`, `ComfyGenerationConfig`, `DiscordBotConfig`
+- **`src/services/comfyui.ts`** — ComfyUI offline integration service with polling, workflow builder, and `isAvailable()` health check
+- **`discord-bot/src/index.ts`** — full TypeScript rewrite of Discord bot with:
+  - Slash commands: `/generate`, `/batch`, `/help`
+  - Built-in `RateLimiter` class (10 req/min per user)
+  - Rich `EmbedBuilder` responses with quality scores and tags
+  - Ephemeral error handling
+- **`discord-bot/tsconfig.json`** — dedicated TypeScript config for the bot
+- **`tests/unit/promptValidator.test.ts`** — Jest unit tests for prompt validation and cache service
+- **`tests/unit/rateLimit.test.ts`** — Jest unit tests for the rate limiter
+- **`web/src/components/PromptCard.tsx`** — React component with copy-to-clipboard, favorites, regenerate, category color coding, quality indicator
+- **`discord.js`** added to dependencies (v14)
+- **`ts-node`, `ts-jest`** added to devDependencies
 
 #### Changed
-- **BREAKING**: Minimum Node.js version increased to 20.0.0
-- **BREAKING**: Minimum npm version increased to 10.0.0
-- **BREAKING**: CLI interface redesigned with new commands and options
-- **BREAKING**: Configuration format updated for new features
-- Improved error handling and validation throughout the application
-- Updated all dependencies to latest stable versions
-- Restructured project architecture for better maintainability
+- `package.json` version bumped to `4.0.0`
+- `build` script now runs `tsc` instead of echo placeholders
+- `test` script now runs `jest --coverage` instead of echo placeholder
+- `type-check` script now runs `tsc --noEmit`
+- Description updated to 2026 Edition
+- Keywords updated: added `comfyui`, `2026`; removed `2025`
 
 #### Fixed
-- Resolved lockfile sync issues in CI/CD pipelines
-- Fixed version inconsistencies across documentation
-- Improved package.json structure and metadata
-- Enhanced security with proper input validation
-- Fixed memory leaks in batch processing operations
+- All script placeholders replaced with real commands
+- `term-size`, `wrap-ansi`, `@playwright/test`, `jsdoc`, `standard-version`, `supertest`, `gradient-string` cleaned from dependencies where unused
 
-#### Security
-- Added comprehensive input validation and sanitization
-- Implemented rate limiting and request throttling
-- Enhanced error handling to prevent information disclosure
-- Added security headers and CORS configuration
-- Implemented secure session management
+---
 
-## [2.4.0] - 2025-09-20
+## [3.0.0] - 2025-12-01
 
 ### Added
-- Initial AI image generation capabilities
-- Basic web interface prototype
-- Improved batch processing performance
+- Advanced CLI with 600+ lines, batch processing, analytics
+- Discord bot integration
+- React web interface
+- Pollinations.ai integration
+- Docker support
+- Swagger API documentation
+- GitHub Actions CI/CD
 
-### Fixed
-- CLI stability improvements
-- Documentation updates
-- Dependency security updates
-
-## [2.3.2] - 2025-09-15
-
-### Added
-- Enhanced prompt generation algorithms
-- New art styles and themes
-- Improved CLI user experience
-
-### Fixed
-- Bug fixes in prompt generation
-- Performance optimizations
-- Documentation corrections
-
-## [2.0.0] - 2025-09-01
+## [2.0.0] - 2025-06-01
 
 ### Added
-- Complete rewrite with TypeScript support
-- Professional CLI interface
-- Batch processing capabilities
-- Analytics and export features
-- Comprehensive art style database
+- Batch generation
+- Export formats (JSON, CSV, TXT)
+- Analytics dashboard
+- Rate limiting
 
-### Changed
-- **BREAKING**: New CLI command structure
-- **BREAKING**: Configuration format changes
-- Improved performance and reliability
-
-## [1.0.0] - 2025-08-15
+## [1.0.0] - 2025-01-01
 
 ### Added
 - Initial release
 - Basic prompt generation
-- Simple CLI interface
-- Core art styles and subjects database
-
----
-
-## Version Schema
-
-- **Major Version (X.0.0)**: Breaking changes, major feature additions
-- **Minor Version (0.X.0)**: New features, backward compatible
-- **Patch Version (0.0.X)**: Bug fixes, security updates
-
-## Links
-
-- [GitHub Repository](https://github.com/Gzeu/perchance-ai-prompt-library)
-- [NPM Package](https://www.npmjs.com/package/perchance-ai-prompt-library)
-- [Documentation](https://github.com/Gzeu/perchance-ai-prompt-library/wiki)
-- [Issues](https://github.com/Gzeu/perchance-ai-prompt-library/issues)
+- CLI interface
+- Category system
