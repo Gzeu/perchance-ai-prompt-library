@@ -2,66 +2,82 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [4.0.0] - 2026-04-16
-
-### 🚀 Major Release — TypeScript Migration & Enterprise Features
-
-#### Added
-- **TypeScript strict mode** — full migration with `tsconfig.json` ES2022 target
-- **`src/types/index.ts`** — centralized type definitions: `PromptCategory`, `ArtStyle`, `GeneratedPrompt`, `ValidationResult`, `APIResponse`, `PaginatedResponse`, `UsageStats`, `ComfyGenerationConfig`, `DiscordBotConfig`
-- **`src/services/comfyui.ts`** — ComfyUI offline integration service with polling, workflow builder, and `isAvailable()` health check
-- **`discord-bot/src/index.ts`** — full TypeScript rewrite of Discord bot with:
-  - Slash commands: `/generate`, `/batch`, `/help`
-  - Built-in `RateLimiter` class (10 req/min per user)
-  - Rich `EmbedBuilder` responses with quality scores and tags
-  - Ephemeral error handling
-- **`discord-bot/tsconfig.json`** — dedicated TypeScript config for the bot
-- **`tests/unit/promptValidator.test.ts`** — Jest unit tests for prompt validation and cache service
-- **`tests/unit/rateLimit.test.ts`** — Jest unit tests for the rate limiter
-- **`web/src/components/PromptCard.tsx`** — React component with copy-to-clipboard, favorites, regenerate, category color coding, quality indicator
-- **`discord.js`** added to dependencies (v14)
-- **`ts-node`, `ts-jest`** added to devDependencies
-
-#### Changed
-- `package.json` version bumped to `4.0.0`
-- `build` script now runs `tsc` instead of echo placeholders
-- `test` script now runs `jest --coverage` instead of echo placeholder
-- `type-check` script now runs `tsc --noEmit`
-- Description updated to 2026 Edition
-- Keywords updated: added `comfyui`, `2026`; removed `2025`
-
-#### Fixed
-- All script placeholders replaced with real commands
-- `term-size`, `wrap-ansi`, `@playwright/test`, `jsdoc`, `standard-version`, `supertest`, `gradient-string` cleaned from dependencies where unused
 
 ---
 
-## [3.0.0] - 2025-12-01
+## [5.0.0] — 2026-04-16
+
+### 🚀 Added — v5
+- **Types extinse** (`src/types/index.ts`): noi categorii (`architecture`, `food`, `nature`, `fashion`, `surreal`), stiluri (`oil-painting`, `digital-art`, `photorealistic`, `anime-style`, `concept-art`, `illustration`), tipuri noi `LogLevel`, `SortOrder`, `SortBy`, `APIError`, `RateLimitInfo`, `ComfyWorkflow`, `DiscordCommandResult`, `AnalyticsEvent`, `AppConfig`, `PromptFilter`, `PromptSearchOptions`, `CacheOptions`
+- **`src/index.ts`** — entry point TypeScript cu re-exports publice complet
+- **`src/config/app.ts`** — configurare centralizată tip-safe `AppConfig` citit din env vars
+- **`src/api/middleware/auth.ts`** — `apiKeyAuth` și `optionalAuth` middleware TypeScript
+- **`src/api/middleware/rateLimit.ts`** — 3 limiters (general / generate / batch) cu `express-rate-limit`
+- **`src/api/middleware/errorHandler.ts`** — `errorHandler`, `notFoundHandler`, `createError`
+- **`src/api/routes/prompts.ts`** — rute TypeScript complete: POST `/generate`, POST `/batch`, POST `/validate`, GET `/stats`, GET `/categories` cu cache + analytics integrate
+- **`src/api/routes/health.ts`** — `/health` și `/health/ping` cu uptime, memorie, versiune
+- **Teste TypeScript noi** (`tests/unit/`):
+  - `cacheService.test.ts` — 18 teste pentru `CacheService`
+  - `generators.test.ts` — 10 teste pentru `generatePrompt`, `generateBatch`, `getRandomCategory`
+  - `analyticsService.test.ts` — 9 teste pentru `AnalyticsService`
+  - `formatters.test.ts` — 14 teste pentru toate utilitarele din `formatters.ts`
+- **`package.json` v5** — `main` → `dist/index.js`, `types` → `dist/index.d.ts`, `test` script actualizat la `jest.config.ts`, devDeps `@types` noi
+
+### 🔧 Changed — v5
+- `package.json`: versiune `4.0.0` → `5.0.0`
+- `types/index.ts`: complet rescris cu 12 noi tipuri, câmpuri opționale adăugate la `GeneratedPrompt`, `CLIOptions`, `BatchOptions`, `PromptMetadata`, `APIResponse`, `PaginatedResponse`
+- `jest.config.ts` test pattern acum include `tests/unit/**/*.test.ts`
+- `prepublishOnly` script include acum și `build` step
+
+---
+
+## [4.0.0] — 2026-04-15
+
+### 🚀 Added — v4
+- **TypeScript full migration** — toate serviciile rescrise în `.ts`
+- **`src/services/promptValidator.ts`** — validare cu reguli, sanitize, warnings
+- **`src/services/cacheService.ts`** — `CacheService<T>` generic cu TTL, stats, purge
+- **`src/services/exportService.ts`** — export JSON / CSV / TXT / Markdown
+- **`src/services/analyticsService.ts`** — tracking usage complet
+- **`src/services/pollinationsService.ts`** — integrare Pollinations.ai (imagine + text + enhance)
+- **`src/services/index.ts`** — barrel export
+- **`src/validators/promptValidator.ts`** — re-export backward-compat
+- **`src/utils/logger.ts`** — logger colorat chalk, silent în test
+- **`src/utils/idGenerator.ts`** — `generateId`, `generateShortId`
+- **`src/utils/formatters.ts`** — 5 funcții de formatare
+- **`src/generators/promptGenerator.ts`** — generator cu 4 calități, 7 categorii, negative prompts
+- **`jest.config.ts`** — config TypeScript ts-jest cu coverage 70%
+- **`.github/workflows/ci.yml`** — CI pe Node 20 + 22, lint/type-check/test/build/codecov
+
+---
+
+## [3.0.0] — 2026-04-10
 
 ### Added
-- Advanced CLI with 600+ lines, batch processing, analytics
 - Discord bot integration
-- React web interface
-- Pollinations.ai integration
-- Docker support
+- ComfyUI service
+- Web interface (Vite + React)
 - Swagger API documentation
-- GitHub Actions CI/CD
+- Docker & docker-compose support
 
-## [2.0.0] - 2025-06-01
+---
+
+## [2.0.0] — 2026-03-20
 
 ### Added
 - Batch generation
-- Export formats (JSON, CSV, TXT)
-- Analytics dashboard
-- Rate limiting
+- Export functionality (JSON, CSV, TXT)
+- Analytics basic tracking
+- CLI improvements
 
-## [1.0.0] - 2025-01-01
+---
+
+## [1.0.0] — 2026-02-01
 
 ### Added
 - Initial release
-- Basic prompt generation
-- CLI interface
-- Category system
+- Basic prompt generation CLI
+- Pollinations.ai integration
+- 7 categories, 6 art styles

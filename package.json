@@ -1,14 +1,16 @@
 {
   "name": "perchance-ai-prompt-library",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "🎨 Ultimate professional AI prompt library and generator with advanced CLI, TypeScript, batch processing, analytics, Discord integration, web interface, and enterprise-grade features - 2026 Edition",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "perchance-prompts": "bin/cli.js",
     "pai": "bin/cli.js"
   },
   "files": [
     "bin/cli.js",
+    "dist/**/*",
     "src/**/*",
     "README.md",
     "CHANGELOG.md",
@@ -26,9 +28,9 @@
     "build:bot": "tsc -p discord-bot/tsconfig.json",
     "cli:dev": "ts-node bin/cli.ts",
     "bot:dev": "ts-node discord-bot/src/index.ts",
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
-    "test:unit": "jest tests/unit --coverage",
+    "test": "jest --config jest.config.ts --coverage",
+    "test:watch": "jest --config jest.config.ts --watch",
+    "test:unit": "jest --config jest.config.ts tests/unit --coverage",
     "test:e2e": "echo 'E2E tests not configured'",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
@@ -43,8 +45,8 @@
     "docker:prod": "docker-compose --profile production up -d",
     "monitor": "node scripts/health-check.js",
     "health-check": "node scripts/health-check.js",
-    "prepublishOnly": "npm run clean && npm run validate",
-    "postinstall": "echo '✅ Perchance AI Prompt Library v4.0.0 installed successfully!'"
+    "prepublishOnly": "npm run clean && npm run build && npm run validate",
+    "postinstall": "echo '✅ Perchance AI Prompt Library v5.0.0 installed successfully!'"
   },
   "keywords": [
     "ai",
@@ -110,10 +112,15 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^24.6.2",
     "@types/react": "^18.3.12",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
     "concurrently": "^9.2.1",
