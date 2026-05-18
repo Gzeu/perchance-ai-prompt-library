@@ -10,10 +10,11 @@
     "examples": ["magical girl", "mecha pilot"],
     "popularity": 95,
     "recommended": true,
-    "negativePrompts": ["3d render", "photorealistic"],
+    "negativePrompts": ["3d render", "photorealistic", "western cartoon"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{character pose}}, {{hair style}} hair, {{eye color}} eyes, wearing {{clothing}}, anime style, vibrant colors, detailed background, {{artists}} art style",
-    "quality_modifiers": ["highly detailed", "sharp focus", "studio lighting", "4k", "8k", "intricate details"]
+    "formula": "{{subject}}, {{character pose}}, {{hair style}} hair, {{eye color}} eyes, wearing {{clothing}}, anime key visual, vibrant cel-shading, studio quality",
+    "quality_modifiers": ["highly detailed", "sharp focus", "studio lighting", "4k", "8k", "intricate details"],
+    "perchance_preset": "anime"
   },
   {
     "key": "photorealistic",
@@ -26,10 +27,28 @@
     "examples": ["portrait", "landscape", "street photography"],
     "popularity": 90,
     "recommended": true,
-    "negativePrompts": ["cartoon", "anime", "painting"],
+    "negativePrompts": ["cartoon", "anime", "painting", "distorted"],
     "variableCount": 3,
-    "formula": "{{subject}}, {{lighting setup}} lighting, {{camera angle}} view, {{composition}}, photorealistic, {{artists}} style, professional photography, ultra-detailed",
-    "quality_modifiers": ["high resolution", "sharp focus", "professional color grading", "8k", "ultra-detailed", "film grain"]
+    "formula": "{{subject}}, {{lighting setup}} lighting, {{camera angle}} view, {{composition}}, photorealistic, 8K, RAW photo",
+    "quality_modifiers": ["high resolution", "sharp focus", "professional color grading", "8k", "ultra-detailed", "film grain"],
+    "perchance_preset": "photorealistic"
+  },
+  {
+    "key": "cinematic",
+    "name": "Cinematic Film",
+    "description": "Dramatic cinematic photography with anamorphic lens aesthetics and film grain",
+    "category": "Photography",
+    "tags": ["film", "dramatic", "cinematic", "anamorphic", "grain"],
+    "variables": ["scene", "lighting", "color grade", "mood"],
+    "artists": ["Roger Deakins", "Emmanuel Lubezki"],
+    "examples": ["epic establishing shot", "noir interior", "golden hour chase"],
+    "popularity": 93,
+    "recommended": true,
+    "negativePrompts": ["flat lighting", "overexposed", "blurry", "amateur"],
+    "variableCount": 4,
+    "formula": "{{subject}}, cinematic photograph, {{lighting}} lighting, {{color grade}} color grade, {{mood}} mood, anamorphic lens, film grain, shallow DOF",
+    "quality_modifiers": ["cinematic lighting", "shallow DOF", "film grain", "anamorphic", "8K"],
+    "perchance_preset": "cinematic"
   },
   {
     "key": "cyberpunk",
@@ -42,10 +61,11 @@
     "examples": ["neon cityscape", "cyborg character", "futuristic street"],
     "popularity": 88,
     "recommended": true,
-    "negativePrompts": ["medieval", "historical", "pastel"],
+    "negativePrompts": ["medieval", "historical", "pastel", "bright"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{setting}}, {{cyberware}}, {{lighting}} lighting, {{atmosphere}}, cyberpunk style, neon lights, futuristic, {{artists}} aesthetic",
-    "quality_modifiers": ["highly detailed", "cinematic lighting", "8k", "sharp focus", "volumetric lighting"]
+    "formula": "{{subject}}, {{setting}}, {{cyberware}}, {{lighting}} lighting, {{atmosphere}}, cyberpunk aesthetic, neon lights, rain-slicked streets, Blade Runner mood",
+    "quality_modifiers": ["highly detailed", "cinematic lighting", "8k", "volumetric lighting"],
+    "perchance_preset": "cyberpunk"
   },
   {
     "key": "watercolor",
@@ -58,10 +78,11 @@
     "examples": ["landscape", "portrait", "still life"],
     "popularity": 85,
     "recommended": true,
-    "negativePrompts": ["digital", "vector", "sharp edges"],
+    "negativePrompts": ["digital", "vector", "sharp edges", "photograph"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{color palette}} colors, {{brush style}} brushwork, {{paper texture}} paper, {{wetness}} watercolor effect, {{artists}} style",
-    "quality_modifiers": ["high resolution", "detailed", "textured paper", "artstation"]
+    "formula": "{{subject}}, {{color palette}} colors, {{brush style}} brushwork, on {{paper texture}} paper, watercolor on paper, wet-on-wet technique, luminous washes",
+    "quality_modifiers": ["high resolution", "detailed", "textured paper", "artstation"],
+    "perchance_preset": "watercolor"
   },
   {
     "key": "steampunk",
@@ -74,10 +95,11 @@
     "examples": ["airship", "clockwork robot", "steam-powered device"],
     "popularity": 82,
     "recommended": true,
-    "negativePrompts": ["modern", "digital", "minimalist"],
+    "negativePrompts": ["modern", "digital", "minimalist", "flat"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{invention}}, made of {{materials}}, {{era}} era, {{purpose}}, steampunk style, brass and copper details, {{artists}} art",
-    "quality_modifiers": ["intricate details", "warm lighting", "highly detailed", "8k"]
+    "formula": "{{subject}}, {{invention}}, made of {{materials}}, {{era}} era, steampunk aesthetic, brass and copper, Victorian-era, intricate clockwork, warm lighting",
+    "quality_modifiers": ["intricate details", "warm lighting", "highly detailed", "8k"],
+    "perchance_preset": "steampunk"
   },
   {
     "key": "pixel_art",
@@ -90,10 +112,11 @@
     "examples": ["character sprite", "game environment", "isometric scene"],
     "popularity": 87,
     "recommended": true,
-    "negativePrompts": ["high resolution", "vector", "smooth gradients"],
+    "negativePrompts": ["high resolution", "vector", "smooth gradients", "photograph"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{resolution}} resolution, {{color depth}} colors, {{dithering}} dithering, {{theme}} theme, pixel art, {{artists}} style",
-    "quality_modifiers": ["clean edges", "limited palette", "crisp pixels", "retro game style"]
+    "formula": "{{subject}}, {{resolution}} resolution, {{color depth}} colors, pixel art, limited color palette, crisp pixels, retro game style",
+    "quality_modifiers": ["clean edges", "limited palette", "crisp pixels", "retro game style"],
+    "perchance_preset": "pixel-art"
   },
   {
     "key": "surrealism",
@@ -106,10 +129,11 @@
     "examples": ["melting clock", "floating island", "impossible architecture"],
     "popularity": 84,
     "recommended": true,
-    "negativePrompts": ["realistic", "ordinary", "mundane"],
+    "negativePrompts": ["realistic", "ordinary", "mundane", "photograph"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{concept}}, {{mood}} mood, {{scale}} scale, featuring {{surreal elements}}, surrealism, {{artists}} style",
-    "quality_modifiers": ["highly detailed", "artstation", "trending on artstation", "8k"]
+    "formula": "{{subject}}, {{concept}}, {{mood}} mood, featuring {{surreal elements}}, surrealist art, dreamlike atmosphere, Salvador Dalí influence",
+    "quality_modifiers": ["highly detailed", "artstation", "trending on artstation", "8k"],
+    "perchance_preset": "surrealism"
   },
   {
     "key": "oil_painting",
@@ -122,10 +146,11 @@
     "examples": ["portrait", "landscape", "still life"],
     "popularity": 89,
     "recommended": true,
-    "negativePrompts": ["digital", "vector", "flat colors"],
+    "negativePrompts": ["digital", "vector", "flat colors", "photograph"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{brushwork}} brushwork, {{color palette}} palette, {{lighting}} lighting, {{composition}}, oil on canvas, {{artists}} style",
-    "quality_modifiers": ["intricate details", "textured brushstrokes", "high resolution", "artstation"]
+    "formula": "{{subject}}, {{brushwork}} brushwork, {{color palette}} palette, {{lighting}} lighting, oil on canvas, impasto texture, Rembrandt lighting",
+    "quality_modifiers": ["intricate details", "textured brushstrokes", "high resolution", "artstation"],
+    "perchance_preset": "oil-painting"
   },
   {
     "key": "low_poly",
@@ -138,10 +163,11 @@
     "examples": ["animal", "landscape", "character"],
     "popularity": 83,
     "recommended": true,
-    "negativePrompts": ["high poly", "realistic", "detailed textures"],
+    "negativePrompts": ["high poly", "realistic", "photograph", "painting"],
     "variableCount": 4,
-    "formula": "{{subject}}, low poly style, {{shape complexity}} complexity, {{color scheme}} colors, {{lighting}} lighting, {{environment}} environment",
-    "quality_modifiers": ["clean geometry", "flat shading", "vibrant colors", "3D render"]
+    "formula": "{{subject}}, low poly 3D, {{shape complexity}} complexity, {{color scheme}} colors, flat shading, geometric shapes, clean render",
+    "quality_modifiers": ["clean geometry", "flat shading", "vibrant colors", "3D render"],
+    "perchance_preset": "low-poly"
   },
   {
     "key": "art_nouveau",
@@ -154,10 +180,11 @@
     "examples": ["female portrait", "poster design", "book illustration"],
     "popularity": 81,
     "recommended": true,
-    "negativePrompts": ["minimalist", "geometric", "modern"],
+    "negativePrompts": ["minimalist", "geometric", "modern", "flat"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{motive}}, {{border style}} border, {{color scheme}} colors, {{flourishes}} flourishes, art nouveau style, {{artists}} influence",
-    "quality_modifiers": ["intricate details", "elegant composition", "high resolution", "gold accents"]
+    "formula": "{{subject}}, {{motive}}, {{border style}} border, art nouveau style, Alphonse Mucha, flowing organic lines, decorative border, gold accents",
+    "quality_modifiers": ["intricate details", "elegant composition", "high resolution", "gold accents"],
+    "perchance_preset": "art-nouveau"
   },
   {
     "key": "chalk_pastel",
@@ -170,10 +197,11 @@
     "examples": ["portrait", "landscape", "still life"],
     "popularity": 80,
     "recommended": true,
-    "negativePrompts": ["digital", "sharp edges", "flat colors"],
+    "negativePrompts": ["digital", "sharp edges", "flat colors", "photograph"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{color blending}} blending, on {{paper texture}} paper, {{subject matter}}, {{lighting}} lighting, chalk pastel artwork, {{artists}} style",
-    "quality_modifiers": ["visible texture", "soft edges", "high resolution", "artistic"]
+    "formula": "{{subject}}, {{color blending}} blending, on {{paper texture}} paper, chalk pastel artwork, soft blending, Edgar Degas style",
+    "quality_modifiers": ["visible texture", "soft edges", "high resolution", "artistic"],
+    "perchance_preset": "chalk-pastel"
   },
   {
     "key": "concept_art",
@@ -186,9 +214,95 @@
     "examples": ["character design", "environment concept", "creature design"],
     "popularity": 92,
     "recommended": true,
-    "negativePrompts": ["finished illustration", "photorealistic", "low detail"],
+    "negativePrompts": ["photorealistic", "low detail", "photograph"],
     "variableCount": 4,
-    "formula": "{{subject}}, {{design style}} design, {{mood}} mood, {{perspective}} perspective, {{details}}, concept art, {{artists}} style",
-    "quality_modifiers": ["highly detailed", "production design", "trending on artstation", "8k"]
+    "formula": "{{subject}}, {{design style}} design, {{mood}} mood, professional concept art, production quality, Artstation trending, detailed linework",
+    "quality_modifiers": ["highly detailed", "production design", "trending on artstation", "8k"],
+    "perchance_preset": "concept-art"
+  },
+  {
+    "key": "ethereal",
+    "name": "Ethereal Glow",
+    "description": "Soft luminous otherworldly atmosphere with dreamy haze — a Perchance favourite",
+    "category": "Digital Art",
+    "tags": ["glowing", "soft", "luminous", "otherworldly", "dreamy"],
+    "variables": ["light source", "color cast", "subject", "atmosphere"],
+    "artists": ["Loish", "Sakimichan"],
+    "examples": ["glowing fairy", "ethereal goddess", "spirit in a misty forest"],
+    "popularity": 86,
+    "recommended": true,
+    "negativePrompts": ["harsh lighting", "dark", "gritty", "concrete"],
+    "variableCount": 4,
+    "formula": "{{subject}}, {{light source}} light, {{color cast}} color cast, {{atmosphere}}, ethereal glowing atmosphere, soft luminosity, dream-like haze, otherworldly light",
+    "quality_modifiers": ["soft glow", "luminous", "dreamy", "highly detailed", "artstation"],
+    "perchance_preset": "ethereal"
+  },
+  {
+    "key": "dark_fantasy",
+    "name": "Dark Fantasy",
+    "description": "Brooding Gothic atmosphere with chiaroscuro lighting — Perchance favourite",
+    "category": "Fantasy",
+    "tags": ["gothic", "dark", "brooding", "chiaroscuro", "horror"],
+    "variables": ["setting", "creature", "atmosphere", "lighting"],
+    "artists": ["Zdzisław Beksiński", "Wayne Barlowe"],
+    "examples": ["dark knight in ruins", "eldritch horror", "necromancer's lair"],
+    "popularity": 87,
+    "recommended": true,
+    "negativePrompts": ["bright", "cheerful", "pastel", "modern"],
+    "variableCount": 4,
+    "formula": "{{subject}}, {{setting}}, {{creature}}, {{atmosphere}}, dark fantasy, brooding atmosphere, chiaroscuro, Gothic architecture, somber palette",
+    "quality_modifiers": ["dramatic lighting", "highly detailed", "8k", "dark atmosphere"],
+    "perchance_preset": "dark-fantasy"
+  },
+  {
+    "key": "flat_design",
+    "name": "Flat Design Illustration",
+    "description": "Clean vector-style illustration with bold color blocks and minimal shadows",
+    "category": "Illustration",
+    "tags": ["flat", "vector", "minimal", "bold", "clean"],
+    "variables": ["color palette", "subject", "icon style", "background"],
+    "artists": ["Malika Favre", "Christoph Niemann"],
+    "examples": ["app icon", "infographic character", "editorial illustration"],
+    "popularity": 78,
+    "recommended": true,
+    "negativePrompts": ["photograph", "3D", "texture", "gradient", "realistic"],
+    "variableCount": 4,
+    "formula": "{{subject}}, flat design illustration, {{color palette}} color palette, clean vector, minimal shadows, bold color blocks",
+    "quality_modifiers": ["clean", "minimal", "flat", "bold colors"],
+    "perchance_preset": "flat-design"
+  },
+  {
+    "key": "line_art",
+    "name": "Line Art",
+    "description": "Precise ink illustration with clean linework on white background",
+    "category": "Illustration",
+    "tags": ["ink", "linework", "minimal", "black and white", "clean"],
+    "variables": ["line weight", "detail level", "subject", "composition"],
+    "artists": ["Moebius", "Kim Jung Gi"],
+    "examples": ["technical illustration", "botanical drawing", "architectural sketch"],
+    "popularity": 79,
+    "recommended": true,
+    "negativePrompts": ["color", "photograph", "3D", "watercolor", "painting"],
+    "variableCount": 4,
+    "formula": "{{subject}}, {{line weight}} line weight, {{detail level}} detail, clean line art, ink illustration, precise linework, white background",
+    "quality_modifiers": ["precise linework", "clean edges", "high resolution", "detailed"],
+    "perchance_preset": "line-art"
+  },
+  {
+    "key": "portrait",
+    "name": "Studio Portrait",
+    "description": "Professional studio portrait with soft box lighting and sharp focus on eyes",
+    "category": "Photography",
+    "tags": ["portrait", "studio", "bokeh", "professional", "face"],
+    "variables": ["lighting setup", "background", "focal length", "mood"],
+    "artists": ["Annie Leibovitz", "Platon"],
+    "examples": ["executive headshot", "editorial portrait", "character study"],
+    "popularity": 91,
+    "recommended": true,
+    "negativePrompts": ["ugly", "deformed", "bad proportions", "extra limbs"],
+    "variableCount": 4,
+    "formula": "{{subject}}, studio portrait, {{lighting setup}} lighting, {{background}} background, {{mood}} mood, soft box lighting, bokeh background, sharp eyes, 85mm lens",
+    "quality_modifiers": ["sharp focus", "professional lighting", "8K", "ultra-detailed"],
+    "perchance_preset": "portrait"
   }
 ]
