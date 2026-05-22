@@ -3,16 +3,13 @@ const { Router } = require('express');
 
 const router = Router();
 
-// Lazy-load Groq so the server starts even without GROQ_API_KEY
-let groqClient = null;
+// Groq client — no module-level singleton to avoid stale null on hot-reload
 function getGroq() {
-  if (groqClient) return groqClient;
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return null;
   try {
     const Groq = require('groq-sdk');
-    groqClient = new Groq({ apiKey });
-    return groqClient;
+    return new Groq({ apiKey });
   } catch {
     return null;
   }
@@ -29,6 +26,7 @@ PERCHANCE SYNTAX RULES:
 6. Weights: add number after entry space ("rare item  1", "common item  5").
 7. Newlines in output: \\n. HTML formatting allowed.
 8. Comments start with //
+9. Use \\s when you need a leading or trailing space in generated text.
 
 OUTPUT ONLY raw Perchance code. No markdown fences, no explanations. Always start with the output list.`;
 
@@ -48,6 +46,7 @@ PERCHANCE SYNTAX RULES:
 - Reference lists with [listName].
 - Inline choices: {a|b|c}. Numbers: {1-10}.
 - Comments start with //
+- Use \\s when you need a leading or trailing space in generated text.
 
 OUTPUT ONLY raw Perchance code. No markdown fences, no explanations.`;
 
@@ -80,6 +79,9 @@ function validateCode(code) {
   }
 
   if (!hasOutput) errors.push('Missing required "output" list');
+  if (lists[0] && lists[0] !== 'output') {
+    warnings.push('"output" should be the first list — Perchance shows the first list by default');
+  }
   if (lists.length < 2) warnings.push('Generator has very few lists — add more for variety');
 
   const refs = code.match(/\[([a-zA-Z][a-zA-Z0-9_-]*)\]/g) || [];
@@ -108,6 +110,15 @@ async function callGroq(messages, maxTokens = 2048, model = 'llama-3.3-70b-versa
 
 function cleanCode(raw) {
   return raw.replace(/^```[a-z]*\n?/gm, '').replace(/^```$/gm, '').trim();
+}
+
+// Normalize Groq errors to a user-friendly HTTP response
+function handleGroqError(e, res) {
+  const status = e?.status || e?.error?.status || e?.response?.status || 500;
+  if (status === 429) {
+    return res.status(429).json({ success: false, error: 'Rate limit reached. Please wait a moment and try again.' });
+  }
+  return res.status(500).json({ success: false, error: e.message || 'Unexpected error' });
 }
 
 // GET /api/perchance/templates
@@ -161,11 +172,11 @@ router.post('/generate', async (req, res) => {
     const code = cleanCode(raw);
     res.json({ success: true, data: { code, model: 'llama-3.3-70b-versatile', generationTime: Date.now() - t0, validation: validateCode(code) } });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    return handleGroqError(e, res);
   }
 });
 
-// POST /api/perchance/from-examples  ← NEW
+// POST /api/perchance/from-examples
 router.post('/from-examples', async (req, res) => {
   const { examples, hints } = req.body;
 
@@ -195,8 +206,12 @@ router.post('/from-examples', async (req, res) => {
     const code = cleanCode(raw);
     const validation = validateCode(code);
 
-    // Count how many lists were generated
-    const listCount = (code.match(/^[a-zA-Z][a-zA-Z0-9_-]*\s*$/gm) || []).length;
+    // Count top-level lists consistently with validateCode()
+    const listCount = code.split('\n').filter(line => {
+      if (!line.trim() || line.trim().startsWith('//')) return false;
+      return !line.startsWith(' ') && !line.startsWith('\t') &&
+        /^[a-zA-Z][a-zA-Z0-9_-]*\s*$/.test(line.trim());
+    }).length;
 
     res.json({
       success: true,
@@ -212,7 +227,7 @@ router.post('/from-examples', async (req, res) => {
       }
     });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    return handleGroqError(e, res);
   }
 });
 
@@ -230,7 +245,7 @@ router.post('/refine', async (req, res) => {
     const refined = cleanCode(raw);
     res.json({ success: true, data: { code: refined, model: 'llama-3.3-70b-versatile', generationTime: Date.now() - t0, validation: validateCode(refined) } });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    return handleGroqError(e, res);
   }
 });
 
@@ -248,7 +263,7 @@ router.post('/ideas', async (req, res) => {
     const ideas = match ? JSON.parse(match[0]) : [];
     res.json({ success: true, data: ideas });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    return handleGroqError(e, res);
   }
 });
 
