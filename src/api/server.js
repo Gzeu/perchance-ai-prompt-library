@@ -13,6 +13,7 @@ const healthRoutes = require('./routes/health');
 const promptsRoutes = require('./routes/prompts');
 const stylesRoutes = require('./routes/styles');
 const imagesRoutes = require('./routes/images');
+const perchanceRoutes = require('./routes/perchance');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/prompts', promptsRoutes);
 app.use('/api/styles', stylesRoutes);
 app.use('/api/images', imagesRoutes);
+app.use('/api/perchance', perchanceRoutes);
 
 // Serve API documentation
 app.use('/api-docs', 
@@ -53,9 +55,9 @@ app.get('/', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
-    version: '2.0.0',
+    version: '5.0.0',
     timestamp: new Date().toISOString(),
-    features: ['api', 'batch', 'styles']
+    features: ['api', 'batch', 'styles', 'perchance-generators', 'ai-groq']
   });
 });
 
@@ -91,26 +93,14 @@ app.get('/api/styles', (req, res) => {
   }
 });
 
-// Style mixing (NEW v2.0 feature)
+// Style mixing
 app.post('/api/prompts/mix', (req, res) => {
   try {
     const { styles, subject } = req.body;
-    
     if (!Array.isArray(styles) || styles.length < 2) {
-      return res.status(400).json({
-        success: false, 
-        error: 'At least 2 styles required for mixing'
-      });
+      return res.status(400).json({ success: false, error: 'At least 2 styles required for mixing' });
     }
-    
-    // Simple mixing: use first style with random variables from others
-    const primaryStyle = styles[0];
-    const result = library.generate({ 
-      style: primaryStyle, 
-      subject,
-      randomizeVariables: true 
-    });
-    
+    const result = library.generate({ style: styles[0], subject, randomizeVariables: true });
     result.mixedStyles = styles;
     res.json({ success: true, data: result });
   } catch (error) {
@@ -118,26 +108,37 @@ app.post('/api/prompts/mix', (req, res) => {
   }
 });
 
-// Root endpoint
+// Root endpoint info
 app.get('/api', (req, res) => {
   res.json({
     name: 'Perchance AI Prompt Library API',
-    version: '2.0.0',
+    version: '5.0.0',
     endpoints: {
-      health: '/api/health',
+      health: 'GET /api/health',
       generate: 'POST /api/prompts/generate',
       batch: 'POST /api/prompts/batch',
       mix: 'POST /api/prompts/mix',
-      styles: '/api/styles'
+      styles: 'GET /api/styles',
+      perchance: {
+        templates: 'GET /api/perchance/templates',
+        categories: 'GET /api/perchance/categories',
+        generate: 'POST /api/perchance/generate',
+        refine: 'POST /api/perchance/refine',
+        ideas: 'POST /api/perchance/ideas',
+        validate: 'POST /api/perchance/validate'
+      }
     }
   });
 });
 
 app.listen(PORT, () => {
-  console.log('🚀 Perchance AI Prompt Library v2.0');
+  console.log('\n🚀 Perchance AI Prompt Library v5.0');
   console.log(`📡 API Server: http://localhost:${PORT}`);
-  console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
-  console.log('✨ Features: Generate, Batch, Style Mixing');
+  console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
+  console.log(`⚡ Perchance AI: http://localhost:${PORT}/api/perchance/generate`);
+  console.log(`📚 Templates: http://localhost:${PORT}/api/perchance/templates`);
+  const hasGroq = !!process.env.GROQ_API_KEY;
+  console.log(`🤖 Groq AI: ${hasGroq ? '✓ Ready' : '✗ Set GROQ_API_KEY to enable'}`);
 });
 
 module.exports = app;
