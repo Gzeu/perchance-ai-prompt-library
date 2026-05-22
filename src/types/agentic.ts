@@ -1,0 +1,27 @@
+export interface AgentSkill {
+  name: string;
+  score: number;
+}
+
+export interface Agent {
+  id: string;
+  name: string;
+  skills: AgentSkill[];
+  expertise: string[];
+}
+
+export interface GeneratedVariant {
+  id: string;
+  content: string;
+  score: number;
+  agent: string;
+  skillsUsed: AgentSkill[];
+}
+
+export interface BrainstormSession {
+  prompt: string;
+  bestVariant: GeneratedVariant;
+  allVariants: GeneratedVariant[];
+  agentsUsed: string[];
+  finalScore: number;
+}
