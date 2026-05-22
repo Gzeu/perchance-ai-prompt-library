@@ -32,12 +32,30 @@ PERCHANCE SYNTAX RULES:
 
 OUTPUT ONLY raw Perchance code. No markdown fences, no explanations. Always start with the output list.`;
 
+const REVERSE_PROMPT = `You are an expert in Perchance.org generator syntax. Your task is to REVERSE-ENGINEER a Perchance generator by analyzing sample outputs provided by the user.
+
+STEPS:
+1. Study the sample outputs carefully — identify patterns, recurring structures, vocabulary, and style.
+2. Decompose each output into its constituent parts (adjectives, nouns, verbs, qualifiers, formats, etc.).
+3. Build named lists that capture the vocabulary and patterns you found.
+4. Wire them together with an output list that reproduces the format of the examples.
+5. Add MORE items to each list beyond what the examples show — extrapolate creatively in the same style.
+6. Ensure every list has at least 10-15 items.
+
+PERCHANCE SYNTAX RULES:
+- List name on its own line (no indent), entries indented 2 spaces.
+- First list must be "output".
+- Reference lists with [listName].
+- Inline choices: {a|b|c}. Numbers: {1-10}.
+- Comments start with //
+
+OUTPUT ONLY raw Perchance code. No markdown fences, no explanations.`;
+
 // Load static template library
 let _templates = null;
 function getTemplates() {
   if (_templates) return _templates;
   try {
-    // Try compiled TS first, fallback to inline
     _templates = require('../../data/perchance-templates/index.js').templateLibrary;
   } catch {
     _templates = [];
@@ -75,11 +93,11 @@ function validateCode(code) {
   return { valid: errors.length === 0, errors, warnings };
 }
 
-async function callGroq(messages, maxTokens = 2048) {
+async function callGroq(messages, maxTokens = 2048, model = 'llama-3.3-70b-versatile') {
   const groq = getGroq();
   if (!groq) throw new Error('GROQ_API_KEY not configured');
   const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model,
     messages,
     temperature: 0.8,
     max_tokens: maxTokens,
@@ -147,6 +165,57 @@ router.post('/generate', async (req, res) => {
   }
 });
 
+// POST /api/perchance/from-examples  ← NEW
+router.post('/from-examples', async (req, res) => {
+  const { examples, hints } = req.body;
+
+  if (!examples || !Array.isArray(examples) || examples.length < 2) {
+    return res.status(400).json({ success: false, error: 'Provide at least 2 example outputs as an array' });
+  }
+  if (examples.length > 30) {
+    return res.status(400).json({ success: false, error: 'Maximum 30 examples allowed' });
+  }
+
+  const examplesBlock = examples
+    .map((ex, i) => `${i + 1}. ${String(ex).trim()}`)
+    .join('\n');
+
+  const hintsLine = hints && hints.trim()
+    ? `\n\nAdditional hints from the user: ${hints.trim()}`
+    : '';
+
+  const userMsg = `Here are ${examples.length} example outputs I want to generate randomly:\n\n${examplesBlock}${hintsLine}\n\nAnalyze the patterns and reverse-engineer a complete Perchance generator that can reproduce outputs in this style. Expand the lists with many more items in the same style. Output only the Perchance code:`;
+
+  const t0 = Date.now();
+  try {
+    const raw = await callGroq(
+      [{ role: 'system', content: REVERSE_PROMPT }, { role: 'user', content: userMsg }],
+      3000
+    );
+    const code = cleanCode(raw);
+    const validation = validateCode(code);
+
+    // Count how many lists were generated
+    const listCount = (code.match(/^[a-zA-Z][a-zA-Z0-9_-]*\s*$/gm) || []).length;
+
+    res.json({
+      success: true,
+      data: {
+        code,
+        model: 'llama-3.3-70b-versatile',
+        generationTime: Date.now() - t0,
+        validation,
+        meta: {
+          examplesAnalyzed: examples.length,
+          listsGenerated: listCount
+        }
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 // POST /api/perchance/refine
 router.post('/refine', async (req, res) => {
   const { code, request } = req.body;
@@ -174,7 +243,7 @@ router.post('/ideas', async (req, res) => {
     const raw = await callGroq([
       { role: 'system', content: 'You generate creative ideas for Perchance.org generators. Output ONLY a JSON array of strings, no explanation.' },
       { role: 'user', content: `Generate ${count} creative Perchance generator ideas for category: "${category}". JSON array of short titles.` }
-    ], 500);
+    ], 500, 'llama-3.1-8b-instant');
     const match = raw.match(/\[.*\]/s);
     const ideas = match ? JSON.parse(match[0]) : [];
     res.json({ success: true, data: ideas });
