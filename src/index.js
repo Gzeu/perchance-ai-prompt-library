@@ -1,51 +1,38 @@
-const PromptGenerator = require('./generators/PromptGenerator');
-const StyleManager = require('./utils/StyleManager');
-const TemplateManager = require('./utils/TemplateManager');
+'use strict';
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const path = require('path');
 
-class PerchancePromptLibrary {
-  constructor(options = {}) {
-    this.generator = new PromptGenerator(options);
-    this.styleManager = new StyleManager();
-    this.templateManager = new TemplateManager();
-  }
+const app = express();
 
-  generate(config) {
-    return this.generator.generate(config);
-  }
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors());
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true }));
 
-  generateVariations(style, config, count = 3) {
-    return this.generator.generateVariations(style, config, count);
-  }
+// ─── Routes ───────────────────────────────────────────────────────────────────
+const perchanceRoutes = require('./api/routes/perchance.js');
+const packRoutes = require('./api/routes/pack.js');
 
-  listStyles() {
-    return this.styleManager.getAllStyles();
-  }
+app.use('/api/perchance', perchanceRoutes);
+app.use('/api/pack', packRoutes);
 
-  getStyleInfo(styleName) {
-    return this.styleManager.getStyleInfo(styleName);
-  }
+// Health check
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', version: '8.0.0', timestamp: new Date().toISOString() });
+});
 
-  saveTemplate(name, config) {
-    return this.templateManager.save(name, config);
-  }
+// Static web build
+const webBuild = path.join(__dirname, '..', 'web', 'dist');
+app.use(express.static(webBuild));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(webBuild, 'index.html'));
+});
 
-  loadTemplate(name) {
-    return this.templateManager.load(name);
-  }
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`[server] running on port ${PORT}`);
+});
 
-  listTemplates() {
-    return this.templateManager.list();
-  }
-
-  getStats() {
-    const generatorStats = this.generator.getStats();
-    return generatorStats;
-  }
-}
-
-module.exports = {
-  PerchancePromptLibrary,
-  PromptGenerator,
-  StyleManager,
-  TemplateManager
-};
+module.exports = app;
