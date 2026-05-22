@@ -12,6 +12,8 @@ import ApiExplorer from './pages/ApiExplorer';
 import HistoryPage from './pages/HistoryPage';
 import FavoritesPage from './pages/FavoritesPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import PerchanceStudio from './pages/PerchanceStudio';
+import PackBuilder from './pages/PackBuilder';
 
 const theme = createTheme({
   palette: {
@@ -24,19 +26,8 @@ const theme = createTheme({
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
   },
   components: {
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-          border: '1px solid rgba(255,255,255,0.06)',
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: { backgroundImage: 'none' },
-      },
-    },
+    MuiCard: { styleOverrides: { root: { backgroundImage: 'none', border: '1px solid rgba(255,255,255,0.06)' } } },
+    MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
   },
 });
 
@@ -57,6 +48,8 @@ function App() {
               <Route path="/favorites" element={<FavoritesPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/api" element={<ApiExplorer />} />
+              <Route path="/studio" element={<PerchanceStudio />} />
+              <Route path="/pack" element={<PackBuilder />} />
             </Routes>
           </Box>
         </Box>
