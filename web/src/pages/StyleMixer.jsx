@@ -1,70 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  Box,
-  Paper,
-  Chip,
-  Alert,
-  CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  OutlinedInput,
+  Grid, Card, CardContent, Typography, TextField, Button, Box, Paper, Chip,
+  Alert, CircularProgress, FormControl, InputLabel, Select, MenuItem,
+  OutlinedInput, IconButton, Tooltip,
 } from '@mui/material';
-import {
-  Palette,
-  PlayArrow,
-  ContentCopy,
-} from '@mui/icons-material';
+import { Palette, PlayArrow, ContentCopy, Star, StarBorder } from '@mui/icons-material';
 import { promptApi } from '../services/api';
+import { useHistory } from '../hooks/useHistory';
+import { useFavorites } from '../hooks/useFavorites';
 
 const StyleMixer = () => {
   const [allStyles, setAllStyles] = useState([]);
-  const [formData, setFormData] = useState({
-    styles: [],
-    subject: '',
-  });
+  const [formData, setFormData] = useState({ styles: [], subject: '' });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const { addToHistory } = useHistory();
+  const { addFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
-    const fetchStyles = async () => {
-      try {
-        const response = await promptApi.getStyles();
-        setAllStyles(response.data.data || []);
-      } catch (err) {
-        setError('Failed to load styles');
-      }
-    };
-    fetchStyles();
+    promptApi.getStyles().then(res => setAllStyles(res.data.data || [])).catch(() => setError('Failed to load styles'));
   }, []);
 
   const handleMix = async () => {
-    if (!formData.subject.trim()) {
-      setError('Subject is required');
-      return;
-    }
-
-    if (formData.styles.length < 2) {
-      setError('Please select at least 2 styles to mix');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
+    if (!formData.subject.trim()) { setError('Subject is required'); return; }
+    if (formData.styles.length < 2) { setError('Select at least 2 styles'); return; }
+    setLoading(true); setError(null);
     try {
       const response = await promptApi.mixStyles(formData);
-      setResult(response.data.data);
+      const r = response.data.data;
+      setResult(r);
+      addToHistory({ text: r.text, style: formData.styles.join('+'), subject: formData.subject, type: 'mixed' });
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to mix styles');
+      setError(err.message || 'Failed to mix styles');
     } finally {
       setLoading(false);
     }
@@ -72,177 +41,104 @@ const StyleMixer = () => {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-        🎨 Style Mixer
-      </Typography>
-
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>🎨 Style Mixer</Typography>
       <Grid container spacing={3}>
-        {/* Configuration */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={5}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Mix Configuration
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Combine multiple art styles to create unique prompts
-              </Typography>
-
+              <Typography variant="h6" gutterBottom>Mix Configuration</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>Combine multiple art styles to create unique prompts</Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <FormControl fullWidth>
                     <InputLabel>Select Styles to Mix</InputLabel>
-                    <Select
-                      multiple
-                      value={formData.styles}
+                    <Select multiple value={formData.styles}
                       onChange={(e) => setFormData({ ...formData, styles: e.target.value })}
                       input={<OutlinedInput label="Select Styles to Mix" />}
                       renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {selected.map((value) => {
-                            const style = allStyles.find(s => s.key === value);
-                            return (
-                              <Chip 
-                                key={value} 
-                                label={style?.name || value} 
-                                size="small" 
-                                color="primary"
-                              />
-                            );
+                          {selected.map(v => {
+                            const s = allStyles.find(x => x.key === v);
+                            return <Chip key={v} label={s?.name || v} size="small" color="primary" />;
                           })}
                         </Box>
-                      )}
-                    >
-                      {allStyles.map((style) => (
-                        <MenuItem key={style.key} value={style.key}>
-                          {style.name}
-                        </MenuItem>
-                      ))}
+                      )}>
+                      {allStyles.map(s => <MenuItem key={s.key} value={s.key}>{s.name}</MenuItem>)}
                     </Select>
                   </FormControl>
                 </Grid>
-
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Subject"
-                    value={formData.subject}
+                  <TextField fullWidth label="Subject" value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="e.g., dragon rider, cyberpunk detective"
-                    required
-                  />
+                    placeholder="e.g., dragon rider, cyberpunk detective" required />
                 </Grid>
-
                 <Grid item xs={12}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    onClick={handleMix}
+                  <Button fullWidth variant="contained" color="primary" onClick={handleMix}
                     disabled={loading || formData.styles.length < 2}
-                    startIcon={loading ? <CircularProgress size={20} /> : <Palette />}
-                    size="large"
-                  >
-                    {loading ? 'Mixing Styles...' : 'Mix Styles'}
+                    startIcon={loading ? <CircularProgress size={20} /> : <Palette />} size="large">
+                    {loading ? 'Mixing...' : 'Mix Styles'}
                   </Button>
                 </Grid>
               </Grid>
-
-              {error && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  {error}
-                </Alert>
-              )}
-
-              {/* Selected Styles Preview */}
+              {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
               {formData.styles.length > 0 && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Selected Styles:
-                  </Typography>
-                  <Grid container spacing={1}>
-                    {formData.styles.map(styleKey => {
-                      const style = allStyles.find(s => s.key === styleKey);
-                      return style ? (
-                        <Grid item xs={12} key={styleKey}>
-                          <Paper sx={{ p: 1 }}>
-                            <Typography variant="body2" fontWeight="bold">
-                              {style.name}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {style.description}
-                            </Typography>
-                          </Paper>
-                        </Grid>
-                      ) : null;
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2" gutterBottom>Selected ({formData.styles.length}):</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {formData.styles.map(k => {
+                      const s = allStyles.find(x => x.key === k);
+                      return s ? <Chip key={k} label={s.name} size="small" onDelete={() => setFormData({ ...formData, styles: formData.styles.filter(x => x !== k) })} /> : null;
                     })}
-                  </Grid>
+                  </Box>
                 </Box>
               )}
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Results */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={7}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6">
-                  Mixed Style Result
-                </Typography>
+                <Typography variant="h6">Mixed Result</Typography>
                 {result && (
-                  <Button
-                    size="small"
-                    onClick={() => copyToClipboard(result.text)}
-                    startIcon={<ContentCopy />}
-                  >
-                    Copy
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Tooltip title={copied ? 'Copied!' : 'Copy'}>
+                      <IconButton size="small" onClick={() => copyToClipboard(result.text)} color={copied ? 'success' : 'default'}><ContentCopy fontSize="small" /></IconButton>
+                    </Tooltip>
+                    <Tooltip title={isFavorite(result.text) ? 'In favorites' : 'Add to favorites'}>
+                      <IconButton size="small" onClick={() => addFavorite({ text: result.text, style: formData.styles.join('+'), subject: formData.subject })} color={isFavorite(result.text) ? 'warning' : 'default'}>
+                        {isFavorite(result.text) ? <Star fontSize="small" /> : <StarBorder fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 )}
               </Box>
-
               {result ? (
                 <Box>
-                  <Paper sx={{ p: 2, mb: 2, maxHeight: 400, overflow: 'auto' }}>
-                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                      {result.text}
-                    </Typography>
+                  <Paper sx={{ p: 2, mb: 2, maxHeight: 300, overflow: 'auto' }}>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.8rem' }}>{result.text}</Typography>
                   </Paper>
-
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-                    <Chip 
-                      label={`Mixed Styles: ${result.mixedStyles?.join(' + ') || 'Unknown'}`} 
-                      color="primary" 
-                      size="small" 
-                    />
-                    <Chip 
-                      label={`Subject: ${result.subject || 'Unknown'}`} 
-                      color="secondary" 
-                      size="small" 
-                    />
+                    <Chip label={`Mixed: ${result.mixedStyles?.join(' + ') || formData.styles.join(' + ')}`} color="primary" size="small" />
+                    <Chip label={`Subject: ${result.subject || formData.subject}`} color="secondary" size="small" />
                   </Box>
-
                   {result.negativePrompt && (
-                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,0,0,0.1)' }}>
-                      <Typography variant="subtitle2" gutterBottom color="error">
-                        🚫 Negative Prompt:
-                      </Typography>
-                      <Typography variant="body2">
-                        {result.negativePrompt}
-                      </Typography>
+                    <Paper sx={{ p: 2, bgcolor: 'rgba(255,0,0,0.08)' }}>
+                      <Typography variant="subtitle2" gutterBottom color="error">🚫 Negative Prompt:</Typography>
+                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{result.negativePrompt}</Typography>
                     </Paper>
                   )}
                 </Box>
               ) : (
-                <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.05)' }}>
-                  <Typography variant="body1" color="text.secondary">
-                    Select at least 2 styles and a subject, then click "Mix Styles" to see the result
-                  </Typography>
+                <Paper sx={{ p: 6, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.03)' }}>
+                  <Typography color="text.secondary">Select ≥2 styles and a subject, then click Mix Styles</Typography>
                 </Paper>
               )}
             </CardContent>

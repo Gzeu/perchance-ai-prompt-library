@@ -1,404 +1,232 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Button,
-  Box,
-  Paper,
-  Chip,
-  Alert,
-  CircularProgress,
-  IconButton,
-  Tooltip,
-  Tabs,
-  Tab,
-  AppBar,
-  useTheme,
-  Divider,
+  Grid, Card, CardContent, Typography, TextField, Select, MenuItem,
+  FormControl, InputLabel, Button, Box, Paper, Chip, Alert, CircularProgress,
+  IconButton, Tooltip, Tabs, Tab, AppBar, Divider, Autocomplete,
 } from '@mui/material';
 import {
-  ContentCopy,
-  Download,
-  PlayArrow,
-  Image as ImageIcon,
-  TextFields,
+  ContentCopy, Download, PlayArrow, Image as ImageIcon, TextFields, Star, StarBorder,
 } from '@mui/icons-material';
 import { promptApi } from '../services/api';
 import ImageGenerator from '../components/ImageGenerator';
+import { useHistory } from '../hooks/useHistory';
+import { useFavorites } from '../hooks/useFavorites';
 
 const PromptGenerator = () => {
   const [styles, setStyles] = useState([]);
-  const [formData, setFormData] = useState({
-    style: '', // Will be set when styles are loaded
-    subject: '',
-    age: '',
-    gender: '',
-    clothing: '',
-    setting: '',
-  });
+  const [artists, setArtists] = useState([]);
+  const [themes, setThemes] = useState([]);
+  const [formData, setFormData] = useState({ style: '', subject: '', age: '', gender: '', clothing: '', setting: '', artist: '', theme: '' });
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
-  const theme = useTheme();
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Reset error when user makes changes
-    if (error) {
-      setError(null);
-    }
-  };
-
-  // Get the current style name for display
-  const getCurrentStyleName = () => {
-    const style = styles.find(s => s.key === formData.style);
-    return style ? style.name : 'Unknown Style';
-  };
+  const [copied, setCopied] = useState(false);
+  const { addToHistory } = useHistory();
+  const { addFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
-    const fetchStyles = async () => {
+    const load = async () => {
       try {
-        const response = await promptApi.getStyles();
-        const loadedStyles = response.data.data || [];
+        const [stylesRes, artistsData, themesData] = await Promise.all([
+          promptApi.getStyles(),
+          promptApi.getArtists(),
+          promptApi.getThemes(),
+        ]);
+        const loadedStyles = stylesRes.data.data || [];
         setStyles(loadedStyles);
-        
-        // Set the first style as default if not already set
-        if (loadedStyles.length > 0 && !formData.style) {
-          setFormData(prev => ({
-            ...prev,
-            style: loadedStyles[0].key // Use the actual style key
-          }));
-        }
+        if (loadedStyles.length > 0) setFormData(prev => ({ ...prev, style: loadedStyles[0].key }));
+        const allArtists = Array.isArray(artistsData) ? artistsData : Object.values(artistsData).flat();
+        setArtists(allArtists.map(a => typeof a === 'string' ? a : a.name).filter(Boolean));
+        const allThemes = Array.isArray(themesData) ? themesData : Object.values(themesData).flat();
+        setThemes(allThemes.map(t => typeof t === 'string' ? t : t.name || t).filter(Boolean));
       } catch (err) {
-        console.error('Error loading styles:', err);
-        setError('Failed to load styles');
+        setError('Failed to load configuration');
       }
     };
-    fetchStyles();
-  }, [formData.style]); // Add formData.style to dependencies to prevent infinite loop
+    load();
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError(null);
+  };
 
   const generatePrompt = useCallback(async (data) => {
     setLoading(true);
     setError(null);
-
     try {
-      // Validate required fields
-      if (!data.subject) {
-        throw new Error('Subject is required');
-      }
-      if (!data.style) {
-        throw new Error('Please select a style');
-      }
-
-      // Ensure we're sending the correct data format expected by the API
+      if (!data.subject) throw new Error('Subject is required');
+      if (!data.style) throw new Error('Please select a style');
       const apiData = {
-        style: data.style, // This should be the style key (e.g., "0", "1")
+        style: data.style,
         subject: data.subject,
         ...(data.age && { age: data.age }),
         ...(data.gender && { gender: data.gender }),
         ...(data.clothing && { clothing: data.clothing }),
         ...(data.setting && { setting: data.setting }),
+        ...(data.artist && { artist: data.artist }),
+        ...(data.theme && { theme: data.theme }),
       };
-      
-      console.log('Sending API request with data:', apiData);
       const response = await promptApi.generate(apiData);
-      console.log('API response:', response.data);
-      
-      if (!response.data || !response.data.data) {
-        throw new Error('Invalid response from the server');
-      }
-      
-      // The backend returns { success: true, data: { text: '...', ... } }
-      setResult(response.data.data);
-      return response.data.data.text; // Return the generated prompt for image generation
+      if (!response.data?.data) throw new Error('Invalid response from server');
+      const r = response.data.data;
+      setResult(r);
+      addToHistory({ text: r.text, style: data.style, subject: data.subject, type: 'single', negativePrompt: r.negativePrompt });
+      return r.text;
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to generate prompt');
-      console.error('Error generating prompt:', err);
+      setError(err.message || 'Failed to generate prompt');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [addToHistory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await generatePrompt(formData);
-    } catch (err) {
-      // Error is already handled in generatePrompt
-    }
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
+    try { await generatePrompt(formData); } catch {}
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleFavorite = () => {
+    if (result) addFavorite({ text: result.text, style: formData.style, subject: formData.subject });
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-        🎯 AI Prompt & Image Generator
-      </Typography>
-
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>🎯 AI Prompt & Image Generator</Typography>
       <Grid container spacing={3}>
-        {/* Input Form */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={5}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Generate Configuration
-              </Typography>
+              <Typography variant="h6" gutterBottom>Configuration</Typography>
+              <Box component="form" onSubmit={handleSubmit}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth margin="normal">
+                      <InputLabel>Art Style</InputLabel>
+                      <Select name="style" value={formData.style} onChange={handleChange} label="Art Style" disabled={loading}>
+                        {styles.map(s => <MenuItem key={s.key} value={s.key}>{s.name}</MenuItem>)}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField fullWidth label="Subject *" value={formData.subject} onChange={handleChange} name="subject" placeholder="e.g., magical sorceress, space warrior" required />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField fullWidth label="Age" value={formData.age} onChange={handleChange} name="age" placeholder="e.g., 22" />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField fullWidth label="Gender" value={formData.gender} onChange={handleChange} name="gender" placeholder="e.g., woman" />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField fullWidth label="Clothing" value={formData.clothing} onChange={handleChange} name="clothing" placeholder="e.g., flowing robes" />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField fullWidth label="Setting" value={formData.setting} onChange={handleChange} name="setting" placeholder="e.g., magical forest" />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      freeSolo
+                      options={artists}
+                      value={formData.artist}
+                      onInputChange={(_, val) => setFormData(prev => ({ ...prev, artist: val }))}
+                      renderInput={(params) => <TextField {...params} label="Artist (optional)" placeholder="e.g., Greg Rutkowski" />}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Autocomplete
+                      freeSolo
+                      options={themes}
+                      value={formData.theme}
+                      onInputChange={(_, val) => setFormData(prev => ({ ...prev, theme: val }))}
+                      renderInput={(params) => <TextField {...params} label="Theme (optional)" placeholder="e.g., dark fantasy" />}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button type="submit" fullWidth variant="contained" color="primary" disabled={loading}
+                      startIcon={loading ? <CircularProgress size={20} /> : <PlayArrow />} size="large">
+                      {loading ? 'Generating...' : 'Generate Prompt'}
+                    </Button>
+                  </Grid>
+                </Grid>
+                {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
 
-              <Box sx={{ width: '100%', mt: 2 }}>
-                <AppBar position="static" color="default" elevation={1}>
-                  <Tabs
-                    value={activeTab}
-                    onChange={handleTabChange}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    variant="fullWidth"
-                    aria-label="generation type tabs"
-                  >
-                    <Tab label="Text Prompt" icon={<TextFields />} iconPosition="start" />
-                    <Tab label="Generate Image" icon={<ImageIcon />} iconPosition="start" />
-                  </Tabs>
-                </AppBar>
+        <Grid item xs={12} md={7}>
+          <Card sx={{ height: '100%' }}>
+            <CardContent>
+              <AppBar position="static" color="default" elevation={1}>
+                <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} indicatorColor="primary" textColor="primary" variant="fullWidth">
+                  <Tab label="Text Prompt" icon={<TextFields />} iconPosition="start" />
+                  <Tab label="Generate Image" icon={<ImageIcon />} iconPosition="start" />
+                </Tabs>
+              </AppBar>
 
-                <Box sx={{ p: 3 }}>
-                  {/* Common form for both tabs */}
-                  <Box component="form" onSubmit={handleSubmit}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <FormControl fullWidth margin="normal">
-                          <InputLabel id="style-label">Art Style</InputLabel>
-                          <Select
-                            labelId="style-label"
-                            id="style"
-                            name="style"
-                            value={formData.style}
-                            onChange={handleChange}
-                            label="Art Style"
-                            disabled={loading || styles.length === 0}
-                          >
-                            {styles.map((style) => (
-                              <MenuItem key={style.key} value={style.key}>
-                                {style.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Subject"
-                          value={formData.subject}
-                          onChange={handleChange}
-                          name="subject"
-                          placeholder="e.g., magical sorceress, space warrior, ancient wizard"
-                          required
-                        />
-                      </Grid>
-
-                      <Grid item xs={6}>
-                        <TextField
-                          fullWidth
-                          label="Age (optional)"
-                          value={formData.age}
-                          onChange={handleChange}
-                          name="age"
-                          placeholder="e.g., 22, teenager"
-                        />
-                      </Grid>
-
-                      <Grid item xs={6}>
-                        <TextField
-                          fullWidth
-                          label="Gender (optional)"
-                          value={formData.gender}
-                          onChange={handleChange}
-                          name="gender"
-                          placeholder="e.g., woman, man, person"
-                        />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Clothing (optional)"
-                          value={formData.clothing}
-                          onChange={handleChange}
-                          name="clothing"
-                          placeholder="e.g., flowing robes, armor, casual outfit"
-                        />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Setting (optional)"
-                          value={formData.setting}
-                          onChange={handleChange}
-                          name="setting"
-                          placeholder="e.g., magical forest, cyberpunk city, ancient temple"
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sx={{ mt: 2 }}>
-                        <Button
-                          type="submit"
-                          fullWidth
-                          variant="contained"
-                          color="primary"
-                          disabled={loading}
-                          startIcon={loading ? <CircularProgress size={24} /> : <PlayArrow />}
-                          size="large"
-                        >
-                          {activeTab === 0 
-                            ? (loading ? 'Generating...' : 'Generate Prompt')
-                            : (loading ? 'Preparing...' : 'Generate Image')
-                          }
-                        </Button>
-                      </Grid>
-                    </Grid>
-
-                    {error && (
-                      <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-                        {error}
-                      </Alert>
-                    )}
-                    {styles.length === 0 && !loading && !error && (
-                      <Alert severity="warning" sx={{ mt: 2, mb: 2 }}>
-                        No styles available. Please check if the API server is running.
-                      </Alert>
-                    )}
-                  </Box>
-
-                  <Divider sx={{ my: 3 }} />
-
-                  {/* Tab Content */}
-                  {activeTab === 0 ? (
-                    // Text Prompt Tab
-                    <>
-                      {result && (
-                        <Card variant="outlined">
-                          <CardContent>
-                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                              <Typography variant="h6" component="h2">
-                                Generated Prompt
-                              </Typography>
-                              <Box>
-                                <Tooltip title="Copy to clipboard">
-                                  <IconButton 
-                                    onClick={() => copyToClipboard(result.text)}
-                                    size="small"
-                                  >
-                                    <ContentCopy fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </Box>
-                            
-                            <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
-                              <Typography component="pre" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-                                {result.text}
-                              </Typography>
-                            </Paper>
-                            
-                            {result.negativePrompt && (
-                              <Paper sx={{ p: 2, mt: 2, bgcolor: 'rgba(255,0,0,0.1)' }}>
-                                <Typography variant="subtitle2" gutterBottom color="error">
-                                  🚫 Negative Prompt:
-                                </Typography>
-                                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-                                  {result.negativePrompt}
-                                </Typography>
-                              </Paper>
-                            )}
-                            
-                            <Box mt={2} display="flex" gap={1} flexWrap="wrap">
-                              <Chip 
-                                label={`Style: ${result.style}`} 
-                                color="primary" 
-                                size="small" 
-                              />
-                              <Chip 
-                                label={`Words: ${result.metadata?.wordCount || 0}`} 
-                                color="secondary" 
-                                size="small" 
-                              />
-                              <Chip 
-                                label={`Chars: ${result.metadata?.characterCount || 0}`} 
-                                color="info" 
-                                size="small" 
-                              />
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      )}
-                    </>
-                  ) : (
-                    // Image Generation Tab
-                    <Box sx={{ mt: 2 }}>
-                      <Typography variant="h6" gutterBottom>
-                        AI Image Generation
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary" paragraph>
-                        Generate an AI image based on your prompt. The image will be created using the current form values.
-                      </Typography>
-                      
-                      {result?.text ? (
-                        <>
-                          <ImageGenerator 
-                            prompt={result.text}
-                            width={768}
-                            height={512}
-                            model="stable-diffusion-xl"
-                          />
-                          
-                          <Box sx={{ mt: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
-                            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-                              Prompt used for this image:
-                            </Typography>
-                            <Typography variant="body2" component="pre" sx={{ 
-                              whiteSpace: 'pre-wrap', 
-                              fontFamily: 'monospace',
-                              p: 1,
-                              bgcolor: 'background.default',
-                              borderRadius: 1,
-                              fontSize: '0.8rem'
-                            }}>
-                              {result.text}
-                            </Typography>
+              <Box sx={{ p: 2 }}>
+                {activeTab === 0 ? (
+                  result ? (
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="h6">Generated Prompt</Typography>
+                          <Box>
+                            <Tooltip title={copied ? 'Copied!' : 'Copy'}>
+                              <IconButton size="small" onClick={() => copyToClipboard(result.text)} color={copied ? 'success' : 'default'}>
+                                <ContentCopy fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title={isFavorite(result.text) ? 'In favorites' : 'Add to favorites'}>
+                              <IconButton size="small" onClick={handleFavorite} color={isFavorite(result.text) ? 'warning' : 'default'}>
+                                {isFavorite(result.text) ? <Star fontSize="small" /> : <StarBorder fontSize="small" />}
+                              </IconButton>
+                            </Tooltip>
                           </Box>
-                        </>
-                      ) : (
-                        <Paper sx={{ p: 4, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.05)' }}>
-                          <Typography variant="body1" color="text.secondary">
-                            Generate a prompt first, then switch to the image tab to create an AI-generated image.
+                        </Box>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
+                          <Typography component="pre" sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                            {result.text}
                           </Typography>
                         </Paper>
-                      )}
-                    </Box>
-                  )}
-                </Box>
+                        {result.negativePrompt && (
+                          <Paper sx={{ p: 2, mt: 2, bgcolor: 'rgba(255,0,0,0.08)' }}>
+                            <Typography variant="subtitle2" gutterBottom color="error">🚫 Negative Prompt:</Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{result.negativePrompt}</Typography>
+                          </Paper>
+                        )}
+                        <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                          <Chip label={`Style: ${result.style || formData.style}`} color="primary" size="small" />
+                          <Chip label={`Words: ${result.metadata?.wordCount || 0}`} color="secondary" size="small" />
+                          <Chip label={`Chars: ${result.metadata?.characterCount || 0}`} color="info" size="small" />
+                          {formData.artist && <Chip label={`Artist: ${formData.artist}`} size="small" variant="outlined" />}
+                          {formData.theme && <Chip label={`Theme: ${formData.theme}`} size="small" variant="outlined" />}
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Paper sx={{ p: 6, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.03)' }}>
+                      <Typography color="text.secondary">Fill in the form and click Generate Prompt</Typography>
+                    </Paper>
+                  )
+                ) : (
+                  <Box sx={{ mt: 2 }}>
+                    {result?.text ? (
+                      <ImageGenerator prompt={result.text} width={768} height={512} model="stable-diffusion-xl" />
+                    ) : (
+                      <Paper sx={{ p: 6, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.03)' }}>
+                        <Typography color="text.secondary">Generate a text prompt first, then come here to create an image</Typography>
+                      </Paper>
+                    )}
+                  </Box>
+                )}
               </Box>
             </CardContent>
           </Card>

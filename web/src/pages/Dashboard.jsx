@@ -1,30 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  Chip,
-  LinearProgress,
-  Button,
-  Alert,
+  Grid, Card, CardContent, Typography, Box, Chip, LinearProgress,
+  Button, Alert, Paper, Table, TableBody, TableCell, TableHead, TableRow,
 } from '@mui/material';
-import {
-  TrendingUp,
-  Speed,
-  Palette,
-  Api,
-  CheckCircle,
-  Error,
-} from '@mui/icons-material';
+import { TrendingUp, Speed, Palette, CheckCircle, Error, History, Star } from '@mui/icons-material';
 import { promptApi } from '../services/api';
+import { useHistory } from '../hooks/useHistory';
+import { useFavorites } from '../hooks/useFavorites';
+import { useNavigate } from 'react-router-dom';
+
+const StatCard = ({ title, value, sub, icon, color }) => (
+  <Card sx={{ height: '100%' }}>
+    <CardContent>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ color, mr: 1 }}>{icon}</Box>
+        <Typography variant="h6">{title}</Typography>
+      </Box>
+      <Typography variant="h3" sx={{ fontWeight: 700, color }}>{value}</Typography>
+      {sub && <Typography variant="body2" color="text.secondary">{sub}</Typography>}
+    </CardContent>
+  </Card>
+);
 
 const Dashboard = () => {
   const [health, setHealth] = useState(null);
   const [styles, setStyles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { history } = useHistory();
+  const { favorites } = useFavorites();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,16 +41,18 @@ const Dashboard = () => {
         setHealth(healthRes.data);
         setStyles(stylesRes.data.data || []);
       } catch (err) {
-        setError('Failed to connect to API. Make sure the server is running on port 3000.');
+        setError('Failed to connect to API. Make sure the server is running.');
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
   if (loading) return <LinearProgress />;
+
+  const recentHistory = history.slice(0, 5);
+  const todayCount = history.filter(h => new Date(h.timestamp).toDateString() === new Date().toDateString()).length;
 
   return (
     <Box>
@@ -53,123 +60,80 @@ const Dashboard = () => {
         🎨 Perchance AI Dashboard
       </Typography>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+      {error && <Alert severity="warning" sx={{ mb: 3 }}>{error}</Alert>}
 
       <Grid container spacing={3}>
-        {/* API Status */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                {health?.status === 'healthy' ? (
-                  <CheckCircle color="success" sx={{ mr: 1 }} />
-                ) : (
-                  <Error color="error" sx={{ mr: 1 }} />
-                )}
-                <Typography variant="h6">API Status</Typography>
-              </Box>
-              <Typography variant="h4" color="success.main">
-                {health?.status || 'Unknown'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Version: {health?.version || 'N/A'}
-              </Typography>
-            </CardContent>
-          </Card>
+        <Grid item xs={6} md={3}>
+          <StatCard
+            title="API Status"
+            value={health?.status === 'healthy' ? '✅' : '❌'}
+            sub={`v${health?.version || 'N/A'}`}
+            icon={health?.status === 'healthy' ? <CheckCircle /> : <Error />}
+            color={health?.status === 'healthy' ? '#4caf50' : '#f44336'}
+          />
+        </Grid>
+        <Grid item xs={6} md={3}>
+          <StatCard title="Art Styles" value={styles.length} sub="Available styles" icon={<Palette />} color="#00bcd4" />
+        </Grid>
+        <Grid item xs={6} md={3}>
+          <StatCard title="Generated" value={history.length} sub={`${todayCount} today`} icon={<TrendingUp />} color="#ff4081" />
+        </Grid>
+        <Grid item xs={6} md={3}>
+          <StatCard title="Favorites" value={favorites.length} sub="Saved prompts" icon={<Star />} color="#ff9800" />
         </Grid>
 
-        {/* Available Styles */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Palette color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Art Styles</Typography>
-              </Box>
-              <Typography variant="h4" color="primary.main">
-                {styles.length}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Available styles
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        {recentHistory.length > 0 && (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">Recent History</Typography>
+                  <Button size="small" onClick={() => navigate('/history')} startIcon={<History />}>View All</Button>
+                </Box>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Prompt</TableCell>
+                      <TableCell>Style</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Time</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {recentHistory.map(item => (
+                      <TableRow key={item.id}>
+                        <TableCell sx={{ maxWidth: 400 }}>
+                          <Typography variant="body2" noWrap sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                            {item.text}
+                          </Typography>
+                        </TableCell>
+                        <TableCell><Chip label={item.style || '—'} size="small" color="primary" /></TableCell>
+                        <TableCell><Chip label={item.type || 'single'} size="small" variant="outlined" /></TableCell>
+                        <TableCell>
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(item.timestamp).toLocaleTimeString()}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
-        {/* Features */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <TrendingUp color="secondary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Features</Typography>
-              </Box>
-              <Typography variant="h4" color="secondary.main">
-                {health?.features?.length || 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Active features
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Performance */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Speed color="info" sx={{ mr: 1 }} />
-                <Typography variant="h6">Performance</Typography>
-              </Box>
-              <Typography variant="h4" color="info.main">
-                &lt;50ms
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Avg. response time
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Styles Grid */}
-        <Grid item xs={12}>
+        <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Available Art Styles
-              </Typography>
-              <Grid container spacing={2}>
+              <Typography variant="h6" gutterBottom>Available Art Styles</Typography>
+              <Grid container spacing={1}>
                 {styles.map((style) => (
                   <Grid item xs={12} sm={6} md={4} key={style.key}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="h6" gutterBottom>
-                          {style.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          {style.description}
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          <Chip 
-                            label={`${style.variableCount} variables`} 
-                            size="small" 
-                            color="primary" 
-                          />
-                          {style.hasExamples && (
-                            <Chip 
-                              label="Examples" 
-                              size="small" 
-                              color="success" 
-                            />
-                          )}
-                        </Box>
-                      </CardContent>
-                    </Card>
+                    <Paper variant="outlined" sx={{ p: 1.5 }}>
+                      <Typography variant="subtitle2">{style.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">{style.description}</Typography>
+                    </Paper>
                   </Grid>
                 ))}
               </Grid>
@@ -177,26 +141,17 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-        {/* Quick Actions */}
-        <Grid item xs={12}>
+        <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Quick Actions
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <Button variant="contained" color="primary" href="/generator">
-                  Generate Prompt
-                </Button>
-                <Button variant="contained" color="secondary" href="/batch">
-                  Batch Generation
-                </Button>
-                <Button variant="contained" color="info" href="/mixer">
-                  Mix Styles
-                </Button>
-                <Button variant="outlined" href="/api">
-                  Explore API
-                </Button>
+              <Typography variant="h6" gutterBottom>Quick Actions</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Button fullWidth variant="contained" color="primary" onClick={() => navigate('/generator')}>🎯 Generate Prompt</Button>
+                <Button fullWidth variant="contained" color="secondary" onClick={() => navigate('/batch')}>🔄 Batch Generation</Button>
+                <Button fullWidth variant="contained" sx={{ bgcolor: '#7c4dff' }} onClick={() => navigate('/mixer')}>🎨 Mix Styles</Button>
+                <Button fullWidth variant="outlined" onClick={() => navigate('/history')}>📜 View History</Button>
+                <Button fullWidth variant="outlined" onClick={() => navigate('/analytics')}>📊 Analytics</Button>
+                <Button fullWidth variant="outlined" color="inherit" onClick={() => navigate('/api')}>🔌 API Explorer</Button>
               </Box>
             </CardContent>
           </Card>
