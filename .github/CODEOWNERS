@@ -1,0 +1,19 @@
+# CODEOWNERS - Gzeu/perchance-ai-prompt-library
+# All changes require review from @Gzeu
+
+# Default owner for everything
+* @Gzeu
+
+# Critical config files - always require owner review
+.github/ @Gzeu
+package.json @Gzeu
+package-lock.json @Gzeu
+Dockerfile @Gzeu
+vercel.json @Gzeu
+tsconfig.json @Gzeu
+
+# Source code
+src/ @Gzeu
+bin/ @Gzeu
+discord-bot/ @Gzeu
+web/ @Gzeu
