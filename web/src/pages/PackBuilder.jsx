@@ -1,674 +1,395 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import {
-  Box, Typography, TextField, Button, Card, CardContent,
-  Chip, Alert, LinearProgress, Divider, IconButton,
-  Tooltip, Grid, Collapse, Skeleton, Stack
-} from '@mui/material';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import BuildIcon from '@mui/icons-material/Build';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import DownloadIcon from '@mui/icons-material/Download';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import LinkIcon from '@mui/icons-material/Link';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import LayersIcon from '@mui/icons-material/Layers';
+import { useState, useCallback } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const ROLE_COLORS = {
-  root: '#ff9800',
-  dependency: '#00bcd4',
-  standalone: '#9c27b0'
+// ─── Status badge colours ────────────────────────────────────────────────────
+const STATUS_STYLE = {
+  unchanged: 'bg-gray-100 text-gray-600',
+  modified:  'bg-yellow-100 text-yellow-700',
+  added:     'bg-green-100 text-green-700',
+  removed:   'bg-red-100 text-red-600'
 };
 
-const ROLE_LABELS = {
-  root: '🎯 Root',
-  dependency: '🔗 Dependency',
-  standalone: '⚡ Standalone'
-};
+const STATUS_ICON = { unchanged: '○', modified: '●', added: '+', removed: '−' };
 
-const ROLE_DESCRIPTIONS = {
-  root: 'Main generator — uses cross-imports from dependencies',
-  dependency: 'Provides named lists imported by root/other generators',
-  standalone: 'Self-contained — no cross-imports needed'
-};
-
-const EXAMPLE_THEMES = [
-  { label: 'Fantasy RPG session', emoji: '⚔️' },
-  { label: 'Sci-fi space opera crew', emoji: '🚀' },
-  { label: 'Cozy mystery village', emoji: '🕵️' },
-  { label: 'Cyberpunk street encounter', emoji: '🌆' },
-  { label: 'Dungeon delve adventure', emoji: '🏰' },
-  { label: 'Pirate voyage generator', emoji: '🏴‍☠️' },
-  { label: 'Horror survival scenario', emoji: '👻' },
-  { label: 'Anime character creator', emoji: '🎌' },
-];
-
-// ── Skeleton for plan cards ──────────────────────────────────────────
-function PlanCardSkeleton() {
+// ─── Small helpers ───────────────────────────────────────────────────────────
+function Badge({ status }) {
   return (
-    <Grid item xs={12} sm={6} md={4}>
-      <Box sx={{ p: 2, borderRadius: 2, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}>
-        <Skeleton variant="rounded" width={80} height={22} sx={{ mb: 1 }} />
-        <Skeleton variant="text" width="70%" height={24} />
-        <Skeleton variant="text" width="100%" height={18} />
-        <Skeleton variant="text" width="60%" height={18} />
-        <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
-          <Skeleton variant="rounded" width={60} height={18} />
-          <Skeleton variant="rounded" width={50} height={18} />
-        </Box>
-      </Box>
-    </Grid>
+    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLE[status]}`}>
+      {STATUS_ICON[status]} {status}
+    </span>
   );
 }
 
-// ── Dependency graph (text-based) ───────────────────────────────────
-function DependencyGraph({ generators }) {
-  const roots = generators.filter(g => g.role === 'root');
-  const deps = generators.filter(g => g.role === 'dependency');
-  const standalones = generators.filter(g => g.role === 'standalone');
+function Spinner() {
+  return <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />;
+}
 
-  if (!deps.length && !standalones.length) return null;
-
+function CodeBox({ code }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
   return (
-    <Box sx={{ p: 2, borderRadius: 2, background: 'rgba(0,188,212,0.04)', border: '1px solid rgba(0,188,212,0.12)', mb: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-        <AccountTreeIcon sx={{ color: '#00bcd4', fontSize: 18 }} />
-        <Typography variant="caption" sx={{ color: '#00bcd4', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-          Import Graph
-        </Typography>
-      </Box>
-      <Box sx={{ fontFamily: '"Fira Code", monospace', fontSize: '0.78rem', color: '#aaa', lineHeight: 2 }}>
-        {deps.map(dep => (
-          <Box key={dep.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography component="span" sx={{ color: '#00bcd4', fontFamily: 'inherit', fontSize: 'inherit' }}>[{dep.id}]</Typography>
-            <Typography component="span" sx={{ color: '#555', fontFamily: 'inherit', fontSize: 'inherit' }}>──▶</Typography>
-            {roots.filter(r => r.imports?.includes(dep.id)).map(r => (
-              <Typography key={r.id} component="span" sx={{ color: '#ff9800', fontFamily: 'inherit', fontSize: 'inherit', mr: 0.5 }}>[{r.id}]</Typography>
-            ))}
-          </Box>
-        ))}
-        {standalones.map(s => (
-          <Box key={s.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography component="span" sx={{ color: '#9c27b0', fontFamily: 'inherit', fontSize: 'inherit' }}>[{s.id}]</Typography>
-            <Typography component="span" sx={{ color: '#555', fontFamily: 'inherit', fontSize: 'inherit' }}>── standalone</Typography>
-          </Box>
-        ))}
-      </Box>
-    </Box>
+    <div className="relative group">
+      <button
+        onClick={copy}
+        className="absolute top-2 right-2 text-xs px-2 py-1 bg-white/10 hover:bg-white/20 rounded opacity-0 group-hover:opacity-100 transition"
+      >
+        {copied ? '✓ copied' : 'copy'}
+      </button>
+      <pre className="bg-gray-900 text-green-300 text-xs p-4 rounded-lg overflow-x-auto max-h-72 font-mono leading-relaxed">
+        {code}
+      </pre>
+    </div>
   );
 }
 
-// ── Single generator card ─────────────────────────────────────────────
-function GeneratorCard({ gen, expanded, onToggle, copied, onCopy, onOpen }) {
-  const roleColor = ROLE_COLORS[gen.role] || '#888';
-  const hasFailed = gen.code?.startsWith('// ERROR');
-
+// ─── Topology visualiser ─────────────────────────────────────────────────────
+function TopologyMap({ generators, masterSlug }) {
   return (
-    <Card sx={{
-      border: `1px solid ${roleColor}${hasFailed ? '60' : '30'}`,
-      background: hasFailed ? 'rgba(244,67,54,0.04)' : `${roleColor}05`,
-      transition: 'box-shadow 0.2s',
-      '&:hover': { boxShadow: `0 0 0 1px ${roleColor}40` }
-    }}>
-      <CardContent sx={{ pb: '12px !important' }}>
-        {/* Header row */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.75 }}>
-          <Chip
-            label={ROLE_LABELS[gen.role] || gen.role}
-            size="small"
-            sx={{ bgcolor: `${roleColor}20`, color: roleColor, fontWeight: 700, fontSize: '0.7rem' }}
-          />
-          <Typography fontWeight={700} sx={{ flexGrow: 1 }}>{gen.name}</Typography>
-
-          {hasFailed && <ErrorOutlineIcon sx={{ color: '#f44336', fontSize: 18 }} />}
-          {!hasFailed && gen.validation?.valid && <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 18 }} />}
-
-          {gen.validation?.crossImports > 0 && (
-            <Chip
-              label={`${gen.validation.crossImports} imports`}
-              size="small"
-              icon={<LinkIcon sx={{ fontSize: '0.75rem !important' }} />}
-              sx={{ bgcolor: 'rgba(0,188,212,0.1)', color: '#00bcd4', fontSize: '0.7rem' }}
-            />
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      {generators.map(gen => (
+        <div
+          key={gen.slug}
+          className={`rounded-lg border p-3 text-sm ${
+            gen.slug === masterSlug
+              ? 'border-indigo-400 bg-indigo-50'
+              : 'border-gray-200 bg-white'
+          }`}
+        >
+          <div className="font-semibold text-gray-800 truncate">{gen.title}</div>
+          <div className="text-xs text-gray-500 mt-0.5 truncate">{gen.slug}</div>
+          {gen.imports?.length > 0 && (
+            <div className="mt-1.5 space-y-0.5">
+              {gen.imports.map((imp, i) => (
+                <div key={i} className="text-xs text-indigo-600 font-mono truncate">
+                  ↩ {imp.fromSlug}.{imp.listName}
+                </div>
+              ))}
+            </div>
           )}
-
-          <Tooltip title={copied[gen.id] ? 'Copied!' : 'Copy code'}>
-            <IconButton size="small" onClick={() => onCopy(gen.id, gen.code)} disabled={hasFailed}>
-              {copied[gen.id]
-                ? <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 18 }} />
-                : <ContentCopyIcon sx={{ fontSize: 18 }} />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Open on Perchance.org">
-            <IconButton size="small" onClick={() => onOpen(gen.code)} disabled={hasFailed}>
-              <OpenInNewIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-          </Tooltip>
-          <IconButton size="small" onClick={onToggle}>
-            {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </IconButton>
-        </Box>
-
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.75, fontSize: '0.82rem' }}>
-          {gen.description}
-        </Typography>
-
-        {/* Cross-import badges */}
-        {gen.imports?.length > 0 && (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 0.75 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5, lineHeight: '20px' }}>imports:</Typography>
-            {gen.imports.map(imp => (
-              <Chip
-                key={imp}
-                label={imp}
-                size="small"
-                icon={<LinkIcon sx={{ fontSize: '0.7rem !important' }} />}
-                sx={{ fontSize: '0.68rem', height: 20, bgcolor: 'rgba(0,188,212,0.08)', color: '#00bcd4' }}
-              />
-            ))}
-          </Box>
-        )}
-
-        {/* Collapsed summary line */}
-        {!expanded && !hasFailed && (
-          <Typography variant="caption" color="text.secondary">
-            {gen.validation?.listsFound || 0} lists · {gen.code?.split('\n').length || 0} lines
-            {gen.validation?.crossImports > 0 ? ` · ${gen.validation.crossImports} cross-imports` : ''}
-          </Typography>
-        )}
-        {!expanded && hasFailed && (
-          <Typography variant="caption" sx={{ color: '#f44336' }}>Generation failed — try Rebuild</Typography>
-        )}
-
-        {/* Expanded code block */}
-        <Collapse in={!!expanded}>
-          <Divider sx={{ my: 1.5 }} />
-          <Box
-            component="pre"
-            sx={{
-              background: 'rgba(0,0,0,0.45)',
-              borderRadius: 1,
-              p: 2,
-              overflowX: 'auto',
-              fontSize: '0.77rem',
-              fontFamily: '"Fira Code", "Cascadia Code", monospace',
-              lineHeight: 1.65,
-              color: hasFailed ? '#f44336' : '#e0e0e0',
-              border: '1px solid rgba(255,255,255,0.06)',
-              maxHeight: 400,
-              overflowY: 'auto',
-              margin: 0
-            }}
-          >
-            {gen.code}
-          </Box>
-          {!hasFailed && (
-            <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
-              <Button
-                size="small"
-                startIcon={copied[gen.id] ? <CheckCircleIcon /> : <ContentCopyIcon />}
-                onClick={() => onCopy(gen.id, gen.code)}
-                variant="outlined"
-                sx={{ color: copied[gen.id] ? '#4caf50' : undefined }}
-              >
-                {copied[gen.id] ? 'Copied!' : 'Copy Code'}
-              </Button>
-              <Button size="small" startIcon={<OpenInNewIcon />} onClick={() => onOpen(gen.code)} variant="outlined" color="warning">
-                Open on Perchance
-              </Button>
-            </Box>
+          {gen.slug === masterSlug && (
+            <div className="mt-1.5 text-xs font-bold text-indigo-700">★ master</div>
           )}
-        </Collapse>
-      </CardContent>
-    </Card>
+        </div>
+      ))}
+    </div>
   );
 }
 
-// ── Main component ───────────────────────────────────────────────────
+// ─── Generator card ──────────────────────────────────────────────────────────
+function GeneratorCard({ gen, diffStatus }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <button
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+        onClick={() => setOpen(o => !o)}
+      >
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-sm text-gray-800">{gen.title}</span>
+          <span className="text-xs text-gray-400 font-mono">{gen.slug}</span>
+          {diffStatus && <Badge status={diffStatus} />}
+        </div>
+        <span className="text-gray-400 text-xs">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && gen.code && (
+        <div className="p-3">
+          <CodeBox code={gen.code} />
+          {gen.meta && (
+            <div className="text-xs text-gray-400 mt-2">
+              {gen.meta.model} · {gen.meta.tokens} tokens · {gen.meta.ms}ms
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Diff view ───────────────────────────────────────────────────────────────
+function DiffView({ diff }) {
+  if (!diff) return null;
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-4 text-sm">
+        {[['modified', diff.modifiedCount], ['added', diff.addedCount],
+          ['removed', diff.removedCount], ['unchanged', diff.unchangedCount]].map(([s, c]) => (
+          <span key={s} className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_STYLE[s]}`}>
+            {STATUS_ICON[s]} {c} {s}
+          </span>
+        ))}
+      </div>
+      {diff.generators.filter(g => g.status !== 'unchanged').map(g => (
+        <div key={g.slug} className="border rounded-lg overflow-hidden">
+          <div className={`flex items-center gap-2 px-4 py-2 ${
+            g.status === 'modified' ? 'bg-yellow-50' :
+            g.status === 'added'    ? 'bg-green-50'  : 'bg-red-50'
+          }`}>
+            <Badge status={g.status} />
+            <span className="font-medium text-sm">{g.title}</span>
+            <span className="text-xs text-gray-400 font-mono">{g.slug}</span>
+          </div>
+          <div className="max-h-48 overflow-y-auto bg-gray-900 px-4 py-3 font-mono text-xs leading-relaxed">
+            {g.lines.slice(0, 80).map((l, i) => (
+              <div key={i} className={`${
+                l.type === 'added'   ? 'text-green-400' :
+                l.type === 'removed' ? 'text-red-400'   : 'text-gray-500'
+              }`}>
+                {l.type === 'added' ? '+' : l.type === 'removed' ? '−' : ' '} {l.text}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
 export default function PackBuilder() {
-  const [theme, setTheme] = useState('');
-  const [phase, setPhase] = useState('idle'); // idle | planning | planned | building | done | error
-  const [plan, setPlan] = useState(null);
-  const [pack, setPack] = useState(null);
-  const [error, setError] = useState(null);
-  const [expanded, setExpanded] = useState({});
-  const [copied, setCopied] = useState({});
-  const [copiedAll, setCopiedAll] = useState(false);
+  // Build flow
+  const [theme, setTheme]       = useState('');
+  const [plan, setPlan]         = useState(null);
+  const [pack, setPack]         = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState('');
+  const [phase, setPhase]       = useState('idle'); // idle | planning | building | done
 
-  const reset = () => {
-    setPhase('idle');
-    setPlan(null);
-    setPack(null);
-    setError(null);
-    setExpanded({});
-    setCopied({});
-    setCopiedAll(false);
+  // Remix flow
+  const [remixInstr, setRemixInstr]   = useState('');
+  const [remixResult, setRemixResult] = useState(null);
+  const [remixLoading, setRemixLoading] = useState(false);
+
+  // Diff
+  const [diff, setDiff]         = useState(null);
+  const [activeTab, setActiveTab] = useState('pack'); // pack | remix | diff
+
+  // ── API helpers ────────────────────────────────────────────────────────────
+  const post = useCallback(async (path, body) => {
+    const r = await fetch(`${API}/api/pack${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const json = await r.json();
+    if (!json.success) throw new Error(json.error?.message || json.error || 'Unknown error');
+    return json.data;
+  }, []);
+
+  // ── Build flow ─────────────────────────────────────────────────────────────
+  const handleBuild = async () => {
+    if (!theme.trim()) return;
+    setLoading(true); setError(''); setPlan(null); setPack(null);
+    setRemixResult(null); setDiff(null);
+
+    try {
+      setPhase('planning');
+      const newPlan = await post('/plan', { theme: theme.trim() });
+      setPlan(newPlan);
+
+      setPhase('building');
+      const newPack = await post('/build', { plan: newPlan });
+      setPack(newPack);
+      setPhase('done');
+    } catch (e) {
+      setError(e.message);
+      setPhase('idle');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const planPack = useCallback(async () => {
-    if (!theme.trim()) return;
-    setError(null);
-    setPlan(null);
-    setPack(null);
-    setExpanded({});
-    setPhase('planning');
+  // ── Remix flow ─────────────────────────────────────────────────────────────
+  const handleRemix = async () => {
+    if (!pack || !remixInstr.trim()) return;
+    setRemixLoading(true); setError('');
+
     try {
-      const res = await fetch(`${API_BASE}/api/perchance/pack/plan`, {
+      const result = await post('/remix', { packId: pack.id, instruction: remixInstr.trim() });
+      setRemixResult(result);
+
+      // Auto-compute diff
+      const diffData = await fetch(`${API}/api/pack/diff`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: theme.trim() })
-      });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || 'Plan failed');
-      setPlan(json.data);
-      setPhase('planned');
+        body: JSON.stringify({ packAId: pack.id, packBId: result.pack.id })
+      }).then(r => r.json());
+      if (diffData.success) setDiff(diffData.data);
+
+      setActiveTab('remix');
     } catch (e) {
       setError(e.message);
-      setPhase('error');
+    } finally {
+      setRemixLoading(false);
     }
-  }, [theme]);
+  };
 
-  const buildPack = useCallback(async () => {
-    if (!plan) return;
-    setError(null);
-    setPack(null);
-    setPhase('building');
-    try {
-      const res = await fetch(`${API_BASE}/api/perchance/pack/build`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ theme: plan.theme, generators: plan.generators })
-      });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || 'Build failed');
-      setPack(json.data);
-      setPhase('done');
-      // Auto-expand root generator
-      const root = json.data.pack.find(g => g.role === 'root');
-      if (root) setExpanded({ [root.id]: true });
-    } catch (e) {
-      setError(e.message);
-      setPhase('error');
-    }
-  }, [plan]);
-
-  const copyCode = useCallback((id, code) => {
-    navigator.clipboard.writeText(code);
-    setCopied(prev => ({ ...prev, [id]: true }));
-    setTimeout(() => setCopied(prev => ({ ...prev, [id]: false })), 2000);
-  }, []);
-
-  const copyAll = useCallback(() => {
-    if (!pack) return;
-    const content = pack.pack
-      .map(g => `// ===== ${g.name.toUpperCase()} (${g.id}) =====\n// Role: ${g.role} | ${g.description}\n\n${g.code}`)
-      .join('\n\n\n');
-    navigator.clipboard.writeText(content);
-    setCopiedAll(true);
-    setTimeout(() => setCopiedAll(false), 2500);
-  }, [pack]);
-
-  const openOnPerchance = useCallback((code) => {
-    const encoded = encodeURIComponent(code);
-    window.open(`https://perchance.org/ai-text-to-text-generator#${encoded}`, '_blank', 'noopener noreferrer');
-  }, []);
-
-  const downloadPack = useCallback(() => {
-    if (!pack) return;
-    const content = [
-      `// PERCHANCE GENERATOR PACK`,
-      `// Theme: ${pack.theme}`,
-      `// Generated: ${new Date().toISOString()}`,
-      `// Generators: ${pack.meta.totalGenerators} (${pack.meta.validGenerators} valid)`,
-      `// Cross-imports: ${pack.meta.totalCrossImports}`,
-      '',
-      ...pack.pack.map(g =>
-        `// ${'='.repeat(60)}\n// ${g.name.toUpperCase()} [${g.id}]\n// Role: ${g.role} — ${g.description}\n// ${'='.repeat(60)}\n\n${g.code}`
-      )
-    ].join('\n');
+  // ── Export all ─────────────────────────────────────────────────────────────
+  const exportAll = (targetPack) => {
+    if (!targetPack) return;
+    const content = targetPack.generators
+      .map(g => `// === ${g.title} (${g.slug}) ===\n${g.code}`)
+      .join('\n\n');
     const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `${pack.theme.toLowerCase().replace(/\s+/g, '-')}-pack.txt`;
+    a.href = URL.createObjectURL(blob);
+    a.download = `${targetPack.theme.replace(/\s+/g, '-').toLowerCase()}-pack.txt`;
     a.click();
-    URL.revokeObjectURL(url);
-  }, [pack]);
+  };
 
-  const toggleExpand = useCallback((id) => {
-    setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
-  }, []);
-
-  const stats = useMemo(() => {
-    if (!pack) return null;
-    const byRole = pack.pack.reduce((acc, g) => {
-      acc[g.role] = (acc[g.role] || 0) + 1;
-      return acc;
-    }, {});
-    return { byRole, failed: pack.pack.filter(g => g.code?.startsWith('// ERROR')).length };
-  }, [pack]);
-
-  const isLoading = phase === 'planning' || phase === 'building';
+  // ─────────────────────────────────────────────────────────────────────────
+  const displayPack = activeTab === 'remix' && remixResult ? remixResult.pack : pack;
+  const diffStatusMap = diff
+    ? Object.fromEntries(diff.generators.map(g => [g.slug, g.status]))
+    : {};
 
   return (
-    <Box sx={{ maxWidth: 1100, mx: 'auto', py: 3 }}>
-      {/* ── Header ── */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.75 }}>
-          <LayersIcon sx={{ color: '#ff9800', fontSize: 34 }} />
-          <Typography variant="h4" fontWeight={800}>Pack Builder</Typography>
-          <Chip label="BETA" size="small" sx={{ bgcolor: 'rgba(255,152,0,0.15)', color: '#ff9800', fontWeight: 700, fontSize: '0.65rem', height: 20 }} />
-        </Box>
-        <Typography color="text.secondary" sx={{ maxWidth: 620 }}>
-          Enter a theme → AI plans a set of interconnected Perchance generators,
-          then builds them in parallel with cross-imports via{' '}
-          <code style={{ color: '#00bcd4', background: 'rgba(0,188,212,0.08)', padding: '1px 5px', borderRadius: 4 }}>
-            [^generator.listName]
-          </code>
-        </Typography>
-      </Box>
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">🎲 Pack Builder</h1>
+        <p className="text-gray-500 mt-1 text-sm">
+          Generate a pack of interconnected Perchance generators from a theme — then remix it in one click.
+        </p>
+      </div>
 
-      {/* ── Input card ── */}
-      <Card sx={{ mb: 3, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <CardContent>
-          <TextField
-            fullWidth
-            label="Theme"
-            placeholder='e.g. "Fantasy RPG session" or "Cyberpunk street encounter"'
-            value={theme}
-            onChange={e => setTheme(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !isLoading && planPack()}
-            disabled={isLoading}
-            sx={{ mb: 2 }}
-            variant="outlined"
-            InputProps={{ sx: { fontFamily: '"Fira Code", monospace' } }}
-          />
+      {/* Build input */}
+      <div className="flex gap-3">
+        <input
+          value={theme}
+          onChange={e => setTheme(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && !loading && handleBuild()}
+          placeholder="fantasy RPG session, cyberpunk city, cozy coffee shop..."
+          className="flex-1 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          disabled={loading}
+        />
+        <button
+          onClick={handleBuild}
+          disabled={loading || !theme.trim()}
+          className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition"
+        >
+          {loading ? <><Spinner /> {phase === 'planning' ? 'Planning…' : 'Building…'}</> : '✨ Build Pack'}
+        </button>
+      </div>
 
-          {/* Example chips */}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mb: 2.5 }}>
-            {EXAMPLE_THEMES.map(t => (
-              <Chip
-                key={t.label}
-                label={`${t.emoji} ${t.label}`}
-                size="small"
-                onClick={() => { setTheme(t.label); if (phase !== 'idle') reset(); }}
-                disabled={isLoading}
-                variant="outlined"
-                sx={{ cursor: 'pointer', fontSize: '0.75rem', transition: 'all 0.15s',
-                  '&:hover': { borderColor: '#00bcd4', color: '#00bcd4', background: 'rgba(0,188,212,0.06)' } }}
-              />
-            ))}
-          </Box>
-
-          {/* Action buttons */}
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-            <Button
-              variant="contained"
-              startIcon={<AutoAwesomeIcon />}
-              onClick={planPack}
-              disabled={!theme.trim() || isLoading}
-              sx={{
-                background: theme.trim() && !isLoading
-                  ? 'linear-gradient(135deg, #0097a7, #006064)'
-                  : undefined,
-                fontWeight: 700
-              }}
-            >
-              {phase === 'planning' ? 'Planning…' : 'Plan Pack'}
-            </Button>
-
-            {(phase === 'planned') && (
-              <Button
-                variant="contained"
-                startIcon={<BuildIcon />}
-                onClick={buildPack}
-                disabled={isLoading}
-                sx={{ background: 'linear-gradient(135deg, #e65100, #bf360c)', fontWeight: 700 }}
-              >
-                Build {plan?.generators?.length} Generators
-              </Button>
-            )}
-
-            {phase === 'done' && (
-              <>
-                <Button variant="outlined" startIcon={<BuildIcon />} onClick={buildPack} disabled={isLoading}>
-                  Rebuild
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={copiedAll ? <CheckCircleIcon /> : <ContentCopyIcon />}
-                  onClick={copyAll}
-                  sx={{ color: copiedAll ? '#4caf50' : undefined, borderColor: copiedAll ? '#4caf50' : undefined }}
-                >
-                  {copiedAll ? 'Copied All!' : 'Copy All'}
-                </Button>
-                <Button variant="outlined" startIcon={<DownloadIcon />} onClick={downloadPack}>
-                  Download .txt
-                </Button>
-              </>
-            )}
-
-            {(plan || pack || error) && (
-              <Button variant="text" onClick={reset} disabled={isLoading} color="inherit" sx={{ opacity: 0.6 }}>
-                Reset
-              </Button>
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
-
-      {/* ── Progress bar ── */}
-      {isLoading && (
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            {phase === 'planning'
-              ? '🤖 AI is analyzing the theme and planning the generator pack…'
-              : `🔨 Building ${plan?.generators?.length || ''} generators in parallel (Promise.allSettled)…`}
-          </Typography>
-          <LinearProgress
-            color={phase === 'planning' ? 'secondary' : 'warning'}
-            sx={{ borderRadius: 1, height: 5 }}
-          />
-        </Box>
-      )}
-
-      {/* ── Error ── */}
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)} icon={<ErrorOutlineIcon />}>
-          <strong>Error:</strong> {error}
-        </Alert>
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+          {error}
+        </div>
       )}
 
-      {/* ── Planning skeleton ── */}
-      {phase === 'planning' && (
-        <Card sx={{ mb: 3, border: '1px solid rgba(255,255,255,0.08)' }}>
-          <CardContent>
-            <Skeleton variant="text" width={220} height={28} sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              {[0, 1, 2, 3, 4].map(i => <PlanCardSkeleton key={i} />)}
-            </Grid>
-          </CardContent>
-        </Card>
+      {/* Plan preview (while building) */}
+      {plan && !pack && (
+        <div className="space-y-3">
+          <h2 className="font-semibold text-gray-700">📐 Plan — {plan.generators.length} generators</h2>
+          <TopologyMap generators={plan.generators} masterSlug={plan.masterSlug} />
+          {loading && (
+            <div className="text-sm text-indigo-600 flex items-center gap-2">
+              <Spinner /> Generating all generators in parallel…
+            </div>
+          )}
+        </div>
       )}
 
-      {/* ── Plan preview ── */}
-      {plan && (phase === 'planned' || phase === 'building' || phase === 'done') && (
-        <Card sx={{ mb: 3, border: '1px solid rgba(0,188,212,0.2)', background: 'rgba(0,188,212,0.02)' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-              <AccountTreeIcon sx={{ color: '#00bcd4' }} />
-              <Typography variant="h6" sx={{ color: '#00bcd4', fontWeight: 700 }}>
-                Pack Plan — {plan.generators.length} generators
-              </Typography>
-              <Typography variant="body2" color="text.secondary">for "{plan.theme}"</Typography>
-              {/* Role legend */}
-              <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
-                {Object.entries(ROLE_LABELS).map(([role, label]) => (
-                  <Tooltip key={role} title={ROLE_DESCRIPTIONS[role]}>
-                    <Chip
-                      label={label}
-                      size="small"
-                      sx={{ bgcolor: `${ROLE_COLORS[role]}15`, color: ROLE_COLORS[role], fontSize: '0.68rem', cursor: 'help' }}
-                    />
-                  </Tooltip>
-                ))}
-              </Box>
-            </Box>
+      {/* Built pack */}
+      {pack && (
+        <>
+          {/* Stats bar */}
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-3">
+            <span>🎲 <strong>{pack.generators.length}</strong> generators</span>
+            <span>⚡ {pack.totalTokens.toLocaleString()} tokens</span>
+            <span>⏱ {(pack.totalMs / 1000).toFixed(1)}s</span>
+            <span className="ml-auto text-xs text-gray-400 font-mono">{pack.id}</span>
+          </div>
 
-            <DependencyGraph generators={plan.generators} />
+          {/* Topology */}
+          <div className="space-y-2">
+            <h2 className="font-semibold text-gray-700">🗺 Topology</h2>
+            <TopologyMap generators={pack.generators} masterSlug={pack.masterSlug} />
+          </div>
 
-            <Grid container spacing={1.5}>
-              {plan.generators.map((gen, i) => (
-                <Grid item xs={12} sm={6} md={4} key={gen.id}>
-                  <Box sx={{
-                    p: 2, borderRadius: 2, height: '100%',
-                    border: `1px solid ${ROLE_COLORS[gen.role] || '#555'}35`,
-                    background: `${ROLE_COLORS[gen.role] || '#555'}06`,
-                    transition: 'border-color 0.2s',
-                    '&:hover': { borderColor: `${ROLE_COLORS[gen.role] || '#555'}70` }
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
-                      <Typography variant="caption" sx={{ color: '#666', fontFamily: 'monospace' }}>#{i + 1}</Typography>
-                      <Chip
-                        label={ROLE_LABELS[gen.role] || gen.role}
-                        size="small"
-                        sx={{ bgcolor: `${ROLE_COLORS[gen.role] || '#555'}20`, color: ROLE_COLORS[gen.role] || '#aaa', fontSize: '0.68rem' }}
-                      />
-                    </Box>
-                    <Typography fontWeight={700} sx={{ mb: 0.25, fontSize: '0.92rem' }}>{gen.name}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.75, fontSize: '0.78rem', lineHeight: 1.4 }}>
-                      {gen.description}
-                    </Typography>
-                    {gen.imports?.length > 0 && (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.4 }}>
-                        {gen.imports.map(imp => (
-                          <Chip
-                            key={imp}
-                            label={`← ${imp}`}
-                            size="small"
-                            sx={{ fontSize: '0.62rem', height: 18, bgcolor: 'rgba(0,188,212,0.08)', color: '#00bcd4' }}
-                          />
-                        ))}
-                      </Box>
-                    )}
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
+          {/* Remix input */}
+          <div className="border border-dashed border-indigo-300 rounded-xl p-4 space-y-3 bg-indigo-50/50">
+            <h2 className="font-semibold text-indigo-700">🔀 Remix this pack</h2>
+            <div className="flex gap-3">
+              <input
+                value={remixInstr}
+                onChange={e => setRemixInstr(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !remixLoading && handleRemix()}
+                placeholder='"convert to sci-fi", "make it darker", "add humor", "pirate theme"…'
+                className="flex-1 border border-indigo-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
+                disabled={remixLoading}
+              />
+              <button
+                onClick={handleRemix}
+                disabled={remixLoading || !remixInstr.trim()}
+                className="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-semibold hover:bg-indigo-600 disabled:opacity-50 flex items-center gap-2 transition"
+              >
+                {remixLoading ? <><Spinner /> Remixing…</> : '🔀 Remix'}
+              </button>
+            </div>
+            {remixResult && (
+              <div className="text-xs text-indigo-600">
+                ✓ {remixResult.diffSummary}
+              </div>
+            )}
+          </div>
 
-            {phase === 'planned' && (
-              <Box sx={{ mt: 2 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<BuildIcon />}
-                  onClick={buildPack}
-                  sx={{ background: 'linear-gradient(135deg, #e65100, #bf360c)', fontWeight: 700 }}
+          {/* Tabs */}
+          {remixResult && (
+            <div className="flex gap-2 border-b border-gray-200">
+              {[
+                ['pack',  '📦 Original'],
+                ['remix', '🔀 Remixed'],
+                ['diff',  '± Diff']
+              ].map(([tab, label]) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                    activeTab === tab
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
                 >
-                  Build All {plan.generators.length} Generators
-                </Button>
-              </Box>
-            )}
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
-            {phase === 'building' && (
-              <Box sx={{ mt: 2 }}>
-                <LinearProgress color="warning" sx={{ borderRadius: 1, height: 4 }} />
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                  Building generators in parallel…
-                </Typography>
-              </Box>
-            )}
-          </CardContent>
-        </Card>
+          {/* Diff view */}
+          {activeTab === 'diff' && diff && <DiffView diff={diff} />}
+
+          {/* Generator list */}
+          {activeTab !== 'diff' && displayPack && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-gray-700">
+                  {activeTab === 'remix' ? '🔀 Remixed' : '📦 Original'} generators
+                </h2>
+                <button
+                  onClick={() => exportAll(displayPack)}
+                  className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                >
+                  ⬇ Export all
+                </button>
+              </div>
+              {displayPack.generators.map(gen => (
+                <GeneratorCard
+                  key={gen.slug}
+                  gen={gen}
+                  diffStatus={activeTab === 'remix' ? diffStatusMap[gen.slug] : undefined}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
-
-      {/* ── Built pack ── */}
-      {pack && phase === 'done' && (
-        <Box>
-          {/* Summary bar */}
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, mb: 2 }}>
-            <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 22 }} />
-            <Typography variant="h6" fontWeight={700}>
-              Pack ready — {pack.meta.validGenerators}/{pack.meta.totalGenerators} generators
-            </Typography>
-            <Chip
-              label={`${pack.meta.totalCrossImports} cross-imports`}
-              size="small"
-              icon={<LinkIcon sx={{ fontSize: '0.85rem !important' }} />}
-              sx={{ bgcolor: 'rgba(0,188,212,0.12)', color: '#00bcd4' }}
-            />
-            <Chip
-              label={`${(pack.meta.buildTime / 1000).toFixed(1)}s build`}
-              size="small"
-              sx={{ bgcolor: 'rgba(255,255,255,0.05)' }}
-            />
-            {stats?.byRole && Object.entries(stats.byRole).map(([role, count]) => (
-              <Chip
-                key={role}
-                label={`${count} ${role}`}
-                size="small"
-                sx={{ bgcolor: `${ROLE_COLORS[role] || '#555'}15`, color: ROLE_COLORS[role] || '#aaa', fontSize: '0.7rem' }}
-              />
-            ))}
-            {stats?.failed > 0 && (
-              <Chip label={`${stats.failed} failed`} size="small" sx={{ bgcolor: 'rgba(244,67,54,0.15)', color: '#f44336' }} />
-            )}
-          </Box>
-
-          {/* Generator cards */}
-          <Stack spacing={1.5}>
-            {pack.pack.map(gen => (
-              <GeneratorCard
-                key={gen.id}
-                gen={gen}
-                expanded={!!expanded[gen.id]}
-                onToggle={() => toggleExpand(gen.id)}
-                copied={copied}
-                onCopy={copyCode}
-                onOpen={openOnPerchance}
-              />
-            ))}
-          </Stack>
-
-          {/* Bottom action bar */}
-          <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-            <Button
-              variant="outlined"
-              startIcon={copiedAll ? <CheckCircleIcon /> : <ContentCopyIcon />}
-              onClick={copyAll}
-              sx={{ color: copiedAll ? '#4caf50' : undefined, borderColor: copiedAll ? '#4caf50' : undefined }}
-            >
-              {copiedAll ? 'Copied All!' : 'Copy All Generators'}
-            </Button>
-            <Button variant="outlined" startIcon={<DownloadIcon />} onClick={downloadPack}>
-              Download Pack (.txt)
-            </Button>
-            <Button variant="outlined" startIcon={<BuildIcon />} onClick={buildPack}>
-              Rebuild
-            </Button>
-          </Box>
-        </Box>
-      )}
-
-      {/* ── Empty state ── */}
-      {phase === 'idle' && (
-        <Box sx={{
-          textAlign: 'center', py: 8,
-          border: '1px dashed rgba(255,255,255,0.1)',
-          borderRadius: 3,
-          background: 'rgba(255,255,255,0.01)'
-        }}>
-          <LayersIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.15)', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>No pack generated yet</Typography>
-          <Typography variant="body2" color="text.disabled">
-            Enter a theme above and click <strong>Plan Pack</strong> to start
-          </Typography>
-        </Box>
-      )}
-    </Box>
+    </div>
   );
 }
