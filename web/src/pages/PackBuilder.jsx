@@ -1,273 +1,387 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  Box, Typography, Grid, Card, CardContent, Button, TextField,
-  Chip, Divider, CircularProgress, IconButton, Tooltip, Alert, Snackbar
+  Box, Typography, TextField, Button, Card, CardContent,
+  Chip, Alert, LinearProgress, Divider, IconButton,
+  Tooltip, Grid, Badge, Collapse
 } from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import DownloadIcon from '@mui/icons-material/Download';
-import ShuffleIcon from '@mui/icons-material/Shuffle';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import BuildIcon from '@mui/icons-material/Build';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DownloadIcon from '@mui/icons-material/Download';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import LinkIcon from '@mui/icons-material/Link';
 
-const PACK_THEMES = [
-  { id: 'fantasy', label: '🐉 Fantasy', color: '#9c27b0' },
-  { id: 'scifi', label: '🚀 Sci-Fi', color: '#2196f3' },
-  { id: 'horror', label: '🕷️ Horror', color: '#f44336' },
-  { id: 'romance', label: '🌹 Romance', color: '#e91e63' },
-  { id: 'nature', label: '🌿 Nature', color: '#4caf50' },
-  { id: 'cyberpunk', label: '🤖 Cyberpunk', color: '#00bcd4' },
-  { id: 'medieval', label: '⚔️ Medieval', color: '#ff9800' },
-  { id: 'cosmic', label: '✨ Cosmic', color: '#673ab7' },
-];
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-const SEED_LISTS = {
-  fantasy: {
-    characters: ['brave hero', 'ancient wizard', 'dark elf', 'paladin', 'shapeshifter', 'cursed knight', 'forest nymph', 'dragon rider'],
-    settings: ['enchanted forest', 'floating castle', 'underground kingdom', 'cursed village', 'mystical tower', 'dragon mountain'],
-    conflicts: ['forbidden spell', 'stolen relic', 'broken prophecy', 'demon invasion', 'royal betrayal', 'cursed bloodline'],
-    moods: ['epic', 'mysterious', 'dark', 'whimsical', 'tragic', 'triumphant'],
-  },
-  scifi: {
-    characters: ['rogue AI', 'space marine', 'alien diplomat', 'cyborg detective', 'time agent', 'clone soldier', 'galactic trader'],
-    settings: ['derelict spaceship', 'alien megacity', 'terraformed Mars', 'quantum lab', 'space station', 'dyson sphere'],
-    conflicts: ['alien invasion', 'AI uprising', 'resource war', 'time paradox', 'colony collapse', 'dark matter breach'],
-    moods: ['tense', 'hopeful', 'bleak', 'adventurous', 'paranoid', 'wonder-filled'],
-  },
-  horror: {
-    characters: ['haunted survivor', 'cursed detective', 'possessed child', 'ancient entity', 'mad scientist', 'cult leader'],
-    settings: ['abandoned asylum', 'fog-covered town', 'cursed mansion', 'deep forest', 'underwater station', 'parallel dimension'],
-    conflicts: ['ancient curse', 'demonic possession', 'psychological break', 'viral infection', 'reality collapse', 'forbidden ritual'],
-    moods: ['terrifying', 'unsettling', 'claustrophobic', 'surreal', 'dreadful', 'cosmic horror'],
-  },
-  romance: {
-    characters: ['brooding artist', 'charming scientist', 'mysterious stranger', 'childhood friend', 'rival turned lover', 'time traveler'],
-    settings: ['rainy Paris café', 'island retreat', 'quaint bookshop', 'mountain cabin', 'starlit rooftop', 'hidden garden'],
-    conflicts: ['forbidden love', 'second chance', 'long distance', 'rival suitor', 'secret identity', 'timed deadline'],
-    moods: ['passionate', 'tender', 'bittersweet', 'playful', 'intense', 'heartfelt'],
-  },
-  nature: {
-    characters: ['wandering naturalist', 'forest guardian', 'storm chaser', 'marine biologist', 'lone ranger', 'earth spirit'],
-    settings: ['ancient rainforest', 'frozen tundra', 'volcanic island', 'deep ocean', 'vast savanna', 'hidden valley'],
-    conflicts: ['ecosystem collapse', 'natural disaster', 'lost expedition', 'climate shift', 'territorial dispute', 'discovery'],
-    moods: ['serene', 'awe-inspiring', 'survival', 'meditative', 'raw', 'transformative'],
-  },
-  cyberpunk: {
-    characters: ['street hacker', 'corpo spy', 'augmented merc', 'rogue netrunner', 'underground journalist', 'AI ghost'],
-    settings: ['neon megacity', 'server underbelly', 'corporate arcology', 'black market bazaar', 'virtual construct', 'rooftop slums'],
-    conflicts: ['data heist', 'corporate war', 'identity theft', 'AI rebellion', 'memory implant gone wrong', 'off-grid survival'],
-    moods: ['gritty', 'neon-soaked', 'paranoid', 'electric', 'bleak-hope', 'razor-sharp'],
-  },
-  medieval: {
-    characters: ['disgraced knight', 'peasant hero', 'corrupt bishop', 'travelling bard', 'royal assassin', 'hedge witch'],
-    settings: ['walled city', 'cathedral crypt', 'siege battlefield', 'plague village', 'king\'s court', 'monastic ruins'],
-    conflicts: ['succession war', 'plague outbreak', 'crusade', 'peasant revolt', 'witch hunt', 'tournament betrayal'],
-    moods: ['brutal', 'chivalric', 'grim', 'folkloric', 'political', 'reverent'],
-  },
-  cosmic: {
-    characters: ['void wanderer', 'cosmic deity', 'star pilgrim', 'entropy agent', 'multiverse architect', 'singularity being'],
-    settings: ['event horizon', 'nebula temple', 'collapsed star', 'space-time rift', 'quantum realm', 'universe membrane'],
-    conflicts: ['heat death', 'dimensional merge', 'cosmic awakening', 'entropy vs order', 'big crunch paradox', 'void infection'],
-    moods: ['transcendent', 'incomprehensible', 'beautiful', 'terrifying', 'meditative', 'infinite'],
-  },
+const ROLE_COLORS = {
+  root: '#ff9800',
+  dependency: '#00bcd4',
+  standalone: '#9c27b0'
 };
 
-const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const ROLE_LABELS = {
+  root: '🎯 Root',
+  dependency: '🔗 Dependency',
+  standalone: '⚡ Standalone'
+};
 
-function buildPerchanceOutput(theme, entries) {
-  const lines = ['output'];
-  entries.forEach(e => {
-    if (e.trim()) lines.push('  ' + e.trim());
-  });
-  return lines.join('\n');
-}
+const EXAMPLE_THEMES = [
+  'Fantasy RPG session',
+  'Sci-fi space opera crew',
+  'Cozy mystery village',
+  'Cyberpunk street encounter',
+  'Dungeon delve adventure',
+  'Pirate voyage generator'
+];
 
 export default function PackBuilder() {
-  const [selectedTheme, setSelectedTheme] = useState('fantasy');
-  const [entries, setEntries] = useState([]);
-  const [customEntry, setCustomEntry] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [output, setOutput] = useState('');
-  const [snack, setSnack] = useState({ open: false, msg: '' });
-  const [packName, setPackName] = useState('My Pack');
-  const [packSize, setPackSize] = useState(10);
+  const [theme, setTheme] = useState('');
+  const [phase, setPhase] = useState('idle'); // idle | planning | building | done | error
+  const [plan, setPlan] = useState(null);      // { theme, generators[] }
+  const [pack, setPack] = useState(null);      // { theme, pack[], meta }
+  const [error, setError] = useState(null);
+  const [expanded, setExpanded] = useState({});
+  const [copied, setCopied] = useState({});
 
-  const seeds = SEED_LISTS[selectedTheme] || SEED_LISTS.fantasy;
+  const reset = () => {
+    setPhase('idle');
+    setPlan(null);
+    setPack(null);
+    setError(null);
+    setExpanded({});
+    setCopied({});
+  };
 
-  const generatePack = useCallback(() => {
-    setLoading(true);
-    setTimeout(() => {
-      const generated = [];
-      for (let i = 0; i < packSize; i++) {
-        const char = pick(seeds.characters);
-        const setting = pick(seeds.settings);
-        const conflict = pick(seeds.conflicts);
-        const mood = pick(seeds.moods);
-        generated.push(`${mood} ${char} in a ${setting} facing ${conflict}`);
-      }
-      setEntries(prev => {
-        const all = [...prev, ...generated];
-        const unique = [...new Set(all)].slice(0, 60);
-        const built = buildPerchanceOutput(selectedTheme, unique);
-        setOutput(built);
-        return unique;
+  const planPack = useCallback(async () => {
+    if (!theme.trim()) return;
+    setError(null);
+    setPlan(null);
+    setPack(null);
+    setPhase('planning');
+    try {
+      const res = await fetch(`${API_BASE}/api/perchance/pack/plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: theme.trim() })
       });
-      setLoading(false);
-    }, 320);
-  }, [selectedTheme, packSize, seeds]);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Plan failed');
+      setPlan(json.data);
+      setPhase('planned');
+    } catch (e) {
+      setError(e.message);
+      setPhase('error');
+    }
+  }, [theme]);
 
-  const addCustom = () => {
-    if (!customEntry.trim()) return;
-    const next = [...entries, customEntry.trim()].slice(0, 60);
-    setEntries(next);
-    setOutput(buildPerchanceOutput(selectedTheme, next));
-    setCustomEntry('');
+  const buildPack = useCallback(async () => {
+    if (!plan) return;
+    setError(null);
+    setPack(null);
+    setPhase('building');
+    try {
+      const res = await fetch(`${API_BASE}/api/perchance/pack/build`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: plan.theme, generators: plan.generators })
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Build failed');
+      setPack(json.data);
+      setPhase('done');
+      // Auto-expand root generator
+      const root = json.data.pack.find(g => g.role === 'root');
+      if (root) setExpanded(prev => ({ ...prev, [root.id]: true }));
+    } catch (e) {
+      setError(e.message);
+      setPhase('error');
+    }
+  }, [plan]);
+
+  const copyCode = (id, code) => {
+    navigator.clipboard.writeText(code);
+    setCopied(prev => ({ ...prev, [id]: true }));
+    setTimeout(() => setCopied(prev => ({ ...prev, [id]: false })), 2000);
   };
 
-  const removeEntry = idx => {
-    const next = entries.filter((_, i) => i !== idx);
-    setEntries(next);
-    setOutput(buildPerchanceOutput(selectedTheme, next));
+  const openOnPerchance = (code) => {
+    const encoded = encodeURIComponent(code);
+    window.open(`https://perchance.org/ai-text-to-text-generator#${encoded}`, '_blank', 'noopener');
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(output).then(() => setSnack({ open: true, msg: 'Copied to clipboard!' }));
-  };
-
-  const handleDownload = () => {
-    const blob = new Blob([output], { type: 'text/plain' });
+  const downloadPack = () => {
+    if (!pack) return;
+    const content = pack.pack.map(g =>
+      `// ===== ${g.name.toUpperCase()} (${g.id}) =====\n// Role: ${g.role}\n// ${g.description}\n\n${g.code}`
+    ).join('\n\n\n');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${packName.replace(/\s+/g, '-').toLowerCase()}.txt`;
+    a.href = url;
+    a.download = `${pack.theme.toLowerCase().replace(/\s+/g, '-')}-pack.txt`;
     a.click();
-    setSnack({ open: true, msg: 'Downloaded!' });
+    URL.revokeObjectURL(url);
   };
 
-  const handleShuffle = () => {
-    const shuffled = [...entries].sort(() => Math.random() - 0.5);
-    setEntries(shuffled);
-    setOutput(buildPerchanceOutput(selectedTheme, shuffled));
-  };
+  const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+
+  const isLoading = phase === 'planning' || phase === 'building';
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+    <Box sx={{ maxWidth: 1100, mx: 'auto', py: 3 }}>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" fontWeight={800} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AutoAwesomeIcon sx={{ color: 'primary.main' }} /> Pack Builder
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+          <AutoAwesomeIcon sx={{ color: '#ff9800', fontSize: 36 }} />
+          Pack Builder
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Generează un pack Perchance randomizat gata de folosit — alege tema, size, adaugă intrări custom și exportă.
+        <Typography color="text.secondary">
+          Give a theme → AI plans & builds a set of interconnected Perchance generators that import from each other via{' '}
+          <code style={{ color: '#00bcd4' }}>[^generator.list]</code>
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
-        {/* Left panel — Config */}
-        <Grid item xs={12} md={5}>
-          <Card sx={{ mb: 2 }}>
-            <CardContent>
-              <Typography variant="subtitle1" fontWeight={700} gutterBottom>1. Configurare pack</Typography>
-              <TextField label="Nume pack" value={packName} onChange={e => setPackName(e.target.value)}
-                size="small" fullWidth sx={{ mb: 2 }} />
-              <TextField label="Număr intrări generate" type="number" value={packSize}
-                onChange={e => setPackSize(Math.min(50, Math.max(1, +e.target.value)))}
-                size="small" fullWidth inputProps={{ min: 1, max: 50 }} sx={{ mb: 2 }} />
-
-              <Typography variant="subtitle2" gutterBottom>2. Temă</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                {PACK_THEMES.map(t => (
-                  <Chip key={t.id} label={t.label} clickable
-                    onClick={() => setSelectedTheme(t.id)}
-                    variant={selectedTheme === t.id ? 'filled' : 'outlined'}
-                    sx={selectedTheme === t.id ? { background: t.color, color: '#fff', fontWeight: 700 } : { borderColor: t.color + '88', color: t.color }} />
-                ))}
-              </Box>
-
-              <Button variant="contained" fullWidth startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <AutoAwesomeIcon />}
-                onClick={generatePack} disabled={loading} sx={{ mb: 1 }}>
-                {loading ? 'Generez...' : 'Generează pack'}
+      {/* Input */}
+      <Card sx={{ mb: 3, background: 'rgba(255,255,255,0.03)' }}>
+        <CardContent>
+          <TextField
+            fullWidth
+            label="Theme"
+            placeholder='e.g. "Fantasy RPG session" or "Cyberpunk street encounter"'
+            value={theme}
+            onChange={e => setTheme(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !isLoading && planPack()}
+            disabled={isLoading}
+            sx={{ mb: 2 }}
+            variant="outlined"
+          />
+          {/* Example chips */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+            {EXAMPLE_THEMES.map(t => (
+              <Chip
+                key={t}
+                label={t}
+                size="small"
+                onClick={() => { setTheme(t); reset(); }}
+                disabled={isLoading}
+                sx={{ cursor: 'pointer', '&:hover': { borderColor: '#00bcd4' } }}
+                variant="outlined"
+              />
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AutoAwesomeIcon />}
+              onClick={planPack}
+              disabled={!theme.trim() || isLoading}
+              sx={{ background: 'linear-gradient(135deg, #00bcd4, #0097a7)' }}
+            >
+              {phase === 'planning' ? 'Planning…' : 'Plan Pack'}
+            </Button>
+            {plan && phase !== 'building' && phase !== 'done' && (
+              <Button
+                variant="contained"
+                color="warning"
+                startIcon={<BuildIcon />}
+                onClick={buildPack}
+                disabled={isLoading}
+              >
+                Build All Generators
               </Button>
+            )}
+            {phase === 'done' && (
+              <>
+                <Button variant="outlined" startIcon={<BuildIcon />} onClick={buildPack}>
+                  Rebuild
+                </Button>
+                <Button variant="outlined" startIcon={<DownloadIcon />} onClick={downloadPack}>
+                  Download Pack
+                </Button>
+              </>
+            )}
+            {(plan || pack || error) && (
+              <Button variant="text" onClick={reset} disabled={isLoading} color="inherit">
+                Reset
+              </Button>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
 
-              <Divider sx={{ my: 2 }} />
+      {/* Progress */}
+      {isLoading && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {phase === 'planning' ? '🤖 AI is planning the generator pack…' : `🔨 Building ${plan?.generators?.length || ''} generators in parallel…`}
+          </Typography>
+          <LinearProgress color={phase === 'planning' ? 'secondary' : 'warning'} />
+        </Box>
+      )}
 
-              <Typography variant="subtitle2" gutterBottom>3. Adaugă intrare custom</Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <TextField size="small" placeholder="ex: lonely samurai in a burning dojo..."
-                  value={customEntry} onChange={e => setCustomEntry(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addCustom()}
-                  fullWidth />
-                <IconButton onClick={addCustom} color="primary"><AddIcon /></IconButton>
-              </Box>
-            </CardContent>
-          </Card>
+      {/* Error */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
-          {/* Entries list */}
-          {entries.length > 0 && (
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="subtitle2" fontWeight={700}>Intrări ({entries.length}/60)</Typography>
-                  <Tooltip title="Amestecă">
-                    <IconButton size="small" onClick={handleShuffle}><ShuffleIcon fontSize="small" /></IconButton>
-                  </Tooltip>
-                </Box>
-                <Box sx={{ maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  {entries.map((e, i) => (
-                    <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, px: 1,
-                      borderRadius: 1, background: 'rgba(255,255,255,0.03)', '&:hover': { background: 'rgba(255,255,255,0.06)' } }}>
-                      <Typography variant="caption" sx={{ flex: 1, color: 'text.secondary', fontFamily: 'monospace' }}>{e}</Typography>
-                      <IconButton size="small" onClick={() => removeEntry(i)} sx={{ opacity: 0.4, '&:hover': { opacity: 1, color: 'error.main' } }}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
+      {/* Plan preview */}
+      {plan && phase === 'planned' && (
+        <Card sx={{ mb: 3, border: '1px solid rgba(0,188,212,0.3)' }}>
+          <CardContent>
+            <Typography variant="h6" sx={{ mb: 2, color: '#00bcd4' }}>
+              📋 Pack Plan — {plan.generators.length} generators for "{plan.theme}"
+            </Typography>
+            <Grid container spacing={2}>
+              {plan.generators.map((gen, i) => (
+                <Grid item xs={12} sm={6} md={4} key={gen.id}>
+                  <Box sx={{
+                    p: 2, borderRadius: 2,
+                    border: `1px solid ${ROLE_COLORS[gen.role]}40`,
+                    background: `${ROLE_COLORS[gen.role]}08`
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                      <Typography variant="caption" sx={{ color: '#888' }}>#{i + 1}</Typography>
+                      <Chip label={ROLE_LABELS[gen.role] || gen.role} size="small"
+                        sx={{ bgcolor: `${ROLE_COLORS[gen.role]}22`, color: ROLE_COLORS[gen.role], fontSize: '0.7rem' }} />
                     </Box>
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          )}
-        </Grid>
+                    <Typography fontWeight={600} sx={{ mb: 0.5 }}>{gen.name}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.8rem' }}>
+                      {gen.description}
+                    </Typography>
+                    {gen.imports?.length > 0 && (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {gen.imports.map(imp => (
+                          <Chip key={imp} label={`←${imp}`} size="small"
+                            icon={<LinkIcon sx={{ fontSize: '0.7rem !important' }} />}
+                            sx={{ fontSize: '0.65rem', height: 20, bgcolor: 'rgba(255,255,255,0.05)' }} />
+                        ))}
+                      </Box>
+                    )}
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ mt: 2 }}>
+              <Button variant="contained" color="warning" startIcon={<BuildIcon />} onClick={buildPack}>
+                Build All {plan.generators.length} Generators
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Right panel — Output */}
-        <Grid item xs={12} md={7}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                <Typography variant="subtitle1" fontWeight={700}>Output Perchance</Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Tooltip title="Copy">
-                    <span><IconButton size="small" onClick={handleCopy} disabled={!output}><ContentCopyIcon fontSize="small" /></IconButton></span>
-                  </Tooltip>
-                  <Tooltip title="Download .txt">
-                    <span><IconButton size="small" onClick={handleDownload} disabled={!output}><DownloadIcon fontSize="small" /></IconButton></span>
-                  </Tooltip>
-                </Box>
-              </Box>
+      {/* Built pack */}
+      {pack && (
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Typography variant="h6">
+              ✅ Pack ready — {pack.meta.validGenerators}/{pack.meta.totalGenerators} generators
+            </Typography>
+            <Chip label={`${pack.meta.totalCrossImports} cross-imports`} size="small"
+              icon={<LinkIcon sx={{ fontSize: '0.85rem !important' }} />}
+              sx={{ bgcolor: 'rgba(0,188,212,0.15)', color: '#00bcd4' }} />
+            <Chip label={`${(pack.meta.buildTime / 1000).toFixed(1)}s`} size="small"
+              sx={{ bgcolor: 'rgba(255,255,255,0.05)' }} />
+          </Box>
 
-              {!output ? (
-                <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, opacity: 0.4 }}>
-                  <AutoAwesomeIcon sx={{ fontSize: 48 }} />
-                  <Typography variant="body2">Alege o temă și apasă "Generează pack"</Typography>
-                </Box>
-              ) : (
-                <TextField multiline value={output} onChange={e => setOutput(e.target.value)}
-                  variant="outlined" fullWidth
-                  sx={{ flex: 1, '& .MuiInputBase-root': { height: '100%', alignItems: 'flex-start', fontFamily: 'monospace', fontSize: 12 },
-                    '& textarea': { height: '100% !important' } }}
-                  inputProps={{ style: { fontFamily: 'monospace', fontSize: 12, lineHeight: 1.7 } }} />
-              )}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {pack.pack.map((gen) => (
+              <Card key={gen.id} sx={{
+                border: `1px solid ${ROLE_COLORS[gen.role] || '#333'}40`,
+                background: `${ROLE_COLORS[gen.role] || '#333'}06`
+              }}>
+                <CardContent sx={{ pb: '12px !important' }}>
+                  {/* Generator header */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                    <Chip label={ROLE_LABELS[gen.role] || gen.role} size="small"
+                      sx={{ bgcolor: `${ROLE_COLORS[gen.role]}22`, color: ROLE_COLORS[gen.role], fontWeight: 600 }} />
+                    <Typography fontWeight={700} sx={{ flexGrow: 1 }}>{gen.name}</Typography>
+                    {gen.validation?.valid && <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 18 }} />}
+                    {gen.validation?.crossImports > 0 && (
+                      <Chip label={`${gen.validation.crossImports} imports`} size="small"
+                        icon={<LinkIcon sx={{ fontSize: '0.75rem !important' }} />}
+                        sx={{ bgcolor: 'rgba(0,188,212,0.1)', color: '#00bcd4', fontSize: '0.7rem' }} />
+                    )}
+                    <Tooltip title="Copy code">
+                      <IconButton size="small" onClick={() => copyCode(gen.id, gen.code)}>
+                        {copied[gen.id] ? <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 18 }} /> : <ContentCopyIcon sx={{ fontSize: 18 }} />}
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Open on Perchance.org">
+                      <IconButton size="small" onClick={() => openOnPerchance(gen.code)}>
+                        <OpenInNewIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Tooltip>
+                    <IconButton size="small" onClick={() => toggleExpand(gen.id)}>
+                      {expanded[gen.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </IconButton>
+                  </Box>
 
-              {output && (
-                <Alert severity="info" sx={{ mt: 2, fontSize: 12 }}>
-                  Copiază outputul în <strong>perchance.org/create</strong> și plasează-l într-un list section.
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    {gen.description}
+                  </Typography>
 
-      <Snackbar open={snack.open} autoHideDuration={2500} onClose={() => setSnack({ open: false, msg: '' })}
-        message={snack.msg} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} />
+                  {/* Cross-import badges */}
+                  {gen.imports?.length > 0 && (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ mr: 0.5 }}>imports:</Typography>
+                      {gen.imports.map(imp => (
+                        <Chip key={imp} label={imp} size="small"
+                          icon={<LinkIcon sx={{ fontSize: '0.7rem !important' }} />}
+                          sx={{ fontSize: '0.68rem', height: 20, bgcolor: 'rgba(0,188,212,0.08)', color: '#00bcd4' }} />
+                      ))}
+                    </Box>
+                  )}
+
+                  {/* Code block (collapsible) */}
+                  <Collapse in={!!expanded[gen.id]}>
+                    <Divider sx={{ mb: 1.5 }} />
+                    <Box component="pre" sx={{
+                      background: 'rgba(0,0,0,0.4)',
+                      borderRadius: 1,
+                      p: 2,
+                      overflowX: 'auto',
+                      fontSize: '0.78rem',
+                      fontFamily: '"Fira Code", "Cascadia Code", monospace',
+                      lineHeight: 1.6,
+                      color: '#e0e0e0',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      maxHeight: 420,
+                      overflowY: 'auto',
+                      margin: 0
+                    }}>
+                      {gen.code}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+                      <Button size="small" startIcon={<ContentCopyIcon />}
+                        onClick={() => copyCode(gen.id, gen.code)} variant="outlined">
+                        {copied[gen.id] ? 'Copied!' : 'Copy Code'}
+                      </Button>
+                      <Button size="small" startIcon={<OpenInNewIcon />}
+                        onClick={() => openOnPerchance(gen.code)} variant="outlined" color="warning">
+                        Open on Perchance
+                      </Button>
+                    </Box>
+                  </Collapse>
+
+                  {/* Collapsed summary */}
+                  {!expanded[gen.id] && (
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                      {gen.validation?.listsFound || 0} lists · {gen.code?.split('\n').length || 0} lines
+                      {gen.validation?.crossImports > 0 ? ` · ${gen.validation.crossImports} cross-imports` : ''}
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }
