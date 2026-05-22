@@ -1,14 +1,19 @@
-# ⚡ Perchance AI Prompt Library
+# ⚡ Perchance AI Prompt Library v7.0
 
-**The most advanced AI-powered Perchance.org generator toolkit** — featuring an **Ultra Agentic Brainstorm System** with specialized agents, skills scoring, collaborative voting, persistent memory.
+**Advanced AI-powered Perchance.org generator** with **Ultra Agentic Brainstorm System**.
 
-## ✨ Key Features
+## Key Features
 
-- Ultra Agentic Brainstorm Engine (multi-agent collaboration)
-- Dynamic Skill System with scoring
+- Ultra Agentic Multi-Agent System (7+ specialized agents)
+- Dynamic Skill Scoring System
+- Collaborative Debate & Weighted Voting
 - Persistent Memory & Context Evolution
 - 150+ Categorized Templates
-- Web Studio, CLI, API, Discord Bot
+- CLI, Web Studio, API, Discord Bot
+
+## Ultra Agentic Mode
+
+Agents with skills like NarrativeDepth, SyntacticPerfection, Originality, Consistency etc. collaborate to create the best Perchance generators.
 
 ## Quick Start
 
@@ -17,6 +22,6 @@ npm install -g perchance-ai-prompt-library
 perchance generate "your description here"
 ```
 
-See full documentation in AGENTIC-SYSTEM.md.
+See `AGENTIC-SYSTEM.md` for full architecture.
 
-MIT License © George Pricop
+MIT License © Gzeu
