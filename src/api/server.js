@@ -14,6 +14,7 @@ const promptsRoutes = require('./routes/prompts');
 const stylesRoutes = require('./routes/styles');
 const imagesRoutes = require('./routes/images');
 const perchanceRoutes = require('./routes/perchance');
+const perchancePackRoutes = require('./routes/perchance-pack');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -34,6 +35,7 @@ app.use('/api/prompts', promptsRoutes);
 app.use('/api/styles', stylesRoutes);
 app.use('/api/images', imagesRoutes);
 app.use('/api/perchance', perchanceRoutes);
+app.use('/api/perchance/pack', perchancePackRoutes);
 
 // Serve API documentation
 app.use('/api-docs', 
@@ -55,9 +57,9 @@ app.get('/', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
-    version: '5.0.0',
+    version: '8.0.0',
     timestamp: new Date().toISOString(),
-    features: ['api', 'batch', 'styles', 'perchance-generators', 'ai-groq']
+    features: ['api', 'batch', 'styles', 'perchance-generators', 'ai-groq', 'pack-builder']
   });
 });
 
@@ -112,7 +114,7 @@ app.post('/api/prompts/mix', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     name: 'Perchance AI Prompt Library API',
-    version: '5.0.0',
+    version: '8.0.0',
     endpoints: {
       health: 'GET /api/health',
       generate: 'POST /api/prompts/generate',
@@ -125,17 +127,20 @@ app.get('/api', (req, res) => {
         generate: 'POST /api/perchance/generate',
         refine: 'POST /api/perchance/refine',
         ideas: 'POST /api/perchance/ideas',
-        validate: 'POST /api/perchance/validate'
+        validate: 'POST /api/perchance/validate',
+        packPlan: 'POST /api/perchance/pack/plan',
+        packBuild: 'POST /api/perchance/pack/build'
       }
     }
   });
 });
 
 app.listen(PORT, () => {
-  console.log('\n🚀 Perchance AI Prompt Library v5.0');
+  console.log('\n🚀 Perchance AI Prompt Library v8.0');
   console.log(`📡 API Server: http://localhost:${PORT}`);
   console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
   console.log(`⚡ Perchance AI: http://localhost:${PORT}/api/perchance/generate`);
+  console.log(`🎲 Pack Builder: http://localhost:${PORT}/api/perchance/pack/plan`);
   console.log(`📚 Templates: http://localhost:${PORT}/api/perchance/templates`);
   const hasGroq = !!process.env.GROQ_API_KEY;
   console.log(`🤖 Groq AI: ${hasGroq ? '✓ Ready' : '✗ Set GROQ_API_KEY to enable'}`);
