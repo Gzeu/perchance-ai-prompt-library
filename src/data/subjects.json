@@ -1,33 +1,60 @@
-[
-  {
-    "category": "Fantasy Characters",
-    "subjects": [
-      {
-        "name": "Dragon Knight",
-        "tags": ["fantasy", "warrior", "dragon", "armor"],
-        "popularity": 96,
-        "compatibleStyles": ["fantasy", "digital_art"],
-        "variations": ["armored knight", "dragon rider"]
-      },
-      {
-        "name": "Magical Witch",
-        "tags": ["fantasy", "magic", "spell", "mystical"],
-        "popularity": 94,
-        "compatibleStyles": ["fantasy", "anime"],
-        "variations": ["young witch", "elder sorceress"]
-      }
-    ]
-  },
-  {
-    "category": "Sci-Fi Characters",
-    "subjects": [
-      {
-        "name": "Space Marine",
-        "tags": ["sci-fi", "warrior", "space", "armor"],
-        "popularity": 85,
-        "compatibleStyles": ["sci-fi", "digital_art"],
-        "variations": ["power armor", "space trooper"]
-      }
+{
+  "categories": {
+    "people": [
+      "warrior", "knight", "samurai", "ninja", "wizard", "witch", "sorceress", "mage",
+      "assassin", "rogue", "paladin", "ranger", "druid", "bard", "scholar", "alchemist",
+      "princess", "queen", "king", "emperor", "goddess", "god", "angel", "demon",
+      "vampire", "werewolf", "hunter", "explorer", "pirate", "sailor", "soldier",
+      "dancer", "musician", "artist", "portrait", "child", "elder", "woman", "man",
+      "cyborg", "android", "pilot", "astronaut", "scientist", "doctor", "merchant"
+    ],
+    "creatures": [
+      "dragon", "phoenix", "unicorn", "griffin", "wyvern", "hydra", "basilisk",
+      "kraken", "leviathan", "cerberus", "chimera", "manticore", "sphinx",
+      "dire wolf", "giant eagle", "sea serpent", "frost giant", "golem",
+      "fairy", "sprite", "imp", "djinn", "elemental", "kirin", "tengu",
+      "kitsune", "tanuki", "naga", "medusa", "harpy", "minotaur", "centaur"
+    ],
+    "nature": [
+      "ancient forest", "enchanted garden", "cherry blossom grove", "autumn forest",
+      "winter tundra", "tropical jungle", "bamboo forest", "mangrove swamp",
+      "alpine meadow", "volcanic landscape", "crystal cave", "coral reef",
+      "ocean depths", "arctic glacier", "desert oasis", "canyon", "waterfall",
+      "mountain peak", "foggy valley", "magical lake", "floating islands",
+      "aurora borealis", "meteor shower", "solar eclipse", "rainbow storm"
+    ],
+    "architecture": [
+      "medieval castle", "ancient temple", "gothic cathedral", "japanese shrine",
+      "roman colosseum", "greek parthenon", "egyptian pyramid", "maya ziggurat",
+      "futuristic skyscraper", "space station", "underwater city", "floating city",
+      "abandoned ruins", "crystal palace", "steampunk tower", "cyberpunk alley",
+      "fantasy village", "magical library", "dragon's lair", "dungeon",
+      "lighthouse", "windmill", "bridge over abyss", "treehouse city"
+    ],
+    "objects": [
+      "magic sword", "ancient artifact", "spell book", "potion", "crystal ball",
+      "enchanted armor", "forbidden tome", "celestial compass", "dragon egg",
+      "philosopher's stone", "elixir of life", "magic mirror", "divine weapon",
+      "mechanical clockwork", "starship", "time machine", "portal", "rune stone",
+      "treasure chest", "skull", "hourglass", "lantern", "compass", "telescope"
+    ],
+    "scenes": [
+      "epic battle", "dragon fight", "castle siege", "naval battle", "space war",
+      "magical duel", "heist", "escape", "rescue mission", "exploration",
+      "ritual ceremony", "coronation", "market day", "festival", "banquet",
+      "storm at sea", "volcanic eruption", "celestial event", "portal opening",
+      "mythical creation", "apocalypse", "awakening", "transformation"
+    ],
+    "vehicles": [
+      "sailing ship", "pirate galleon", "airship", "steam locomotive", "hot air balloon",
+      "dragon-drawn carriage", "magical carpet", "mechanical spider", "submarine",
+      "interstellar cruiser", "mech suit", "hovercraft", "sky fortress", "battle tank"
+    ],
+    "abstract": [
+      "sacred geometry", "mandala", "fractal universe", "cosmic web",
+      "dream landscape", "memory palace", "inner world", "subconscious",
+      "time vortex", "parallel dimension", "quantum realm", "void",
+      "emotion made visible", "sound as color", "pure energy", "consciousness"
     ]
   }
-]
+}

@@ -1,258 +1,284 @@
-// ============================================================
-// PERCHANCE AI PROMPT LIBRARY — Core Type Definitions
-// v4.0.0 — TypeScript strict mode
-// ============================================================
+// ─── Core Prompt Types ─────────────────────────────────────────────────────
 
-/** Un stil artistic din styles.json */
-export interface ArtStyle {
-  name: string;
-  description: string;
+export interface Prompt {
+  id: string;
+  text: string;
   category: string;
-  variables: string[];
-  variableCount?: number;
-  popularity: number;
-  examples?: string[];
-  tags?: string[];
-  year?: number;
+  style?: string;
+  mood?: string;
+  quality?: number;
+  tags: string[];
+  negativePrompt?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+  imageUrl?: string;
+  model?: string;
+  seed?: number;
+  metadata?: Record<string, unknown>;
 }
 
-/** Un artist din artists.json */
-export interface Artist {
-  name: string;
-  period: string;
-  country: string;
-  style: string;
-  keywords: string[];
-  popularity: number;
-  born?: number;
-  died?: number | null;
-  movement?: string;
-}
-
-/** O categorie de subiecte din subjects.json */
-export interface SubjectCategory {
+export interface GeneratedPrompt {
+  id: string;
+  prompt: string;
   category: string;
-  subjects: SubjectItem[];
+  style?: string;
+  mood?: string;
+  quality?: number;
+  tags: string[];
+  negativePrompt?: string;
+  createdAt: Date;
+  imageUrl?: string;
+  model?: string;
+  seed?: number;
 }
 
-export interface SubjectItem {
+export interface PromptTemplate {
+  id: string;
   name: string;
   description?: string;
+  template: string;
+  variables: Record<string, string[]>;
+  category: string;
+  qualitySuffix?: string;
+  negativePrompt?: string;
+  tags?: string[];
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// ─── Generation Options ─────────────────────────────────────────────────────
+
+export type MoodType = 'dramatic' | 'epic' | 'peaceful' | 'vibrant' | 'mysterious' | 'melancholic' | 'joyful' | 'dark' | 'ethereal' | 'raw';
+
+export interface GenerateOptions {
+  category?: string;
+  style?: string;
+  subject?: string;
+  mood?: MoodType;
+  quality?: number;
+  count?: number;
+  includeNegative?: boolean;
+  seed?: number;
+  enhancers?: string[];
+  loras?: string[];
   tags?: string[];
 }
 
-/** O temă din themes.json */
-export interface Theme {
-  name: string;
-  description: string;
-  category: string;
-  ageGroup: string;
-  keywords?: string[];
-  mood?: string;
+export interface BatchGenerateOptions extends GenerateOptions {
+  parallel?: number;
+  onProgress?: (current: number, total: number) => void;
+  stopOnError?: boolean;
 }
 
-/** Negative prompts din negatives.json */
-export interface NegativePrompts {
-  universal: string[];
-  photography?: string[];
-  digital_art?: string[];
-  anime?: string[];
-  painting?: string[];
-  [key: string]: string[] | undefined;
-}
+// ─── Analytics Types ────────────────────────────────────────────────────────
 
-/** Recipe din recipes.json */
-export interface Recipe {
-  id: string;
-  name: string;
-  description: string;
-  style: string;
-  subject: string;
-  quality: number;
-  mood?: string;
-  tags: string[];
-  prompt?: string;
-}
-
-// ============================================================
-// PROMPT GENERATION TYPES
-// ============================================================
-
-export type MoodType =
-  | 'dramatic'
-  | 'epic'
-  | 'peaceful'
-  | 'vibrant'
-  | 'mysterious'
-  | 'romantic'
-  | 'dark'
-  | 'whimsical';
-
-export type QualityLevel = 5 | 6 | 7 | 8 | 9 | 10;
-
-export type OutputFormat = 'standard' | 'compact' | 'detailed' | 'json';
-
-export interface PromptConfig {
-  style: string;
-  subject: string;
-  quality: QualityLevel;
-  mood?: MoodType;
-  enhancer?: boolean;
-  variation?: number;
-  artist?: string;
-  theme?: string;
-  negatives?: boolean;
-  seed?: number;
-}
-
-export interface PromptMetadata {
-  wordCount: number;
-  characterCount: number;
-  style: string;
-  subject: string;
-  quality: QualityLevel;
-  mood?: MoodType;
-  artist?: string;
-  options: Partial<PromptConfig>;
-  timestamp: string;
-  enhancementLevel: 'basic' | 'advanced' | 'premium';
-  seed?: number;
-}
-
-export interface GenerationResult {
-  text: string;
-  negative?: string;
-  metadata: PromptMetadata;
-}
-
-// ============================================================
-// BATCH PROCESSING
-// ============================================================
-
-export interface BatchOptions {
+export interface DailyActivity {
+  date: string;
   count: number;
-  parallel: number;
-  quality: QualityLevel;
-  mood?: MoodType;
-  export?: 'json' | 'txt' | 'csv';
-  outputFile?: string;
+  categories: Record<string, number>;
 }
 
-export interface BatchResult {
-  results: GenerationResult[];
-  stats: {
-    total: number;
-    duration: number;
-    avgQuality: number;
-    avgWordCount: number;
-  };
+export interface UsageStats {
+  totalGenerated: number;
+  totalExported: number;
+  totalImages: number;
+  byCategory: Record<string, number>;
+  byStyle: Record<string, number>;
+  byMood: Record<string, number>;
+  byQuality: Record<number, number>;
+  popularTags: Array<{ tag: string; count: number }>;
+  dailyActivity: DailyActivity[];
+  sessionStart: Date;
+  lastActivity: Date;
+  averageQuality: number;
 }
 
-// ============================================================
-// v4.0.0 TYPES — LoRA, ComfyUI, Enhancers, Cache, CLI
-// ============================================================
-
-/** LoRA preset pentru Stable Diffusion */
-export interface LoraPreset {
-  id: string;
-  name: string;
-  description: string;
-  trigger_words: string[];
-  weight_range: [number, number];
-  compatible_models: string[];
-  category: string;
-  source?: string;
-  tags: string[];
-}
-
-/** ComfyUI Workflow Template */
-export interface WorkflowTemplate {
-  id: string;
-  name: string;
-  description: string;
-  nodes: WorkflowNode[];
-  category: string;
-  required_models: string[];
-  tags: string[];
-}
-
-export interface WorkflowNode {
-  id: string;
-  type: string;
-  params: Record<string, unknown>;
-  connections: { from: string; to: string }[];
-}
-
-/** Enhancer term pentru calitate */
-export interface EnhancerTerm {
-  term: string;
-  category: EnhancerCategory;
-  weight?: number;
-  compatible_styles?: string[];
-}
-
-export type EnhancerCategory =
-  | 'quality'
-  | 'lighting'
-  | 'composition'
-  | 'texture'
-  | 'color'
-  | 'mood'
-  | 'technical';
-
-/** Config persistată local */
-export interface CLIConfig {
-  defaultStyle: string;
-  qualityLevel: QualityLevel;
-  outputFormat: OutputFormat;
-  theme: string;
-  autoSave: boolean;
-  apiKeys?: {
-    openai?: string;
-    pollinationsApiKey?: string;
-  };
-  comfyuiUrl?: string;
-  automatic1111Url?: string;
-}
-
-/** Entry în history */
-export interface HistoryEntry {
-  command: string;
-  result: string;
-  timestamp: number;
+export interface AnalyticsEvent {
+  type: 'generate' | 'export' | 'image' | 'search' | 'batch';
+  category?: string;
   style?: string;
-  subject?: string;
+  mood?: string;
+  quality?: number;
+  tags?: string[];
+  count?: number;
+  timestamp: Date;
 }
 
-/** Cache entry generic */
-export interface CacheEntry<T = unknown> {
-  data: T;
-  timestamp: number;
-  ttl?: number;
-  key?: string;
+// ─── Export Types ───────────────────────────────────────────────────────────
+
+export type ExportFormat = 'json' | 'csv' | 'txt' | 'md' | 'markdown';
+
+export interface ExportOptions {
+  format: ExportFormat;
+  outputPath?: string;
+  filename?: string;
+  includeMetadata?: boolean;
+  includeNegatives?: boolean;
+  separator?: string;
 }
 
-/** Trending style entry */
-export interface TrendingStyle {
+export interface ExportResult {
+  success: boolean;
+  filePath?: string;
+  content: string;
+  format: ExportFormat;
+  count: number;
+  sizeBytes: number;
+  error?: string;
+}
+
+// ─── API Types ──────────────────────────────────────────────────────────────
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  code?: string;
+  message?: string;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface ApiError {
+  success: false;
+  error: string;
+  code: string;
+  statusCode: number;
+  details?: unknown;
+}
+
+// ─── Pollinations Types ──────────────────────────────────────────────────────
+
+export type PollinationsImageModel = 'flux' | 'flux-realism' | 'flux-cablyai' | 'flux-anime' | 'flux-3d' | 'any-dark' | 'turbo' | 'stable-diffusion';
+export type PollinationsTextModel = 'mistral' | 'mistral-nemo' | 'llama' | 'gemma' | 'qwen' | 'openai';
+
+export interface PollinationsImageOptions {
+  prompt: string;
+  model?: PollinationsImageModel;
+  width?: number;
+  height?: number;
+  seed?: number;
+  enhance?: boolean;
+  nologo?: boolean;
+  safe?: boolean;
+}
+
+export interface PollinationsTextOptions {
+  prompt: string;
+  model?: PollinationsTextModel;
+  system?: string;
+  seed?: number;
+  jsonMode?: boolean;
+}
+
+// ─── Cache Types ─────────────────────────────────────────────────────────────
+
+export interface CacheEntry<T> {
+  value: T;
+  expiresAt: number;
+  hits: number;
+  createdAt: number;
+}
+
+export interface CacheStats {
+  size: number;
+  hits: number;
+  misses: number;
+  hitRate: number;
+  memoryUsage: string;
+}
+
+// ─── Validation Types ────────────────────────────────────────────────────────
+
+export interface ValidationResult {
+  valid: boolean;
+  sanitized: string;
+  warnings: string[];
+  errors: string[];
+  score: number;
+  wordCount: number;
+  estimatedTokens: number;
+}
+
+export interface ValidatorOptions {
+  maxLength?: number;
+  minLength?: number;
+  allowNSFW?: boolean;
+  strictMode?: boolean;
+}
+
+// ─── Style & Data Types ──────────────────────────────────────────────────────
+
+export interface ArtStyle {
+  id: string;
   name: string;
-  rank: number;
-  delta: number;
-  source: string;
-  fetchedAt: string;
+  category: string;
+  description?: string;
+  keywords: string[];
+  modifiers?: string[];
+  qualitySuffix?: string;
+  examplePrompts?: string[];
+  tags?: string[];
 }
 
-/** Rezultat remix */
-export interface RemixResult {
-  original: string;
-  variations: GenerationResult[];
-  strategy: string;
+export interface Artist {
+  id: string;
+  name: string;
+  period: string;
+  years: string;
+  nationality: string;
+  keywords: string[];
+  styles: string[];
 }
 
-/** Rezultat compare */
-export interface CompareResult {
-  style1: ArtStyle;
-  style2: ArtStyle;
-  similarities: string[];
-  differences: Record<string, { style1: unknown; style2: unknown }>;
-  recommendation: string;
+export interface LoRA {
+  id: string;
+  name: string;
+  trigger: string;
+  strength: number;
+  description: string;
+  category: string;
+  tags: string[];
+  compatibleModels: string[];
+}
+
+export interface Enhancer {
+  id: string;
+  name: string;
+  terms: string[];
+  category: string;
+  description?: string;
+}
+
+// ─── CLI Types ───────────────────────────────────────────────────────────────
+
+export interface CLIOptions {
+  count?: number;
+  quality?: number;
+  mood?: MoodType;
+  verbose?: boolean;
+  save?: boolean;
+  negative?: boolean;
+  parallel?: number;
+  export?: ExportFormat;
+  progress?: boolean;
+}
+
+export interface HistoryEntry {
+  id: string;
+  command: string;
+  args: string[];
+  options: CLIOptions;
+  result?: string[];
+  timestamp: Date;
+  duration?: number;
 }

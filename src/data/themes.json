@@ -1,29 +1,70 @@
-[
-  {
-    "name": "Epic Adventure",
-    "description": "Grand heroic journeys and legendary quests",
-    "category": "Action",
-    "keywords": ["heroic", "quest", "adventure"],
-    "ageGroup": "10+",
-    "popularity": 94,
-    "compatibleStyles": ["cinematic", "fantasy"]
-  },
-  {
-    "name": "Peaceful Nature",
-    "description": "Serene natural environments and tranquil scenes",
-    "category": "Nature",
-    "keywords": ["peaceful", "serene", "natural"],
-    "ageGroup": "all",
-    "popularity": 88,
-    "compatibleStyles": ["impressionist", "photorealistic"]
-  },
-  {
-    "name": "Dark Mystery",
-    "description": "Gothic and mysterious atmospheric themes",
-    "category": "Mystery",
-    "keywords": ["dark", "mysterious", "gothic"],
-    "ageGroup": "13+",
-    "popularity": 82,
-    "compatibleStyles": ["gothic", "dark_fantasy"]
+{
+  "categories": {
+    "fantasy": [
+      "high fantasy", "dark fantasy", "sword and sorcery", "epic fantasy", "low fantasy",
+      "fairy tale", "mythological", "legendary", "heroic quest", "chosen one",
+      "ancient prophecy", "magical realism", "urban fantasy", "portal fantasy",
+      "secondary world", "tolkienesque", "grimdark", "cozy fantasy", "flintlock fantasy",
+      "gaslamp fantasy", "wuxia", "xianxia", "cultivation", "isekai"
+    ],
+    "science_fiction": [
+      "cyberpunk", "solarpunk", "biopunk", "steampunk", "dieselpunk", "atompunk",
+      "space opera", "hard sci-fi", "soft sci-fi", "military sci-fi", "dystopia",
+      "utopia", "post-apocalyptic", "far future", "near future", "alternate history",
+      "first contact", "alien invasion", "generation ship", "terraforming",
+      "AI singularity", "transhumanism", "virtual reality", "time travel",
+      "multiverse", "cosmic horror"
+    ],
+    "nature_and_seasons": [
+      "spring awakening", "summer solstice", "autumn harvest", "winter silence",
+      "cherry blossom season", "monsoon", "aurora", "midnight sun",
+      "deep ocean", "ancient forest", "desert survival", "mountain majesty",
+      "cave exploration", "wetlands", "arctic wilderness", "tropical paradise",
+      "volcanic", "glacial", "primordial earth", "nature's fury"
+    ],
+    "emotion_and_mood": [
+      "melancholy", "euphoria", "nostalgia", "wonder", "dread", "serenity",
+      "grief", "joy", "rage", "tenderness", "longing", "hope", "despair",
+      "awe", "curiosity", "solitude", "belonging", "transformation",
+      "catharsis", "transcendence", "liminal", "bittersweet"
+    ],
+    "horror": [
+      "gothic horror", "cosmic horror", "body horror", "psychological horror",
+      "supernatural", "haunted", "eldritch", "lovecraftian", "folk horror",
+      "slasher", "survival horror", "paranormal", "occult", "cursed",
+      "dread", "creeping darkness", "monster", "possession", "ritual"
+    ],
+    "mythology_and_religion": [
+      "Greek mythology", "Norse mythology", "Egyptian mythology", "Japanese mythology",
+      "Celtic mythology", "Hindu mythology", "Aztec mythology", "Mesopotamian",
+      "creation myth", "hero's journey", "underworld", "pantheon",
+      "sacred", "divine", "ritual", "prophecy", "fate", "hubris",
+      "resurrection", "sacrifice", "spiritual journey"
+    ],
+    "historical": [
+      "ancient Egypt", "classical Rome", "medieval Europe", "feudal Japan",
+      "Renaissance Italy", "Age of Exploration", "Victorian England",
+      "Roaring Twenties", "World War era", "Cold War", "Wild West",
+      "ancient China", "Mughal Empire", "Ottoman Empire", "Viking age",
+      "Byzantine", "Silk Road", "age of pirates", "French Revolution"
+    ],
+    "romance_and_relationships": [
+      "forbidden love", "epic romance", "star-crossed lovers", "reunion",
+      "first love", "unrequited", "rivalry to romance", "soulmates",
+      "love across time", "sacrifice", "devotion", "separation",
+      "family bonds", "friendship", "betrayal", "redemption"
+    ],
+    "adventure_and_action": [
+      "treasure hunt", "dungeon crawl", "heist", "escape", "survival",
+      "gladiatorial combat", "tournament", "expedition", "assassination",
+      "revolution", "resistance", "infiltration", "race against time",
+      "last stand", "rescue mission", "bounty hunting", "espionage"
+    ],
+    "philosophical_and_conceptual": [
+      "identity", "existentialism", "mortality", "consciousness", "free will",
+      "simulation theory", "entropy", "order vs chaos", "light vs darkness",
+      "nature vs nurture", "memory", "perception", "truth", "illusion",
+      "power", "corruption", "redemption arc", "cycle of life", "impermanence"
+    ]
   }
-]
+}

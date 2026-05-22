@@ -1,15 +1,33 @@
 {
   "universal": [
-    "blurry", "low quality", "worst quality", "bad anatomy", 
-    "bad hands", "watermark", "signature", "text"
+    "blurry", "blur", "out of focus", "unfocused", "hazy",
+    "low quality", "bad quality", "worst quality", "poor quality", "low res", "lowres",
+    "jpeg artifacts", "compression artifacts", "pixelated", "grainy", "noisy",
+    "ugly", "deformed", "disfigured", "mutilated", "mutated", "monstrous",
+    "extra limbs", "extra arms", "extra legs", "extra fingers", "missing limbs",
+    "missing arms", "missing legs", "fused fingers", "too many fingers",
+    "bad anatomy", "wrong anatomy", "bad proportions", "bad hands", "bad feet",
+    "cloned face", "duplicate", "watermark", "signature", "text", "logo",
+    "cropped", "cut off", "out of frame", "poorly drawn", "bad drawing",
+    "amateur", "amateurish", "sketch", "rough", "unfinished",
+    "overexposed", "underexposed", "washed out", "oversaturated"
   ],
-  "anime": [
-    "3d", "photorealistic", "western cartoon", "realistic"
+  "portrait_specific": [
+    "cross-eyed", "wall-eyed", "asymmetrical face", "wonky eyes", "bad eyes",
+    "extra eyes", "bad teeth", "bad mouth", "deformed mouth", "bad nose",
+    "double chin excessive", "flat face", "plastic face", "uncanny valley",
+    "mannequin", "doll-like unrealistic", "lifeless eyes"
   ],
-  "photorealistic": [
-    "anime", "cartoon", "painting", "drawn", "sketch"
+  "style_specific": [
+    "cartoon" ,"anime style" , "3d render look", "cgi", "illustration style",
+    "painting style", "drawing style", "sketch style", "comic style"
   ],
-  "fantasy": [
-    "modern clothing", "cars", "phones", "contemporary"
+  "composition": [
+    "bad composition", "cluttered", "busy background", "distracting background",
+    "unbalanced", "tilted horizon", "dutch angle unintentional"
+  ],
+  "technical": [
+    "depth of field error", "chromatic aberration excessive", "lens flare excessive",
+    "overprocessed", "HDR excessive", "vignette excessive", "film grain excessive"
   ]
 }

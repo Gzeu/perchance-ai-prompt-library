@@ -1,73 +1,198 @@
-// src/services/exportService.ts — v4.0.0
-import { writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
-import type { GeneratedPrompt, ExportFormat } from '../types/index.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import type { GeneratedPrompt } from './analyticsService.js';
 
-function ensureDir(filePath: string): void {
-  mkdirSync(dirname(filePath), { recursive: true });
+export type ExportFormat = 'json' | 'csv' | 'txt' | 'md' | 'markdown';
+
+export interface ExportOptions {
+  format: ExportFormat;
+  outputPath?: string;
+  filename?: string;
+  includeMetadata?: boolean;
+  includeNegatives?: boolean;
+  separator?: string;
 }
 
-export function exportToJson(prompts: GeneratedPrompt[], outputPath: string): void {
-  ensureDir(outputPath);
-  const data = JSON.stringify({ version: '4.0.0', exported: new Date().toISOString(), count: prompts.length, prompts }, null, 2);
-  writeFileSync(outputPath, data, 'utf-8');
-  console.log(`✅ Exportat ${prompts.length} prompturi → ${outputPath}`);
+export interface ExportResult {
+  success: boolean;
+  filePath?: string;
+  content: string;
+  format: ExportFormat;
+  count: number;
+  sizeBytes: number;
+  error?: string;
 }
 
-export function exportToCsv(prompts: GeneratedPrompt[], outputPath: string): void {
-  ensureDir(outputPath);
-  const headers = ['prompt', 'negativePrompt', 'category', 'style', 'quality', 'tags', 'source', 'createdAt'];
-  const rows = prompts.map((p) => [
-    `"${p.prompt.replace(/"/g, '""')}"`,
-    `"${(p.negativePrompt ?? '').replace(/"/g, '""')}"`,
-    p.category,
-    p.style,
-    p.quality,
-    `"${p.tags.join('; ')}"`,
-    p.metadata.source,
-    p.metadata.createdAt.toISOString(),
-  ]);
-  const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-  writeFileSync(outputPath, csv, 'utf-8');
-  console.log(`✅ Exportat ${prompts.length} prompturi CSV → ${outputPath}`);
-}
+class ExportService {
+  private defaultOutputDir = './exports';
 
-export function exportToTxt(prompts: GeneratedPrompt[], outputPath: string): void {
-  ensureDir(outputPath);
-  const lines = prompts.map((p, i) => `--- Prompt ${i + 1} [${p.category}/${p.style}] ---\n${p.prompt}${p.negativePrompt ? `\nNegative: ${p.negativePrompt}` : ''}\n`);
-  writeFileSync(outputPath, lines.join('\n'), 'utf-8');
-  console.log(`✅ Exportat ${prompts.length} prompturi TXT → ${outputPath}`);
-}
-
-export function exportToMarkdown(prompts: GeneratedPrompt[], outputPath: string): void {
-  ensureDir(outputPath);
-  const sections = prompts.map((p, i) => [
-    `## Prompt ${i + 1} — ${p.category} / ${p.style}`,
-    '',
-    '```',
-    p.prompt,
-    '```',
-    '',
-    p.negativePrompt ? `**Negative:** \`${p.negativePrompt}\`` : '',
-    `**Quality:** ${p.quality}/100 | **Tags:** ${p.tags.join(', ')}`,
-    '',
-  ].filter(Boolean).join('\n'));
-  const md = [`# Perchance AI Prompt Export`, `*Generated: ${new Date().toISOString()}*`, '', ...sections].join('\n');
-  writeFileSync(outputPath, md, 'utf-8');
-  console.log(`✅ Exportat ${prompts.length} prompturi MD → ${outputPath}`);
-}
-
-export function exportPrompts(prompts: GeneratedPrompt[], format: ExportFormat, outputDir = './exports'): string {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const ext = format === 'md' ? 'md' : format;
-  const outputPath = join(outputDir, `prompts-${timestamp}.${ext}`);
-
-  switch (format) {
-    case 'json': exportToJson(prompts, outputPath); break;
-    case 'csv':  exportToCsv(prompts, outputPath);  break;
-    case 'txt':  exportToTxt(prompts, outputPath);  break;
-    case 'md':   exportToMarkdown(prompts, outputPath); break;
+  async ensureDir(dirPath: string): Promise<void> {
+    await fs.mkdir(dirPath, { recursive: true });
   }
 
-  return outputPath;
+  async export(prompts: GeneratedPrompt[], options: ExportOptions): Promise<ExportResult> {
+    const format = options.format === 'markdown' ? 'md' : options.format;
+    let content: string;
+
+    switch (format) {
+      case 'json':
+        content = this.toJSON(prompts, options);
+        break;
+      case 'csv':
+        content = this.toCSV(prompts, options);
+        break;
+      case 'txt':
+        content = this.toTXT(prompts, options);
+        break;
+      case 'md':
+        content = this.toMarkdown(prompts, options);
+        break;
+      default:
+        throw new Error(`Unsupported export format: ${format}`);
+    }
+
+    const result: ExportResult = {
+      success: true,
+      content,
+      format,
+      count: prompts.length,
+      sizeBytes: Buffer.byteLength(content, 'utf-8'),
+    };
+
+    if (options.outputPath || options.filename) {
+      const dir = options.outputPath ?? this.defaultOutputDir;
+      const filename = options.filename ?? this.generateFilename(format);
+      const fullPath = path.join(dir, filename);
+
+      try {
+        await this.ensureDir(dir);
+        await fs.writeFile(fullPath, content, 'utf-8');
+        result.filePath = fullPath;
+      } catch (err) {
+        result.success = false;
+        result.error = `Failed to write file: ${String(err)}`;
+      }
+    }
+
+    return result;
+  }
+
+  private generateFilename(format: ExportFormat): string {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const ext = format === 'md' ? 'md' : format;
+    return `prompts-${timestamp}.${ext}`;
+  }
+
+  private toJSON(prompts: GeneratedPrompt[], options: ExportOptions): string {
+    const data = options.includeMetadata
+      ? prompts
+      : prompts.map(({ prompt, category, style, mood, quality, tags }) => ({
+          prompt,
+          category,
+          style,
+          mood,
+          quality,
+          tags,
+        }));
+    return JSON.stringify(data, null, 2);
+  }
+
+  private toCSV(prompts: GeneratedPrompt[], options: ExportOptions): string {
+    const sep = options.separator ?? ',';
+    const escape = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+
+    const headers = ['prompt', 'category', 'style', 'mood', 'quality', 'tags'];
+    if (options.includeMetadata) headers.push('id', 'createdAt', 'imageUrl');
+
+    const rows = prompts.map((p) => {
+      const base = [
+        escape(p.prompt),
+        escape(p.category),
+        escape(p.style ?? ''),
+        escape(p.mood ?? ''),
+        String(p.quality ?? ''),
+        escape(p.tags.join('; ')),
+      ];
+      if (options.includeMetadata) {
+        base.push(escape(p.id), escape(new Date(p.createdAt).toISOString()), escape(p.imageUrl ?? ''));
+      }
+      return base.join(sep);
+    });
+
+    return [headers.map(escape).join(sep), ...rows].join('\n');
+  }
+
+  private toTXT(prompts: GeneratedPrompt[], options: ExportOptions): string {
+    return prompts
+      .map((p, i) => {
+        const lines = [`${i + 1}. ${p.prompt}`];
+        if (options.includeMetadata) {
+          if (p.category) lines.push(`   Category: ${p.category}`);
+          if (p.style) lines.push(`   Style: ${p.style}`);
+          if (p.mood) lines.push(`   Mood: ${p.mood}`);
+          if (p.quality) lines.push(`   Quality: ${p.quality}/10`);
+          if (p.tags.length) lines.push(`   Tags: ${p.tags.join(', ')}`);
+        }
+        return lines.join('\n');
+      })
+      .join('\n\n');
+  }
+
+  private toMarkdown(prompts: GeneratedPrompt[], options: ExportOptions): string {
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const lines = [
+      `# AI Prompt Library Export`,
+      ``,
+      `**Generated:** ${date}  `,
+      `**Total prompts:** ${prompts.length}`,
+      ``,
+      `---`,
+      ``,
+    ];
+
+    for (const p of prompts) {
+      lines.push(`## Prompt`);
+      lines.push(``);
+      lines.push(`> ${p.prompt}`);
+      lines.push(``);
+      if (options.includeMetadata) {
+        const meta: string[] = [];
+        if (p.category) meta.push(`**Category:** ${p.category}`);
+        if (p.style) meta.push(`**Style:** ${p.style}`);
+        if (p.mood) meta.push(`**Mood:** ${p.mood}`);
+        if (p.quality) meta.push(`**Quality:** ${p.quality}/10`);
+        if (p.tags.length) meta.push(`**Tags:** ${p.tags.map((t) => `\`${t}\``).join(', ')}`);
+        if (meta.length) {
+          lines.push(meta.join('  \n'));
+          lines.push(``);
+        }
+      }
+      lines.push(`---`);
+      lines.push(``);
+    }
+
+    return lines.join('\n');
+  }
+
+  async exportFromStrings(
+    promptStrings: string[],
+    options: ExportOptions,
+    defaults: Partial<Omit<GeneratedPrompt, 'id' | 'prompt' | 'createdAt'>> = {}
+  ): Promise<ExportResult> {
+    const prompts: GeneratedPrompt[] = promptStrings.map((prompt, i) => ({
+      id: `prompt-${i + 1}`,
+      prompt,
+      category: defaults.category ?? 'general',
+      style: defaults.style,
+      mood: defaults.mood,
+      quality: defaults.quality,
+      tags: defaults.tags ?? [],
+      imageUrl: defaults.imageUrl,
+      createdAt: new Date(),
+    }));
+    return this.export(prompts, options);
+  }
 }
+
+export const exportService = new ExportService();
+export default ExportService;

@@ -1,30 +1,274 @@
-[
-  {
-    "name": "Epic Fantasy Portrait",
-    "description": "Professional fantasy character portrait template",
-    "style": "fantasy",
-    "components": {
-      "qualityModifiers": ["masterpiece", "best quality", "8k"],
-      "styleModifiers": ["fantasy art", "digital painting"],
-      "lightingSetup": ["dramatic lighting", "cinematic lighting"],
-      "composition": ["dynamic pose", "heroic stance"]
+{
+  "recipes": [
+    {
+      "id": "epic-fantasy-warrior",
+      "name": "Epic Fantasy Warrior",
+      "category": "fantasy",
+      "template": "{subject}, {armor_style} armor, {weapon}, epic fantasy, dramatic lighting, cinematic composition, hyper-detailed, 8k, {artist_style}",
+      "variables": {
+        "subject": ["a fierce female warrior", "a battle-hardened knight", "a legendary hero", "a dark paladin"],
+        "armor_style": ["ornate plate", "ancient enchanted", "battle-worn", "celestial", "demon-forged"],
+        "weapon": ["glowing sword", "enchanted spear", "twin daggers", "massive warhammer"],
+        "artist_style": ["by Craig Mullins", "by Greg Rutkowski", "by Artgerm", "concept art style"]
+      },
+      "quality_suffix": "masterpiece, best quality, highly detailed, sharp focus, professional",
+      "negative": "blurry, bad anatomy, extra limbs, low quality, watermark"
     },
-    "negativePrompts": ["blurry", "low quality", "modern"],
-    "difficulty": "advanced",
-    "category": "Character"
-  },
-  {
-    "name": "Anime Character Standard",
-    "description": "High-quality anime character template",
-    "style": "anime",
-    "components": {
-      "qualityModifiers": ["masterpiece", "best quality"],
-      "styleModifiers": ["anime style", "2d"],
-      "characterDetails": ["detailed face", "beautiful eyes"],
-      "composition": ["centered", "portrait"]
+    {
+      "id": "cyberpunk-cityscape",
+      "name": "Cyberpunk Cityscape",
+      "category": "sci-fi",
+      "template": "cyberpunk city, {time_of_day}, {weather}, neon lights, {detail}, ultra wide angle, cinematic, photorealistic, 8k",
+      "variables": {
+        "time_of_day": ["rainy night", "neon-lit midnight", "stormy evening", "foggy dawn"],
+        "weather": ["heavy rain", "light drizzle", "thick fog", "electric storm"],
+        "detail": ["flying cars", "holographic ads", "dense crowd", "robot police"]
+      },
+      "quality_suffix": "hyperrealistic, ray tracing, volumetric lighting, depth of field, sharp",
+      "negative": "blurry, cartoon, low res, bad composition, oversaturated"
     },
-    "negativePrompts": ["3d", "realistic", "blurry"],
-    "difficulty": "beginner",
-    "category": "Character"
-  }
-]
+    {
+      "id": "portrait-renaissance",
+      "name": "Renaissance Portrait",
+      "category": "portrait",
+      "template": "portrait of {subject}, Renaissance style, {lighting}, oil painting, masterful brushwork, in the style of {artist}, museum quality",
+      "variables": {
+        "subject": ["a noble woman", "a merchant prince", "a scholar", "a young noblewoman"],
+        "lighting": ["Rembrandt lighting", "soft window light", "candlelight", "golden hour light"],
+        "artist": ["Leonardo da Vinci", "Raphael", "Titian", "Hans Holbein"]
+      },
+      "quality_suffix": "masterpiece, oil on canvas, museum quality, highly detailed, classical",
+      "negative": "modern, cartoon, blurry, bad anatomy, anachronistic"
+    },
+    {
+      "id": "nature-landscape",
+      "name": "Magical Nature Landscape",
+      "category": "landscape",
+      "template": "{season} {location}, {time}, magical atmosphere, {detail}, photorealistic nature photography, dramatic sky, award-winning",
+      "variables": {
+        "season": ["spring", "summer", "autumn", "winter"],
+        "location": ["enchanted forest", "misty mountain valley", "ancient ruins", "coastal cliffs"],
+        "time": ["golden hour", "blue hour", "stormy midday", "moonlit night"],
+        "detail": ["magical particles", "fireflies", "morning mist", "dramatic storm clouds"]
+      },
+      "quality_suffix": "8k photography, award-winning, National Geographic style, perfect lighting",
+      "negative": "people, buildings, blur, overexposed, artificial"
+    },
+    {
+      "id": "anime-hero",
+      "name": "Anime Hero",
+      "category": "anime",
+      "template": "anime {character_type}, {hair}, {outfit}, {expression}, action pose, dramatic wind, detailed background, {studio} style, high quality",
+      "variables": {
+        "character_type": ["protagonist", "magical girl", "mech pilot", "ninja", "shounen hero"],
+        "hair": ["silver white hair", "vibrant red hair", "dark flowing hair", "golden spiky hair"],
+        "outfit": ["battle outfit", "magical uniform", "school uniform with cape", "futuristic armor"],
+        "expression": ["determined expression", "fierce battle cry", "calm focus", "joyful smile"],
+        "studio": ["Studio Ghibli", "Ufotable", "KyoAni", "MAPPA"]
+      },
+      "quality_suffix": "anime key visual, high detail, beautiful lighting, sharp, professional",
+      "negative": "western cartoon, 3d render, bad anatomy, blurry"
+    },
+    {
+      "id": "dark-gothic",
+      "name": "Dark Gothic",
+      "category": "horror",
+      "template": "{subject} in a {location}, gothic atmosphere, {mood}, dark fantasy, dramatic lighting, {detail}, cinematic, high quality",
+      "variables": {
+        "subject": ["a vampire lord", "a dark sorceress", "a cursed knight", "a necromancer"],
+        "location": ["haunted cathedral", "moonlit cemetery", "crumbling castle", "fog-filled mausoleum"],
+        "mood": ["melancholic", "menacing", "mysterious", "tragic"],
+        "detail": ["blood moon", "swirling shadows", "dying roses", "ethereal mist"]
+      },
+      "quality_suffix": "masterpiece, cinematic, dark aesthetic, detailed, atmospheric",
+      "negative": "cartoon, cheerful, bright colors, low quality, blurry"
+    },
+    {
+      "id": "sci-fi-portrait",
+      "name": "Sci-Fi Character Portrait",
+      "category": "sci-fi",
+      "template": "close-up portrait of {character}, {augmentations}, {background}, cinematic lighting, futuristic aesthetic, photorealistic, 8k",
+      "variables": {
+        "character": ["a cyborg soldier", "an alien diplomat", "a space explorer", "a hacker"],
+        "augmentations": ["cybernetic eye implants", "neural interface ports", "bioluminescent markings", "holographic visor"],
+        "background": ["space station interior", "alien planet surface", "neon-lit corridor", "control room"]
+      },
+      "quality_suffix": "cinematic, photorealistic, sharp focus, studio lighting, 8k",
+      "negative": "cartoon, anime, blurry, bad anatomy, watermark"
+    },
+    {
+      "id": "impressionist-landscape",
+      "name": "Impressionist Landscape",
+      "category": "art-style",
+      "template": "{scene}, {time_of_day}, impressionist painting style, loose brushwork, {palette}, in the style of {artist}, oil on canvas",
+      "variables": {
+        "scene": ["Parisian boulevard", "country garden", "river at dawn", "coastal village"],
+        "time_of_day": ["golden hour", "overcast afternoon", "rainy morning", "summer midday"],
+        "palette": ["warm golden tones", "cool blue-grey palette", "vibrant complementary colors"],
+        "artist": ["Claude Monet", "Pierre-Auguste Renoir", "Camille Pissarro", "Alfred Sisley"]
+      },
+      "quality_suffix": "museum quality, fine art, classical technique, beautiful light",
+      "negative": "photorealistic, digital art, sharp edges, modern style"
+    },
+    {
+      "id": "macro-nature",
+      "name": "Macro Nature Photography",
+      "category": "photography",
+      "template": "extreme macro photograph of {subject}, {background}, {lighting}, shallow depth of field, high resolution, professional photography",
+      "variables": {
+        "subject": ["a dewdrop on a leaf", "butterfly wing scales", "flower pollen", "crystal formation"],
+        "background": ["soft bokeh", "dark velvet", "blurred green", "light background"],
+        "lighting": ["ring flash", "diffused natural light", "dramatic side light", "backlit"]
+      },
+      "quality_suffix": "award-winning photography, ultra sharp, perfect focus, 100MP",
+      "negative": "blurry, out of focus, painting, illustration, low quality"
+    },
+    {
+      "id": "underwater-scene",
+      "name": "Underwater Fantasy",
+      "category": "fantasy",
+      "template": "underwater {scene}, {lighting}, {creatures}, coral reef, volumetric god rays, photorealistic underwater photography, vibrant colors",
+      "variables": {
+        "scene": ["ancient sunken temple", "mermaid city", "deep sea exploration", "enchanted lagoon"],
+        "lighting": ["dappled sunlight from above", "bioluminescent glow", "magical blue light"],
+        "creatures": ["colorful tropical fish", "giant sea turtle", "school of glowing jellyfish", "friendly whale shark"]
+      },
+      "quality_suffix": "photorealistic, underwater photography, vivid colors, sharp, award-winning",
+      "negative": "muddy water, blurry, dark, bad composition, cartoon"
+    },
+    {
+      "id": "retro-futurism",
+      "name": "Retro Futurism",
+      "category": "sci-fi",
+      "template": "{scene}, retro-futuristic aesthetic, 1950s-1960s vision of the future, {palette}, space age design, optimistic, atomic age",
+      "variables": {
+        "scene": ["flying cars over gleaming city", "rocket ship launch pad", "robot servants in suburban home", "moon colony"],
+        "palette": ["pastel colors", "chrome and turquoise", "orange and white", "silver and gold"]
+      },
+      "quality_suffix": "highly detailed illustration, clean lines, optimistic mood, 1950s Googie style",
+      "negative": "dark, gritty, dystopian, modern style, photorealistic"
+    },
+    {
+      "id": "abstract-expressionism",
+      "name": "Abstract Emotional",
+      "category": "abstract",
+      "template": "{emotion} expressed as abstract art, {colors}, {technique}, powerful gestural marks, emotional intensity, large scale",
+      "variables": {
+        "emotion": ["rage", "grief", "ecstasy", "longing", "serenity", "chaos"],
+        "colors": ["deep reds and blacks", "ethereal blues and whites", "vibrant yellows and oranges", "muted earth tones"],
+        "technique": ["impasto oil paint", "action painting drips", "color field wash", "gestural strokes"]
+      },
+      "quality_suffix": "museum quality, expressive, powerful, gallery artwork",
+      "negative": "representational, realistic, cartoon, low quality"
+    },
+    {
+      "id": "mythological-scene",
+      "name": "Mythological Epic",
+      "category": "mythology",
+      "template": "{myth_scene}, {pantheon} mythology, {art_style}, epic scale, divine atmosphere, dramatic lighting, gods and mortals",
+      "variables": {
+        "myth_scene": ["battle of the gods", "hero's trial", "creation of the world", "descent to the underworld"],
+        "pantheon": ["Greek", "Norse", "Egyptian", "Mesopotamian", "Hindu"],
+        "art_style": ["classical painting style", "ancient fresco style", "academic oil painting", "Renaissance masterpiece"]
+      },
+      "quality_suffix": "masterpiece, epic scale, museum quality, dramatic, highly detailed",
+      "negative": "modern setting, cartoon, low quality, anachronistic"
+    },
+    {
+      "id": "product-visualization",
+      "name": "Product Visualization",
+      "category": "commercial",
+      "template": "{product}, product photography, {background}, professional studio lighting, {style}, commercial quality, sharp focus",
+      "variables": {
+        "product": ["luxury perfume bottle", "premium watch", "futuristic gadget", "artisan jewelry"],
+        "background": ["pure white studio", "dark luxury background", "natural material backdrop", "abstract color gradient"],
+        "style": ["minimalist", "luxury brand", "high fashion editorial", "tech product reveal"]
+      },
+      "quality_suffix": "commercial photography quality, perfect lighting, sharp, professional",
+      "negative": "blurry, bad lighting, amateur, watermark, background clutter"
+    },
+    {
+      "id": "ink-illustration",
+      "name": "Ink and Wash Illustration",
+      "category": "illustration",
+      "template": "{subject}, ink and wash illustration, {technique}, limited palette, {style}, professional editorial illustration",
+      "variables": {
+        "subject": ["ancient warrior", "forest spirit", "urban explorer", "mythical creature"],
+        "technique": ["bold ink outlines", "loose flowing lines", "crosshatching", "gestural marks"],
+        "style": ["Japanese sumi-e inspired", "European editorial style", "graphic novel style", "book illustration style"]
+      },
+      "quality_suffix": "professional illustration, clean linework, limited palette, editorial quality",
+      "negative": "photorealistic, color photography, digital painting, low quality"
+    },
+    {
+      "id": "art-nouveau-design",
+      "name": "Art Nouveau Design",
+      "category": "art-style",
+      "template": "{subject}, Art Nouveau style, {flora}, ornate decorative borders, {palette}, flowing organic lines, in the style of {artist}, poster design",
+      "variables": {
+        "subject": ["elegant woman", "goddess figure", "nature spirit", "mythological figure"],
+        "flora": ["lily flowers", "wisteria", "iris", "rose motifs"],
+        "palette": ["gold and forest green", "muted blues and cream", "warm ochres", "jewel tones"],
+        "artist": ["Alphonse Mucha", "Gustav Klimt", "Aubrey Beardsley"]
+      },
+      "quality_suffix": "decorative art, high quality poster, detailed ornamentation, flat graphic style",
+      "negative": "modern style, photorealistic, cartoon, low quality, ugly"
+    },
+    {
+      "id": "street-photography",
+      "name": "Cinematic Street Photography",
+      "category": "photography",
+      "template": "{location} street scene, {time_of_day}, {mood}, candid photography style, cinematic framing, {technique}",
+      "variables": {
+        "location": ["Tokyo Shibuya crossing", "New York City alley", "Parisian café", "Hong Kong night market", "Istanbul bazaar"],
+        "time_of_day": ["rainy evening", "golden hour", "neon night", "foggy morning"],
+        "mood": ["melancholic solitude", "bustling energy", "quiet contemplation", "joyful chaos"],
+        "technique": ["35mm film look", "Leica lens quality", "black and white", "desaturated cinematic"]
+      },
+      "quality_suffix": "award-winning photography, cinematic, perfect moment, Magnum Photos quality",
+      "negative": "posed, studio, artificial lighting, cartoon, blurry"
+    },
+    {
+      "id": "cosmic-space",
+      "name": "Cosmic Space Scene",
+      "category": "sci-fi",
+      "template": "{scene} in deep space, {nebula}, {stars}, {detail}, NASA imagery quality, scientifically inspired, awe-inspiring scale",
+      "variables": {
+        "scene": ["binary star system", "black hole accretion disk", "alien planet surface", "intergalactic voyage"],
+        "nebula": ["colorful emission nebula", "dark absorption nebula", "supernova remnant", "protostellar cloud"],
+        "stars": ["dense star field", "globular cluster", "distant galaxy", "milky way core"],
+        "detail": ["lonely spaceship", "space station", "alien megastructure", "comet passing"]
+      },
+      "quality_suffix": "astrophotography quality, Hubble Space Telescope style, ultra high resolution",
+      "negative": "cartoon, blurry, low quality, fake looking"
+    },
+    {
+      "id": "food-art",
+      "name": "Gourmet Food Photography",
+      "category": "photography",
+      "template": "{dish}, gourmet food photography, {styling}, professional food styling, {lighting}, {background}, award-winning food photography",
+      "variables": {
+        "dish": ["artisan pasta", "molecular gastronomy dessert", "deconstructed sushi", "chocolate sculpture"],
+        "styling": ["rustic styling", "minimalist plating", "abundant luxurious presentation", "artistic abstract plating"],
+        "lighting": ["soft natural window light", "dramatic side lighting", "warm candlelight", "clean studio light"],
+        "background": ["dark slate surface", "rustic wood", "white marble", "textured linen"]
+      },
+      "quality_suffix": "professional food photography, sharp, perfect lighting, magazine quality",
+      "negative": "unappetizing, blurry, bad lighting, dirty, cartoon"
+    },
+    {
+      "id": "architectural-visualization",
+      "name": "Architectural Visualization",
+      "category": "architecture",
+      "template": "{building_type}, {style}, {setting}, photorealistic architectural visualization, {lighting}, ultra detailed, professional render",
+      "variables": {
+        "building_type": ["modern villa", "futuristic skyscraper", "minimalist house", "eco-sustainable building"],
+        "style": ["Zaha Hadid inspired", "Japanese minimalist", "Nordic design", "parametric design"],
+        "setting": ["mountain landscape", "urban context", "forest clearing", "seaside cliff"],
+        "lighting": ["golden hour exterior", "dramatic night lighting", "soft overcast day", "interior with natural light"]
+      },
+      "quality_suffix": "architectural visualization quality, photorealistic, professional, ultra detailed",
+      "negative": "cartoon, sketch, unfinished, low quality, distorted"
+    }
+  ]
+}
