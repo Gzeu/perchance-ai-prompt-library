@@ -1,0 +1,84 @@
+[
+  {
+    "id": "lcm-lora",
+    "name": "LCM LoRA",
+    "description": "Latent Consistency Model LoRA for ultra-fast inference (4-8 steps)",
+    "trigger_words": [],
+    "weight_range": [0.8, 1.0],
+    "compatible_models": ["SD 1.5", "SDXL"],
+    "category": "speed",
+    "tags": ["fast", "consistency", "universal"]
+  },
+  {
+    "id": "add-detail-xl",
+    "name": "Add More Details XL",
+    "description": "Enhances fine details in SDXL outputs dramatically",
+    "trigger_words": ["detailed", "highly detailed"],
+    "weight_range": [0.3, 0.8],
+    "compatible_models": ["SDXL", "SDXL Turbo"],
+    "category": "quality",
+    "source": "CivitAI",
+    "tags": ["detail", "quality", "enhancement"]
+  },
+  {
+    "id": "film-grain",
+    "name": "Cinematic Film Grain",
+    "description": "Adds authentic analog film grain and cinematic texture",
+    "trigger_words": ["film grain", "analog photography"],
+    "weight_range": [0.4, 0.9],
+    "compatible_models": ["SD 1.5", "SDXL"],
+    "category": "style",
+    "tags": ["cinematic", "film", "analog"]
+  },
+  {
+    "id": "epi-noise-offset",
+    "name": "EPI Noise Offset",
+    "description": "Improves dark and high-contrast scenes dramatically",
+    "trigger_words": [],
+    "weight_range": [0.5, 1.0],
+    "compatible_models": ["SD 1.5"],
+    "category": "quality",
+    "tags": ["dark", "contrast", "lighting"]
+  },
+  {
+    "id": "ghibli-style",
+    "name": "Studio Ghibli Style",
+    "description": "Authentic Studio Ghibli animation aesthetic",
+    "trigger_words": ["ghibli style", "studio ghibli", "miyazaki"],
+    "weight_range": [0.6, 1.0],
+    "compatible_models": ["SD 1.5", "SDXL"],
+    "category": "style",
+    "tags": ["anime", "ghibli", "animation"]
+  },
+  {
+    "id": "flux-realism",
+    "name": "FLUX Realism LoRA",
+    "description": "Enhances photorealism for FLUX.1 base model",
+    "trigger_words": ["photorealistic", "hyperrealistic"],
+    "weight_range": [0.7, 1.2],
+    "compatible_models": ["FLUX.1 dev", "FLUX.1 schnell"],
+    "category": "realism",
+    "source": "CivitAI",
+    "tags": ["flux", "realism", "photography"]
+  },
+  {
+    "id": "neon-cyberpunk",
+    "name": "Neon Cyberpunk",
+    "description": "Cyberpunk neon aesthetics with rain-soaked streets",
+    "trigger_words": ["cyberpunk", "neon lights", "rain reflections"],
+    "weight_range": [0.5, 0.9],
+    "compatible_models": ["SD 1.5", "SDXL"],
+    "category": "style",
+    "tags": ["cyberpunk", "neon", "urban", "futuristic"]
+  },
+  {
+    "id": "watercolor-dream",
+    "name": "Watercolor Dreamy",
+    "description": "Soft watercolor painting with dreamy blur effects",
+    "trigger_words": ["watercolor painting", "watercolor style"],
+    "weight_range": [0.4, 0.8],
+    "compatible_models": ["SD 1.5", "SDXL"],
+    "category": "style",
+    "tags": ["watercolor", "painting", "soft"]
+  }
+]

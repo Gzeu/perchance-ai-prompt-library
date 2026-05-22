@@ -1,21 +1,21 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import type { CacheEntry, CacheOptions } from '../types/index.js';
+import { createHash } from 'crypto';
+import type { CacheEntry } from '@/types';
 
-const DEFAULT_TTL = 3_600_000;         // 1 hour in ms
-const DEFAULT_CACHE_DIR = path.join(os.homedir(), '.perchance', 'cache');
+export interface CacheOptions {
+  ttl?: number;     // TTL in ms (default: 1h)
+  namespace?: string;
+}
 
 export class FileCache {
-  private readonly cacheDir: string;
-  private readonly defaultTtl: number;
+  protected readonly cacheDir: string;
 
-  constructor(options?: { cacheDir?: string; defaultTtl?: number }) {
-    this.cacheDir  = options?.cacheDir   ?? DEFAULT_CACHE_DIR;
-    this.defaultTtl = options?.defaultTtl ?? DEFAULT_TTL;
+  constructor(namespace = 'default') {
+    this.cacheDir = path.join(os.homedir(), '.perchance', 'cache', namespace);
+    this.ensureDir();
   }
-
-  // ─── helpers ────────────────────────────────────────────────────────────────────
 
   private ensureDir(): void {
     if (!fs.existsSync(this.cacheDir)) {
@@ -23,29 +23,18 @@ export class FileCache {
     }
   }
 
-  private filePath(namespace: string, key: string): string {
-    const safeKey = key.replace(/[^a-z0-9_\-]/gi, '_').slice(0, 120);
-    return path.join(this.cacheDir, namespace, `${safeKey}.json`);
+  private keyToFile(key: string): string {
+    const hash = createHash('sha256').update(key).digest('hex').substring(0, 16);
+    return path.join(this.cacheDir, `${hash}.json`);
   }
 
-  private ensureNamespaceDir(namespace: string): void {
-    const dir = path.join(this.cacheDir, namespace);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  }
-
-  // ─── public API ───────────────────────────────────────────────────────────────
-
-  get<T>(key: string, options?: Pick<CacheOptions, 'namespace'>): T | null {
-    const ns = options?.namespace ?? 'default';
-    const fp = this.filePath(ns, key);
+  get<T>(key: string): T | null {
     try {
-      if (!fs.existsSync(fp)) return null;
-      const raw = fs.readFileSync(fp, 'utf8');
-      const entry = JSON.parse(raw) as CacheEntry<T>;
-      if (Date.now() - entry.timestamp > entry.ttl) {
-        fs.unlinkSync(fp);
+      const filePath = this.keyToFile(key);
+      if (!fs.existsSync(filePath)) return null;
+      const entry = JSON.parse(fs.readFileSync(filePath, 'utf8')) as CacheEntry<T>;
+      if (entry.ttl !== undefined && Date.now() - entry.timestamp > entry.ttl) {
+        fs.unlinkSync(filePath);
         return null;
       }
       return entry.data;
@@ -54,54 +43,71 @@ export class FileCache {
     }
   }
 
-  set<T>(key: string, data: T, options?: CacheOptions): void {
-    const ns  = options?.namespace ?? 'default';
-    const ttl = options?.ttl       ?? this.defaultTtl;
-    this.ensureDir();
-    this.ensureNamespaceDir(ns);
-    const entry: CacheEntry<T> = {
-      data,
-      timestamp: Date.now(),
-      ttl,
-      namespace: ns,
-    };
-    const fp = this.filePath(ns, key);
+  set<T>(key: string, data: T, ttl = 3_600_000): void {
     try {
-      fs.writeFileSync(fp, JSON.stringify(entry, null, 2));
-    } catch {
-      // silent fail
-    }
+      const entry: CacheEntry<T> = { data, timestamp: Date.now(), ttl, key };
+      fs.writeFileSync(this.keyToFile(key), JSON.stringify(entry, null, 2));
+    } catch { /* silent */ }
   }
 
-  delete(key: string, options?: Pick<CacheOptions, 'namespace'>): void {
-    const ns = options?.namespace ?? 'default';
-    const fp = this.filePath(ns, key);
+  delete(key: string): void {
     try {
-      if (fs.existsSync(fp)) fs.unlinkSync(fp);
-    } catch {
-      // silent
-    }
+      const filePath = this.keyToFile(key);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    } catch { /* silent */ }
   }
 
-  /** Clear an entire namespace or the whole cache directory. */
-  clear(namespace?: string): void {
-    const target = namespace
-      ? path.join(this.cacheDir, namespace)
-      : this.cacheDir;
+  clear(): void {
     try {
-      if (fs.existsSync(target)) {
-        fs.rmSync(target, { recursive: true, force: true });
+      const files = fs.readdirSync(this.cacheDir);
+      for (const file of files) {
+        fs.unlinkSync(path.join(this.cacheDir, file));
       }
+    } catch { /* silent */ }
+  }
+
+  /** Returns count of cache files */
+  size(): number {
+    try {
+      return fs.readdirSync(this.cacheDir).filter((f) => f.endsWith('.json')).length;
     } catch {
-      // silent
+      return 0;
     }
   }
 
-  /** Return true if the key exists and is not expired. */
-  has(key: string, options?: Pick<CacheOptions, 'namespace'>): boolean {
-    return this.get(key, options) !== null;
+  /** Remove all expired entries, returns count pruned */
+  prune(): number {
+    let pruned = 0;
+    try {
+      const files = fs.readdirSync(this.cacheDir).filter((f) => f.endsWith('.json'));
+      for (const file of files) {
+        const filePath = path.join(this.cacheDir, file);
+        try {
+          const entry = JSON.parse(fs.readFileSync(filePath, 'utf8')) as CacheEntry<unknown>;
+          if (entry.ttl !== undefined && Date.now() - entry.timestamp > entry.ttl) {
+            fs.unlinkSync(filePath);
+            pruned++;
+          }
+        } catch {
+          fs.unlinkSync(filePath);
+          pruned++;
+        }
+      }
+    } catch { /* silent */ }
+    return pruned;
   }
 }
 
-// Singleton export for CLI use
-export const cache = new FileCache();
+// Singleton instances per namespace
+const cacheInstances = new Map<string, FileCache>();
+
+/**
+ * Returns a singleton FileCache instance for the given namespace.
+ * @param namespace - Cache namespace (default: 'default')
+ */
+export function getCache(namespace = 'default'): FileCache {
+  if (!cacheInstances.has(namespace)) {
+    cacheInstances.set(namespace, new FileCache(namespace));
+  }
+  return cacheInstances.get(namespace)!;
+}

@@ -1,0 +1,47 @@
+{
+  "quality": [
+    "masterpiece", "best quality", "ultra-high resolution", "8K UHD",
+    "sharp focus", "highly detailed", "professional", "award-winning",
+    "museum quality", "gallery worthy", "trending on ArtStation",
+    "featured on Behance", "CG Society top pick", "photorealistic",
+    "hyperrealistic", "RAW photo", "DSLR quality"
+  ],
+  "lighting": [
+    "dramatic lighting", "cinematic lighting", "golden hour",
+    "volumetric lighting", "rim lighting", "soft box lighting",
+    "chiaroscuro", "neon glow", "bioluminescent", "studio lighting",
+    "ambient occlusion", "global illumination", "ray tracing",
+    "subsurface scattering", "caustics"
+  ],
+  "composition": [
+    "rule of thirds", "golden ratio composition", "symmetrical composition",
+    "dynamic composition", "foreground interest", "leading lines",
+    "framing within frame", "negative space mastery", "panoramic view",
+    "bird's eye view", "worm's eye view", "dutch angle", "close-up portrait"
+  ],
+  "texture": [
+    "intricate textures", "fine fabric details", "skin pores visible",
+    "metallic sheen", "matte finish", "glossy surface", "worn patina",
+    "crystalline surface", "organic texture", "geometric patterns",
+    "micro detail", "surface imperfections", "weathered appearance"
+  ],
+  "color": [
+    "vivid colors", "muted palette", "complementary colors",
+    "analogous color scheme", "triadic harmony", "split complementary",
+    "monochromatic", "warm tones", "cool tones", "pastel palette",
+    "earth tones", "neon palette", "duotone", "color graded"
+  ],
+  "mood": [
+    "ethereal atmosphere", "melancholic mood", "joyful energy",
+    "tense atmosphere", "serene ambiance", "mystical aura",
+    "nostalgic feeling", "epic grandeur", "intimate warmth",
+    "cold isolation", "dreamlike state", "otherworldly presence"
+  ],
+  "technical": [
+    "depth of field", "bokeh effect", "motion blur",
+    "HDR tone mapping", "chromatic aberration", "lens flare",
+    "film grain", "noise reduction", "super resolution",
+    "upscaled 4x", "denoise", "sharpened edges",
+    "balanced histogram", "correct exposure"
+  ]
+}

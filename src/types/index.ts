@@ -1,259 +1,258 @@
-// src/types/index.ts — v5.0.0
+// ============================================================
+// PERCHANCE AI PROMPT LIBRARY — Core Type Definitions
+// v4.0.0 — TypeScript strict mode
+// ============================================================
 
-// ─── Prompt Core ─────────────────────────────────────────────
-export type PromptCategory =
-  | 'anime'
-  | 'realistic'
-  | 'fantasy'
-  | 'scifi'
-  | 'portrait'
-  | 'landscape'
-  | 'abstract'
-  | 'architecture'
-  | 'food'
-  | 'nature'
-  | 'fashion'
-  | 'surreal';
+/** Un stil artistic din styles.json */
+export interface ArtStyle {
+  name: string;
+  description: string;
+  category: string;
+  variables: string[];
+  variableCount?: number;
+  popularity: number;
+  examples?: string[];
+  tags?: string[];
+  year?: number;
+}
 
-export type ArtStyle =
-  | 'cinematic'
-  | 'painterly'
-  | 'minimalist'
-  | 'cyberpunk'
-  | 'watercolor'
-  | 'sketch'
-  | 'oil-painting'
-  | 'digital-art'
-  | 'photorealistic'
-  | 'anime-style'
-  | 'concept-art'
-  | 'illustration';
+/** Un artist din artists.json */
+export interface Artist {
+  name: string;
+  period: string;
+  country: string;
+  style: string;
+  keywords: string[];
+  popularity: number;
+  born?: number;
+  died?: number | null;
+  movement?: string;
+}
 
-export type ExportFormat = 'json' | 'csv' | 'txt' | 'md';
-export type QualityLevel = 'draft' | 'standard' | 'high' | 'ultra';
-export type LogLevel = 'error' | 'warn' | 'info' | 'debug' | 'verbose';
-export type SortOrder = 'asc' | 'desc';
-export type SortBy = 'quality' | 'createdAt' | 'category' | 'style';
+/** O categorie de subiecte din subjects.json */
+export interface SubjectCategory {
+  category: string;
+  subjects: SubjectItem[];
+}
+
+export interface SubjectItem {
+  name: string;
+  description?: string;
+  tags?: string[];
+}
+
+/** O temă din themes.json */
+export interface Theme {
+  name: string;
+  description: string;
+  category: string;
+  ageGroup: string;
+  keywords?: string[];
+  mood?: string;
+}
+
+/** Negative prompts din negatives.json */
+export interface NegativePrompts {
+  universal: string[];
+  photography?: string[];
+  digital_art?: string[];
+  anime?: string[];
+  painting?: string[];
+  [key: string]: string[] | undefined;
+}
+
+/** Recipe din recipes.json */
+export interface Recipe {
+  id: string;
+  name: string;
+  description: string;
+  style: string;
+  subject: string;
+  quality: number;
+  mood?: string;
+  tags: string[];
+  prompt?: string;
+}
+
+// ============================================================
+// PROMPT GENERATION TYPES
+// ============================================================
+
+export type MoodType =
+  | 'dramatic'
+  | 'epic'
+  | 'peaceful'
+  | 'vibrant'
+  | 'mysterious'
+  | 'romantic'
+  | 'dark'
+  | 'whimsical';
+
+export type QualityLevel = 5 | 6 | 7 | 8 | 9 | 10;
+
+export type OutputFormat = 'standard' | 'compact' | 'detailed' | 'json';
+
+export interface PromptConfig {
+  style: string;
+  subject: string;
+  quality: QualityLevel;
+  mood?: MoodType;
+  enhancer?: boolean;
+  variation?: number;
+  artist?: string;
+  theme?: string;
+  negatives?: boolean;
+  seed?: number;
+}
 
 export interface PromptMetadata {
-  id: string;
-  createdAt: Date;
-  updatedAt: Date;
-  version: string;
-  source: 'cli' | 'web' | 'discord' | 'api';
+  wordCount: number;
+  characterCount: number;
+  style: string;
+  subject: string;
+  quality: QualityLevel;
+  mood?: MoodType;
+  artist?: string;
+  options: Partial<PromptConfig>;
+  timestamp: string;
+  enhancementLevel: 'basic' | 'advanced' | 'premium';
   seed?: number;
-  model?: string;
-  enhancedBy?: string;
 }
 
-export interface GeneratedPrompt {
-  prompt: string;
-  negativePrompt?: string;
-  category: PromptCategory;
-  style: ArtStyle;
-  quality: number;
-  tags: string[];
+export interface GenerationResult {
+  text: string;
+  negative?: string;
   metadata: PromptMetadata;
-  variations?: string[];
-  width?: number;
-  height?: number;
 }
 
-// ─── CLI ─────────────────────────────────────────────────────
-export interface CLIOptions {
-  category?: PromptCategory;
-  style?: ArtStyle;
-  count?: number;
-  export?: ExportFormat;
-  quality?: QualityLevel;
-  seed?: number;
-  verbose?: boolean;
-  output?: string;
-  enhance?: boolean;
-  negative?: boolean;
-  width?: number;
-  height?: number;
-}
+// ============================================================
+// BATCH PROCESSING
+// ============================================================
 
-export interface BatchOptions extends CLIOptions {
+export interface BatchOptions {
   count: number;
-  parallel?: boolean;
-  delay?: number;
-  maxConcurrent?: number;
+  parallel: number;
+  quality: QualityLevel;
+  mood?: MoodType;
+  export?: 'json' | 'txt' | 'csv';
+  outputFile?: string;
 }
 
-// ─── Cache ───────────────────────────────────────────────────
-export interface CacheEntry<T> {
-  value: T;
-  expiresAt: number;
-  hits: number;
+export interface BatchResult {
+  results: GenerationResult[];
+  stats: {
+    total: number;
+    duration: number;
+    avgQuality: number;
+    avgWordCount: number;
+  };
+}
+
+// ============================================================
+// v4.0.0 TYPES — LoRA, ComfyUI, Enhancers, Cache, CLI
+// ============================================================
+
+/** LoRA preset pentru Stable Diffusion */
+export interface LoraPreset {
+  id: string;
+  name: string;
+  description: string;
+  trigger_words: string[];
+  weight_range: [number, number];
+  compatible_models: string[];
+  category: string;
+  source?: string;
+  tags: string[];
+}
+
+/** ComfyUI Workflow Template */
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  nodes: WorkflowNode[];
+  category: string;
+  required_models: string[];
+  tags: string[];
+}
+
+export interface WorkflowNode {
+  id: string;
+  type: string;
+  params: Record<string, unknown>;
+  connections: { from: string; to: string }[];
+}
+
+/** Enhancer term pentru calitate */
+export interface EnhancerTerm {
+  term: string;
+  category: EnhancerCategory;
+  weight?: number;
+  compatible_styles?: string[];
+}
+
+export type EnhancerCategory =
+  | 'quality'
+  | 'lighting'
+  | 'composition'
+  | 'texture'
+  | 'color'
+  | 'mood'
+  | 'technical';
+
+/** Config persistată local */
+export interface CLIConfig {
+  defaultStyle: string;
+  qualityLevel: QualityLevel;
+  outputFormat: OutputFormat;
+  theme: string;
+  autoSave: boolean;
+  apiKeys?: {
+    openai?: string;
+    pollinationsApiKey?: string;
+  };
+  comfyuiUrl?: string;
+  automatic1111Url?: string;
+}
+
+/** Entry în history */
+export interface HistoryEntry {
+  command: string;
+  result: string;
+  timestamp: number;
+  style?: string;
+  subject?: string;
+}
+
+/** Cache entry generic */
+export interface CacheEntry<T = unknown> {
+  data: T;
+  timestamp: number;
+  ttl?: number;
   key?: string;
 }
 
-export interface CacheStats {
-  size: number;
-  hits: number;
-  misses: number;
-  hitRate: number;
-}
-
-export interface CacheOptions {
-  ttl?: number;
-  maxSize?: number;
-  onEvict?: (key: string, value: unknown) => void;
-}
-
-// ─── Validation ──────────────────────────────────────────────
-export interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-  sanitized: string;
-  score?: number;
-}
-
-export interface ValidationRule {
+/** Trending style entry */
+export interface TrendingStyle {
   name: string;
-  validate: (input: string) => boolean;
-  message: string;
-  severity: 'error' | 'warning';
-  weight?: number;
+  rank: number;
+  delta: number;
+  source: string;
+  fetchedAt: string;
 }
 
-// ─── API ─────────────────────────────────────────────────────
-export interface APIResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  timestamp: string;
-  version: string;
-  requestId?: string;
+/** Rezultat remix */
+export interface RemixResult {
+  original: string;
+  variations: GenerationResult[];
+  strategy: string;
 }
 
-export interface PaginatedResponse<T> extends APIResponse<T[]> {
-  page: number;
-  perPage: number;
-  total: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-}
-
-export interface APIError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-  stack?: string;
-}
-
-export interface RateLimitInfo {
-  limit: number;
-  remaining: number;
-  resetAt: Date;
-  retryAfter?: number;
-}
-
-// ─── ComfyUI ─────────────────────────────────────────────────
-export interface ComfyGenerationConfig {
-  baseUrl: string;
-  width?: number;
-  height?: number;
-  steps?: number;
-  cfgScale?: number;
-  sampler?: string;
-  seed?: number;
-  timeout?: number;
-  checkpointModel?: string;
-  loraModels?: string[];
-}
-
-export interface ComfyWorkflow {
-  id: string;
-  nodes: Record<string, unknown>;
-  metadata?: Record<string, unknown>;
-}
-
-// ─── Discord ─────────────────────────────────────────────────
-export interface DiscordBotConfig {
-  token: string;
-  clientId: string;
-  guildId?: string;
-  rateLimitPerUser?: number;
-  rateLimitWindowMs?: number;
-  adminRoleId?: string;
-  logChannelId?: string;
-}
-
-export interface DiscordCommandResult {
-  success: boolean;
-  content: string;
-  ephemeral?: boolean;
-  embeds?: unknown[];
-}
-
-// ─── Analytics ───────────────────────────────────────────────
-export interface UsageStats {
-  totalGenerated: number;
-  categoryCounts: Record<PromptCategory, number>;
-  styleCounts: Record<ArtStyle, number>;
-  averageQuality: number;
-  topTags: Array<{ tag: string; count: number }>;
-  dailyActivity: Array<{ date: string; count: number }>;
-  topCategories?: Array<{ category: PromptCategory; count: number }>;
-  qualityDistribution?: Array<{ range: string; count: number }>;
-}
-
-export interface AnalyticsEvent {
-  type: 'generate' | 'export' | 'validate' | 'enhance';
-  timestamp: Date;
-  metadata?: Record<string, unknown>;
-  userId?: string;
-  sessionId?: string;
-}
-
-// ─── Configuration ───────────────────────────────────────────
-export interface AppConfig {
-  port: number;
-  host: string;
-  env: 'development' | 'production' | 'test';
-  logLevel: LogLevel;
-  cors: {
-    origins: string[];
-    credentials: boolean;
-  };
-  rateLimit: {
-    windowMs: number;
-    max: number;
-  };
-  cache: {
-    defaultTtl: number;
-    maxSize: number;
-  };
-  pollinations: {
-    imageBaseUrl: string;
-    textBaseUrl: string;
-    defaultModel: string;
-    timeout: number;
-  };
-}
-
-// ─── Filter & Search ─────────────────────────────────────────
-export interface PromptFilter {
-  category?: PromptCategory;
-  style?: ArtStyle;
-  minQuality?: number;
-  maxQuality?: number;
-  tags?: string[];
-  source?: PromptMetadata['source'];
-  dateFrom?: Date;
-  dateTo?: Date;
-}
-
-export interface PromptSearchOptions extends PromptFilter {
-  query?: string;
-  page?: number;
-  perPage?: number;
-  sortBy?: SortBy;
-  sortOrder?: SortOrder;
+/** Rezultat compare */
+export interface CompareResult {
+  style1: ArtStyle;
+  style2: ArtStyle;
+  similarities: string[];
+  differences: Record<string, { style1: unknown; style2: unknown }>;
+  recommendation: string;
 }
