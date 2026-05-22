@@ -1,4 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
+import SharePackModal from '../components/SharePackModal';
+import ExportModal from '../components/ExportModal';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -48,11 +50,8 @@ function CodeBox({ code }) {
 }
 
 // ─── Open on Perchance ───────────────────────────────────────────────────────
-// Perchance supports ?code= in their create page for pre-filling the editor.
-// We encode the full generator code and open a new tab directly.
 function openOnPerchance(code, slug) {
   const encoded = encodeURIComponent(code);
-  // Perchance create URL — falls back gracefully if they change it
   const url = `https://perchance.org/create?title=${encodeURIComponent(slug)}&code=${encoded}`;
   window.open(url, '_blank', 'noopener,noreferrer');
 }
@@ -105,7 +104,6 @@ function GeneratorCard({ gen, diffStatus }) {
           {diffStatus && <Badge status={diffStatus} />}
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-2">
-          {/* Open on Perchance button — always visible in header */}
           {gen.code && (
             <button
               onClick={e => { e.stopPropagation(); openOnPerchance(gen.code, gen.slug); }}
@@ -172,16 +170,13 @@ function DiffView({ diff }) {
 }
 
 // ─── Remix History Timeline ───────────────────────────────────────────────────
-// Each entry: { pack, instruction, diffSummary, timestamp }
 function RemixTimeline({ history, activePack, onActivate }) {
   if (!history || history.length === 0) return null;
   return (
     <div className="space-y-1">
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Remix History</h3>
       <div className="relative pl-4">
-        {/* vertical line */}
         <div className="absolute left-1.5 top-0 bottom-0 w-px bg-gray-200" />
-
         {history.map((entry, idx) => {
           const isActive = activePack?.id === entry.pack.id;
           const label = idx === 0 ? 'Original' : `v${idx}`;
@@ -190,9 +185,8 @@ function RemixTimeline({ history, activePack, onActivate }) {
             <button
               key={entry.pack.id}
               onClick={() => onActivate(entry)}
-              className={`w-full flex items-start gap-3 py-2 text-left group transition`}
+              className="w-full flex items-start gap-3 py-2 text-left group transition"
             >
-              {/* node dot */}
               <div className={`relative z-10 mt-1 w-2.5 h-2.5 rounded-full shrink-0 -ml-1 ring-2 ring-white transition ${
                 isActive ? 'bg-indigo-500' : 'bg-gray-300 group-hover:bg-indigo-300'
               }`} />
@@ -227,24 +221,26 @@ export default function PackBuilder() {
   const [pack, setPack]         = useState(null);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
-  const [phase, setPhase]       = useState('idle'); // idle | planning | building | done
+  const [phase, setPhase]       = useState('idle');
 
   // Remix flow
   const [remixInstr, setRemixInstr]     = useState('');
   const [remixResult, setRemixResult]   = useState(null);
   const [remixLoading, setRemixLoading] = useState(false);
 
-  // Remix history: Array<{ pack, instruction, diffSummary, timestamp }>
+  // Remix history
   const [remixHistory, setRemixHistory] = useState([]);
-  // The pack currently being viewed (could be original or any remix)
   const [activePack, setActivePack]     = useState(null);
   const [activeDiff, setActiveDiff]     = useState(null);
 
   // Diff
   const [diff, setDiff]         = useState(null);
-  const [activeTab, setActiveTab] = useState('pack'); // pack | diff
+  const [activeTab, setActiveTab] = useState('pack');
 
-  // ref to original pack id for diff computation against any remix version
+  // Modal state
+  const [shareOpen, setShareOpen]   = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+
   const originalPackIdRef = useRef(null);
 
   // ── API helpers ────────────────────────────────────────────────────────────
@@ -288,7 +284,6 @@ export default function PackBuilder() {
       setActivePack(newPack);
       originalPackIdRef.current = newPack.id;
 
-      // Seed history with original
       setRemixHistory([{ pack: newPack, instruction: null, diffSummary: null, timestamp: Date.now() }]);
       setPhase('done');
     } catch (e) {
@@ -301,7 +296,6 @@ export default function PackBuilder() {
 
   // ── Remix flow ─────────────────────────────────────────────────────────────
   const handleRemix = async () => {
-    // Remix always from the currently active pack so chains work: A → B → C
     if (!activePack || !remixInstr.trim()) return;
     setRemixLoading(true); setError('');
 
@@ -309,7 +303,6 @@ export default function PackBuilder() {
       const result = await post('/remix', { packId: activePack.id, instruction: remixInstr.trim() });
       const newPack = result.pack;
 
-      // Compute diff vs the original (always), so you can see total drift
       const diffData = originalPackIdRef.current
         ? await fetchDiff(originalPackIdRef.current, newPack.id)
         : null;
@@ -340,7 +333,6 @@ export default function PackBuilder() {
     setActivePack(entry.pack);
     setActiveTab('pack');
 
-    // Load diff vs original for this version (skip for the original itself)
     if (entry.pack.id !== originalPackIdRef.current && originalPackIdRef.current) {
       const d = await fetchDiff(originalPackIdRef.current, entry.pack.id);
       setActiveDiff(d);
@@ -351,20 +343,7 @@ export default function PackBuilder() {
     }
   }, [fetchDiff]);
 
-  // ── Export all generators of a pack ───────────────────────────────────────
-  const exportAll = (targetPack) => {
-    if (!targetPack) return;
-    const content = targetPack.generators
-      .map(g => `// === ${g.title} (${g.slug}) ===\n${g.code}`)
-      .join('\n\n');
-    const blob = new Blob([content], { type: 'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${targetPack.theme.replace(/\s+/g, '-').toLowerCase()}-pack.txt`;
-    a.click();
-  };
-
-  // ── Open all generators from active pack on Perchance in separate tabs ─────
+  // ── Open all on Perchance ──────────────────────────────────────────────────
   const openAllOnPerchance = (targetPack) => {
     if (!targetPack) return;
     targetPack.generators.forEach(gen => {
@@ -372,7 +351,7 @@ export default function PackBuilder() {
     });
   };
 
-  // ─── derive current diff status map ────────────────────────────────────────
+  // ── Derived state ──────────────────────────────────────────────────────────
   const diffStatusMap = activeDiff
     ? Object.fromEntries(activeDiff.generators.map(g => [g.slug, g.status]))
     : {};
@@ -506,26 +485,41 @@ export default function PackBuilder() {
               {/* Generator list */}
               {activeTab === 'pack' && (
                 <div className="space-y-2">
+                  {/* Toolbar — Share / Export / Open all / Perchance */}
                   <div className="flex items-center justify-between">
                     <h2 className="font-semibold text-gray-700">
                       {versionLabel} generators
                     </h2>
                     <div className="flex gap-2">
+                      {/* 🔗 Share */}
+                      <button
+                        onClick={() => setShareOpen(true)}
+                        title="Share this pack via link"
+                        className="text-xs px-3 py-1.5 border border-teal-300 text-teal-700 rounded-lg hover:bg-teal-50 transition font-medium flex items-center gap-1"
+                      >
+                        🔗 Share
+                      </button>
+
+                      {/* 📦 Export */}
+                      <button
+                        onClick={() => setExportOpen(true)}
+                        title="Export generators as .zip / .json / clipboard"
+                        className="text-xs px-3 py-1.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium flex items-center gap-1"
+                      >
+                        📦 Export
+                      </button>
+
+                      {/* ↗ Open all on Perchance */}
                       <button
                         onClick={() => openAllOnPerchance(activePack)}
-                        title="Open all generators on Perchance.org (one tab per generator)"
+                        title="Open all generators on Perchance.org"
                         className="text-xs px-3 py-1.5 border border-indigo-300 text-indigo-700 rounded-lg hover:bg-indigo-50 transition"
                       >
                         ↗ Open all on Perchance
                       </button>
-                      <button
-                        onClick={() => exportAll(activePack)}
-                        className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                      >
-                        ⬇ Export all
-                      </button>
                     </div>
                   </div>
+
                   {activePack.generators.map(gen => (
                     <GeneratorCard
                       key={gen.slug}
@@ -551,6 +545,22 @@ export default function PackBuilder() {
         )}
 
       </div>
+
+      {/* ── Modals ────────────────────────────────────────────────────────── */}
+      {shareOpen && activePack && (
+        <SharePackModal
+          pack={activePack}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
+
+      {exportOpen && activePack && (
+        <ExportModal
+          generators={activePack.generators}
+          packTheme={activePack.theme}
+          onClose={() => setExportOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { path: '/generator', label: 'Generator', icon: '✨' },
   { path: '/studio', label: 'Studio', icon: '⚡', highlight: true },
   { path: '/pack', label: 'Pack Builder', icon: '🎲', highlight: true },
+  { path: '/templates', label: 'Templates', icon: '📚' },
   { path: '/batch', label: 'Batch', icon: '📦' },
   { path: '/mixer', label: 'Mixer', icon: '🎨' },
   { path: '/history', label: 'History', icon: '📜' },
@@ -17,6 +18,9 @@ const NAV_LINKS = [
 export default function Navbar() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  // Mark /pack/:id as active for the Pack Builder nav item
+  const isPackActive = location.pathname === '/pack' || location.pathname.startsWith('/pack/');
 
   return (
     <nav style={{
@@ -38,7 +42,9 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div style={{ display: 'flex', gap: 2, alignItems: 'center' }} className="desktop-nav">
           {NAV_LINKS.map(link => {
-            const active = location.pathname === link.path;
+            const active = link.path === '/pack'
+              ? isPackActive
+              : location.pathname === link.path;
             return (
               <Link key={link.path} to={link.path} style={{
                 padding: '5px 10px', borderRadius: 6, fontSize: 12, fontWeight: active ? 700 : 500,

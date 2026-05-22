@@ -14,6 +14,8 @@ import FavoritesPage from './pages/FavoritesPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PerchanceStudio from './pages/PerchanceStudio';
 import PackBuilder from './pages/PackBuilder';
+import PackViewPage from './pages/PackViewPage';
+import TemplateLibrary from './pages/TemplateLibrary';
 
 const theme = createTheme({
   palette: {
@@ -50,6 +52,8 @@ function App() {
               <Route path="/api" element={<ApiExplorer />} />
               <Route path="/studio" element={<PerchanceStudio />} />
               <Route path="/pack" element={<PackBuilder />} />
+              <Route path="/pack/:id" element={<PackViewPage />} />
+              <Route path="/templates" element={<TemplateLibrary />} />
             </Routes>
           </Box>
         </Box>
