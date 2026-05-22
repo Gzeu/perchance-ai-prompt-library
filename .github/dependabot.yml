@@ -1,21 +1,38 @@
 version: 2
 updates:
-  # Enable version updates for npm
+  # npm root - lunar, max 3 PRs, only security + minor/patch
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    
-  # Enable version updates for web npm
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      production-deps:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+      dev-deps:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+
+  # npm /web - lunar, max 3 PRs
   - package-ecosystem: "npm"
     directory: "/web"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-    
-  # Enable version updates for GitHub Actions
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      web-deps:
+        update-types: ["minor", "patch"]
+
+  # GitHub Actions - only security updates, weekly
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 2
