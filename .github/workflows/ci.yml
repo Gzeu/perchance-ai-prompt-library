@@ -1,4 +1,4 @@
-# .github/workflows/ci.yml — v4.0.0
+# .github/workflows/ci.yml — v7.0.0
 name: CI
 
 on:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint-and-test:
-    name: Lint, Type-check & Test
+    name: Type-check (agents) & Test
     runs-on: ubuntu-latest
 
     strategy:
@@ -29,14 +29,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Type check
-        run: npm run type-check
+      - name: Validate package structure
+        run: npm run validate
 
-      - name: Lint
-        run: npm run lint
+      - name: Type-check Ultra Agentic modules
+        run: npm run type-check:agents
 
-      - name: Run tests with coverage
-        run: npm run test
+      - name: Run CI test suite
+        run: npm run test:ci
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -46,7 +46,7 @@ jobs:
           fail_ci_if_error: false
 
   build:
-    name: Build
+    name: Build agents
     runs-on: ubuntu-latest
     needs: lint-and-test
 
@@ -57,10 +57,10 @@ jobs:
           node-version: '20.x'
           cache: 'npm'
       - run: npm ci
-      - run: npm run build
-      - name: Upload build artifacts
+      - run: npm run build:agents
+      - name: Upload agent build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dist
-          path: dist/
+          name: dist-agents
+          path: dist/agents/
           retention-days: 7

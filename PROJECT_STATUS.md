@@ -9,8 +9,8 @@
 
 ## v7.0 highlights
 
-- **Ultra Agentic pipeline** — 7 specialists, smart selection (max 3), Groq generation, debate, weighted voting, SyntaxMaster refine
-- **API** — `POST /api/perchance/agentic`, `GET /api/perchance/agentic/status`
+- **Ultra Agentic pipeline** — 7 specialists, smart selection (max 3), parallel Groq generation, debate, weighted voting, SyntaxMaster refine, session memory
+- **API** — `POST /api/perchance/agentic`, `GET /api/perchance/agentic/preview`, `GET /api/perchance/agentic/status`
 - **CLI** — `pai agentic "<description>"`
 - **Web** — `/agentic` Ultra Agentic Studio page
 - **Groq service** — shared module with retry/backoff on 429 and 5xx

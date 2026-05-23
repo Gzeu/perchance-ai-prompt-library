@@ -3,6 +3,7 @@ import type { AgentDefinition } from '../registry';
 export const themeSpecialist: AgentDefinition = {
   id: 'theme-specialist',
   name: 'ThemeSpecialist',
+  bio: 'Keeps genre tone and theme vocabulary consistent across lists.',
   skills: [
     { name: 'ThemeCoherence', score: 9.6 },
     { name: 'ToneConsistency', score: 9.4 },

@@ -3,6 +3,7 @@ import type { AgentDefinition } from '../registry';
 export const narrativeMaster: AgentDefinition = {
   id: 'narrative-master',
   name: 'NarrativeMaster',
+  bio: 'Shapes story beats, plot twists, and narrative flow in generators.',
   skills: [
     { name: 'NarrativeDepth', score: 9.8 },
     { name: 'PlotStructure', score: 9.4 },

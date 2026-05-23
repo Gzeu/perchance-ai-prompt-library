@@ -11,8 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Ultra Agentic system** — real Groq-backed multi-agent pipeline in `src/agents/orchestrator.ts`
-- **7 specialist agents** in `src/agents/specialists/` with registry and smart selection (max 3 per request)
-- **`POST /api/perchance/agentic`** and **`GET /api/perchance/agentic/status`**
+- **7 specialist agents** in `src/agents/specialists/` with registry, bios, and smart selection (max 3 per request)
+- **`POST /api/perchance/agentic`**, **`GET /api/perchance/agentic/preview`**, and **`GET /api/perchance/agentic/status`**
+- **Parallel agent generation** and **session memory** context in the orchestrator
+- **`npm run build:agents`** / **`npm run type-check:agents`** for production agent builds
 - **CLI** `pai agentic` command (HTTP to local API)
 - **Web** Ultra Agentic Studio at `/agentic`
 - **`src/services/groqService.js`** — shared Groq client with retry/backoff
@@ -21,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Version unified to **7.0.0** across package, API, CLI, docs
+- CI runs agent-focused type-check, build, and test suite (`test:ci`)
+- Agentic Studio UI: live agent preview, variant tabs, memory indicator
 - `perchance.js` routes refactored to use shared Groq service and rate limiting
 - Web API client defaults to `/api` proxy in dev; supports `VITE_API_BASE_URL`
 

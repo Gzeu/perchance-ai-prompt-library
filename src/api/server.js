@@ -126,6 +126,7 @@ app.get('/api', (req, res) => {
         categories: 'GET /api/perchance/categories',
         generate: 'POST /api/perchance/generate',
         agentic: 'POST /api/perchance/agentic',
+        agenticPreview: 'GET /api/perchance/agentic/preview',
         agenticStatus: 'GET /api/perchance/agentic/status',
         refine: 'POST /api/perchance/refine',
         ideas: 'POST /api/perchance/ideas',

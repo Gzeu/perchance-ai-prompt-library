@@ -1,10 +1,13 @@
 jest.mock('../../src/agents/agenticRunner', () => ({
   getAgenticStatus: jest.fn(() => ({
     totalAgents: 7,
-    agents: [{ id: 'syntax-master', name: 'SyntaxMaster', skills: [], expertise: [] }],
+    agents: [{ id: 'syntax-master', name: 'SyntaxMaster', bio: 'Syntax', skills: [], expertise: [] }],
     memoryEntries: 0,
     groqConfigured: false
   })),
+  previewAgenticSelection: jest.fn(() => [
+    { id: 'character-expert', name: 'CharacterExpert', bio: 'NPCs', skills: [], expertise: [] }
+  ]),
   runAgenticBrainstorm: jest.fn()
 }));
 
@@ -56,5 +59,21 @@ describe('GET /api/perchance/agentic/status', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data.totalAgents).toBe(7);
+  });
+});
+
+describe('GET /api/perchance/agentic/preview', () => {
+  it('returns 400 without description', async () => {
+    const res = await request(createApp()).get('/api/perchance/agentic/preview');
+    expect(res.status).toBe(400);
+  });
+
+  it('returns selected agents for a prompt', async () => {
+    const res = await request(createApp())
+      .get('/api/perchance/agentic/preview')
+      .query({ description: 'fantasy npc names', category: 'names' });
+    expect(res.status).toBe(200);
+    expect(res.body.data.agents).toHaveLength(1);
+    expect(res.body.data.agents[0].id).toBe('character-expert');
   });
 });

@@ -3,6 +3,7 @@ import type { AgentDefinition } from '../registry';
 export const creativityBooster: AgentDefinition = {
   id: 'creativity-booster',
   name: 'CreativityBooster',
+  bio: 'Maximizes variety, surprise, and rich item combinations.',
   skills: [
     { name: 'Originality', score: 9.7 },
     { name: 'SurpriseFactor', score: 9.5 },

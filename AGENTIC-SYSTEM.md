@@ -32,6 +32,14 @@ Agent definitions live in `src/agents/specialists/` and `src/agents/registry.ts`
 curl http://localhost:3000/api/perchance/agentic/status
 ```
 
+### Preview selected agents (no Groq call)
+
+```bash
+curl "http://localhost:3000/api/perchance/agentic/preview?description=fantasy%20tavern%20names&category=names"
+```
+
+Returns up to 3 agents that would run for the given description and category.
+
 ### Generate (Ultra Agentic)
 
 ```bash

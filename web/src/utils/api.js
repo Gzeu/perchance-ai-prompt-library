@@ -32,5 +32,6 @@ export const endpoints = {
   perchanceTemplates: '/perchance/templates',
   perchanceCategories: '/perchance/categories',
   perchanceAgentic: '/perchance/agentic',
-  perchanceAgenticStatus: '/perchance/agentic/status'
+  perchanceAgenticStatus: '/perchance/agentic/status',
+  perchanceAgenticPreview: '/perchance/agentic/preview'
 };

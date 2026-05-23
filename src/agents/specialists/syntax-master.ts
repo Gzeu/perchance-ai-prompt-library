@@ -3,6 +3,7 @@ import type { AgentDefinition } from '../registry';
 export const syntaxMaster: AgentDefinition = {
   id: 'syntax-master',
   name: 'SyntaxMaster',
+  bio: 'Polishes Perchance syntax: output-first, indents, valid refs.',
   skills: [
     { name: 'SyntacticPerfection', score: 9.9 },
     { name: 'PerchanceSyntax', score: 9.8 },

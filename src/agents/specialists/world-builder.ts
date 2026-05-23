@@ -3,6 +3,7 @@ import type { AgentDefinition } from '../registry';
 export const worldBuilder: AgentDefinition = {
   id: 'world-builder',
   name: 'WorldBuilder',
+  bio: 'Designs places, atmospheres, and coherent world-building vocabulary.',
   skills: [
     { name: 'WorldCoherence', score: 9.6 },
     { name: 'AtmosphereCreation', score: 9.3 },

@@ -1,7 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { Agent, GeneratedVariant, AgenticSessionResult } from '../types/agentic';
-import { AGENT_REGISTRY, selectAgentsForRequest, getAgentById, type AgentDefinition } from './registry';
+import type { Agent, GeneratedVariant, AgenticSessionResult, SelectedAgentSummary } from '../types/agentic';
+import {
+  AGENT_REGISTRY,
+  selectAgentsForRequest,
+  getAgentById,
+  toAgentSummary,
+  type AgentDefinition
+} from './registry';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const groq = require('../services/groqService.js') as {
@@ -61,14 +67,17 @@ export class UltraAgenticOrchestrator {
 
     const t0 = Date.now();
     const selectedAgents = selectAgentsForRequest(prompt, category);
+    const selectedSummaries: SelectedAgentSummary[] = selectedAgents.map(toAgentSummary);
     const complexityHint = COMPLEXITY_HINTS[complexity] || COMPLEXITY_HINTS.medium;
+    const memoryHint = this.getMemoryContext(prompt);
 
     let variants = await this.generateInitialVariants(
       selectedAgents,
       prompt,
       category,
       complexityHint,
-      theme
+      theme,
+      memoryHint
     );
 
     const debateRounds = Math.min(Math.max(iterations, 1), 3);
@@ -98,6 +107,8 @@ export class UltraAgenticOrchestrator {
       bestVariant: best,
       allVariants: variants,
       agentsUsed: selectedAgents.map((a) => a.name),
+      selectedAgents: selectedSummaries,
+      memoryUsed: memoryHint.length > 0,
       finalScore: best.score,
       code: best.content,
       validation,
@@ -113,7 +124,8 @@ export class UltraAgenticOrchestrator {
     prompt: string,
     category: string,
     complexityHint: string,
-    theme?: string
+    theme?: string,
+    memoryHint?: string
   ): string {
     return [
       `You are ${agent.name}, a specialized Perchance generator expert.`,
@@ -123,6 +135,7 @@ export class UltraAgenticOrchestrator {
       `User request: ${prompt}`,
       theme ? `Theme: ${theme}` : '',
       complexityHint,
+      memoryHint || '',
       '',
       'Generate complete Perchance code for this request.'
     ]
@@ -130,78 +143,136 @@ export class UltraAgenticOrchestrator {
       .join('\n');
   }
 
+  private getMemoryContext(prompt: string): string {
+    const words = prompt
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w) => w.length > 3);
+    if (words.length === 0 || this.memory.size === 0) return '';
+
+    let bestKey: string | null = null;
+    let bestVariant: GeneratedVariant | null = null;
+    let bestOverlap = 0;
+
+    for (const [key, variant] of this.memory) {
+      const keyWords = key.toLowerCase().split(/\W+/);
+      const overlap = words.filter((w) =>
+        keyWords.some((kw) => kw.includes(w) || w.includes(kw))
+      ).length;
+      if (overlap > bestOverlap) {
+        bestOverlap = overlap;
+        bestKey = key;
+        bestVariant = variant;
+      }
+    }
+
+    if (!bestKey || !bestVariant || bestOverlap === 0) return '';
+
+    const snippet = bestVariant.content.slice(0, 700);
+    return [
+      'Relevant prior successful generator (use as structural inspiration, do not copy verbatim):',
+      snippet,
+      bestVariant.content.length > 700 ? '...(truncated)' : ''
+    ].join('\n');
+  }
+
   private async generateInitialVariants(
     agents: AgentDefinition[],
     prompt: string,
     category: string,
     complexityHint: string,
-    theme?: string
+    theme?: string,
+    memoryHint?: string
   ): Promise<GeneratedVariant[]> {
     const maxTokens = complexityHint.includes('MASTER') ? 4096 : 2048;
-    const results: GeneratedVariant[] = [];
 
-    for (let index = 0; index < agents.length; index++) {
-      const agent = agents[index];
-      const userMsg = this.buildUserMessage(agent, prompt, category, complexityHint, theme);
-      const raw = await groq.callGroq(
-        [
-          { role: 'system', content: groq.SYSTEM_PROMPT },
-          { role: 'user', content: userMsg }
-        ],
-        maxTokens
-      );
-      const content = groq.cleanCode(raw);
-      const validation = validateCode(content);
-      const skillAvg =
-        agent.skills.reduce((sum, s) => sum + s.score, 0) / Math.max(agent.skills.length, 1);
-      const score = skillAvg / 10 + (validation.valid ? 0.5 : 0);
-
-      results.push({
-        id: `var-${index}`,
-        content,
-        score,
-        agent: agent.name,
-        skillsUsed: agent.skills
-      });
-    }
+    const results = await Promise.all(
+      agents.map((agent, index) =>
+        this.generateVariantForAgent(
+          agent,
+          index,
+          prompt,
+          category,
+          complexityHint,
+          theme,
+          memoryHint,
+          maxTokens
+        )
+      )
+    );
 
     return results.sort((a, b) => b.score - a.score);
+  }
+
+  private async generateVariantForAgent(
+    agent: AgentDefinition,
+    index: number,
+    prompt: string,
+    category: string,
+    complexityHint: string,
+    theme: string | undefined,
+    memoryHint: string | undefined,
+    maxTokens: number
+  ): Promise<GeneratedVariant> {
+    const userMsg = this.buildUserMessage(agent, prompt, category, complexityHint, theme, memoryHint);
+    const raw = await groq.callGroq(
+      [
+        { role: 'system', content: groq.SYSTEM_PROMPT },
+        { role: 'user', content: userMsg }
+      ],
+      maxTokens
+    );
+    const content = groq.cleanCode(raw);
+    const validation = validateCode(content);
+    const skillAvg =
+      agent.skills.reduce((sum, s) => sum + s.score, 0) / Math.max(agent.skills.length, 1);
+    const score = skillAvg / 10 + (validation.valid ? 0.5 : 0);
+
+    return {
+      id: `var-${index}`,
+      content,
+      score,
+      agent: agent.name,
+      skillsUsed: agent.skills
+    };
   }
 
   private async runDebateRound(variants: GeneratedVariant[], agents: Agent[]) {
     const top = variants.slice(0, 2);
     if (top.length === 0) return;
 
-    for (const variant of top) {
-      for (const agent of agents) {
-        try {
-          const raw = await groq.callGroq(
-            [
-              {
-                role: 'system',
-                content:
-                  'Critique Perchance generator code. Reply ONLY with JSON: {"score":1-10,"issues":[],"suggestion":""}'
-              },
-              {
-                role: 'user',
-                content: `Agent ${agent.name} reviews this code:\n\n${variant.content}\n\nScore 1-10 for quality, syntax, and fit.`
+    await Promise.all(
+      top.flatMap((variant) =>
+        agents.map(async (agent) => {
+          try {
+            const raw = await groq.callGroq(
+              [
+                {
+                  role: 'system',
+                  content:
+                    'Critique Perchance generator code. Reply ONLY with JSON: {"score":1-10,"issues":[],"suggestion":""}'
+                },
+                {
+                  role: 'user',
+                  content: `Agent ${agent.name} reviews this code:\n\n${variant.content}\n\nScore 1-10 for quality, syntax, and fit.`
+                }
+              ],
+              300,
+              groq.FAST_MODEL
+            );
+            const match = raw.match(/\{[\s\S]*\}/);
+            if (match) {
+              const critique = JSON.parse(match[0]) as { score?: number };
+              if (typeof critique.score === 'number') {
+                variant.score = (variant.score + critique.score) / 2;
               }
-            ],
-            300,
-            groq.FAST_MODEL
-          );
-          const match = raw.match(/\{[\s\S]*\}/);
-          if (match) {
-            const critique = JSON.parse(match[0]) as { score?: number };
-            if (typeof critique.score === 'number') {
-              variant.score = (variant.score + critique.score) / 2;
             }
+          } catch {
+            // Debate round is best-effort
           }
-        } catch {
-          // Debate round is best-effort
-        }
-      }
-    }
+        })
+      )
+    );
   }
 
   private async weightedVoting(variants: GeneratedVariant[]): Promise<GeneratedVariant[]> {
@@ -279,9 +350,10 @@ export class UltraAgenticOrchestrator {
   getAgentsStatus() {
     return {
       totalAgents: AGENT_REGISTRY.length,
-      agents: AGENT_REGISTRY.map(({ id, name, skills, expertise }) => ({
+      agents: AGENT_REGISTRY.map(({ id, name, bio, skills, expertise }) => ({
         id,
         name,
+        bio,
         skills,
         expertise
       })),

@@ -3,6 +3,7 @@ import type { AgentDefinition } from '../registry';
 export const consistencyChecker: AgentDefinition = {
   id: 'consistency-checker',
   name: 'ConsistencyChecker',
+  bio: 'Validates references, list structure, and logical coherence.',
   skills: [
     { name: 'Consistency', score: 9.9 },
     { name: 'LogicCoherence', score: 9.5 },

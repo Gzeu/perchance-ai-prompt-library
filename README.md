@@ -36,6 +36,8 @@ pai agentic "fantasy tavern name generator" --category names
 
 See `AGENTIC-SYSTEM.md` for architecture, API curl examples, and deployment notes.
 
+Compile agents for production: `npm run build:agents` (outputs to `dist/agents/`).
+
 ### Deployment
 
 | Component | Host | Notes |

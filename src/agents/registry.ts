@@ -114,11 +114,20 @@ export function getAgentById(id: string): AgentDefinition | undefined {
   return AGENT_REGISTRY.find((a) => a.id === id);
 }
 
+export function toAgentSummary(agent: AgentDefinition) {
+  return {
+    id: agent.id,
+    name: agent.name,
+    bio: agent.bio,
+    skills: agent.skills,
+    expertise: agent.expertise
+  };
+}
+
+export function previewAgentsForRequest(prompt: string, category?: string) {
+  return selectAgentsForRequest(prompt, category).map(toAgentSummary);
+}
+
 export function listAgentsStatus() {
-  return AGENT_REGISTRY.map(({ id, name, skills, expertise }) => ({
-    id,
-    name,
-    skills,
-    expertise
-  }));
+  return AGENT_REGISTRY.map(toAgentSummary);
 }

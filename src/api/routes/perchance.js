@@ -10,7 +10,11 @@ const {
   isGroqConfigured
 } = require('../../services/groqService');
 const { validateCode } = require('../../utils/perchanceValidate');
-const { runAgenticBrainstorm, getAgenticStatus } = require('../../agents/agenticRunner');
+const {
+  runAgenticBrainstorm,
+  getAgenticStatus,
+  previewAgenticSelection
+} = require('../../agents/agenticRunner');
 
 const router = Router();
 
@@ -38,6 +42,30 @@ function getTemplates() {
   }
   return _templates;
 }
+
+// GET /api/perchance/agentic/preview?description=&category=
+router.get('/agentic/preview', (req, res) => {
+  const description = typeof req.query.description === 'string' ? req.query.description.trim() : '';
+  const category = typeof req.query.category === 'string' ? req.query.category : 'writing';
+
+  if (!description) {
+    return res.status(400).json({ success: false, error: 'description query param is required' });
+  }
+
+  try {
+    const agents = previewAgenticSelection(description, category);
+    res.json({
+      success: true,
+      data: {
+        agents,
+        count: agents.length,
+        totalAvailable: getAgenticStatus().totalAgents
+      }
+    });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
 // GET /api/perchance/agentic/status
 router.get('/agentic/status', (_req, res) => {
@@ -80,6 +108,8 @@ router.post('/agentic', groqLimiter, async (req, res) => {
         bestVariant: session.bestVariant,
         allVariants: session.allVariants,
         agentsUsed: session.agentsUsed,
+        selectedAgents: session.selectedAgents,
+        memoryUsed: session.memoryUsed,
         debateRounds: session.debateRounds,
         validation: session.validation,
         finalScore: session.finalScore,

@@ -6,6 +6,15 @@ export interface AgentSkill {
 export interface Agent {
   id: string;
   name: string;
+  bio: string;
+  skills: AgentSkill[];
+  expertise: string[];
+}
+
+export interface SelectedAgentSummary {
+  id: string;
+  name: string;
+  bio: string;
   skills: AgentSkill[];
   expertise: string[];
 }
@@ -39,4 +48,6 @@ export interface AgenticSessionResult extends BrainstormSession {
   generationTime: number;
   category?: string;
   complexity?: string;
+  selectedAgents: SelectedAgentSummary[];
+  memoryUsed: boolean;
 }

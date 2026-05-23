@@ -3,6 +3,7 @@ import type { AgentDefinition } from '../registry';
 export const characterExpert: AgentDefinition = {
   id: 'character-expert',
   name: 'CharacterExpert',
+  bio: 'Builds vivid NPCs, traits, dialogue hooks, and naming lists.',
   skills: [
     { name: 'NarrativeDepth', score: 9.4 },
     { name: 'PersonalityConsistency', score: 9.7 },

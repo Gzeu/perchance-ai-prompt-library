@@ -11,7 +11,7 @@ list
   b`)
 }));
 
-import { selectAgentsForRequest } from '../../src/agents/registry';
+import { selectAgentsForRequest, previewAgentsForRequest } from '../../src/agents/registry';
 import { UltraAgenticOrchestrator } from '../../src/agents/orchestrator';
 
 describe('agentic registry', () => {
@@ -24,6 +24,12 @@ describe('agentic registry', () => {
   it('selects world builder for locations', () => {
     const agents = selectAgentsForRequest('fantasy city', 'locations');
     expect(agents.some((a) => a.id === 'world-builder')).toBe(true);
+  });
+
+  it('previewAgentsForRequest returns summaries with bio', () => {
+    const preview = previewAgentsForRequest('fantasy weapon', 'items');
+    expect(preview.length).toBeGreaterThan(0);
+    expect(preview[0].bio).toBeTruthy();
   });
 });
 
@@ -40,7 +46,9 @@ describe('UltraAgenticOrchestrator', () => {
 
     expect(session.code).toContain('output');
     expect(session.agentsUsed.length).toBeGreaterThan(0);
+    expect(session.selectedAgents.length).toBeGreaterThan(0);
     expect(session.debateRounds).toBe(1);
     expect(session.validation).toBeDefined();
+    expect(typeof session.memoryUsed).toBe('boolean');
   });
 });
