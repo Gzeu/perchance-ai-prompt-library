@@ -15,20 +15,23 @@ function applyGlobal(app) {
   // Security headers
   app.use(helmet({ contentSecurityPolicy: false }));
 
-  // CORS — allow all origins by default; override via CORS_ORIGIN env var
-  const corsOptions = process.env.CORS_ORIGIN
-    ? { origin: process.env.CORS_ORIGIN, optionsSuccessStatus: 200 }
-    : {};
-  app.use(cors(corsOptions));
+  // CORS — use explicit origin list; never allow wildcard in production
+  const allowedOrigin =
+    process.env.CORS_ORIGIN ||
+    (process.env.NODE_ENV === 'production'
+      ? 'https://perchance-ai-prompt-library.vercel.app'
+      : 'http://localhost:5173');
+  app.use(cors({ origin: allowedOrigin, optionsSuccessStatus: 200 }));
 
   // HTTP request logging (skip in test)
   if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('combined'));
   }
 
-  // Body parsers
-  app.use(require('express').json({ limit: '10mb' }));
-  app.use(require('express').urlencoded({ extended: true, limit: '10mb' }));
+  // Body parsers — keep limits small to prevent DoS via body flooding
+  // Routes that need larger payloads (e.g. /api/images for base64) override locally
+  app.use(require('express').json({ limit: '256kb' }));
+  app.use(require('express').urlencoded({ extended: true, limit: '256kb' }));
 
   // Global rate limiting — 100 req/min per IP
   app.use(defaultLimiter);
