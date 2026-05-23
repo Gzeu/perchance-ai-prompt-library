@@ -1,14 +1,16 @@
+'use strict';
+
 // Load environment variables from .env file
 require('dotenv').config();
 
 const express = require('express');
-const cors = require('cors');
-const swaggerUi = require('swagger-ui-express');
 const path = require('path');
+const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const { PerchancePromptLibrary } = require('../index');
+const { applyGlobal } = require('./middleware/index');
 
-// Import route files
+// Route files
 const healthRoutes = require('./routes/health');
 const promptsRoutes = require('./routes/prompts');
 const stylesRoutes = require('./routes/styles');
@@ -20,134 +22,76 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const library = new PerchancePromptLibrary();
 
-// Middleware
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// ── Global middleware (helmet, cors, morgan, body parsers, rate limit) ──────
+applyGlobal(app);
 
-// Serve static files from public directory
+// ── Static files ─────────────────────────────────────────────────────────────
 const publicPath = path.join(__dirname, 'public');
 app.use(express.static(publicPath));
 
-// API Routes
-app.use('/api/health', healthRoutes);
-app.use('/api/prompts', promptsRoutes);
-app.use('/api/styles', stylesRoutes);
-app.use('/api/images', imagesRoutes);
-app.use('/api/perchance', perchanceRoutes);
+// ── API Routes ────────────────────────────────────────────────────────────────
+app.use('/api/health',        healthRoutes);
+app.use('/api/prompts',       promptsRoutes);
+app.use('/api/styles',        stylesRoutes);
+app.use('/api/images',        imagesRoutes);
+app.use('/api/perchance',     perchanceRoutes);
 app.use('/api/perchance/pack', perchancePackRoutes);
 
-// Serve API documentation
-app.use('/api-docs', 
-  swaggerUi.serve, 
+// ── Swagger docs ──────────────────────────────────────────────────────────────
+app.use('/api-docs',
+  swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
     explorer: true,
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Perchance AI Prompt Library API',
-    customfavIcon: '/favicon.ico'
+    customfavIcon: '/favicon.ico',
   })
 );
 
-// Root route - serve index.html
-app.get('/', (req, res) => {
+// ── Root ──────────────────────────────────────────────────────────────────────
+app.get('/', (_req, res) => {
   res.sendFile(path.join(publicPath, 'index.html'));
 });
 
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    version: '7.0.0',
-    timestamp: new Date().toISOString(),
-    features: ['api', 'batch', 'styles', 'perchance-generators', 'ai-groq', 'agentic', 'pack-builder']
-  });
-});
-
-// Generate prompt
-app.post('/api/prompts/generate', (req, res) => {
-  try {
-    const { style, subject, ...config } = req.body;
-    const result = library.generate({ style, subject, ...config });
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-});
-
-// Batch generation
-app.post('/api/prompts/batch', (req, res) => {
-  try {
-    const { style, subject, count = 3, ...config } = req.body;
-    const results = library.generateVariations(style, { subject, ...config }, count);
-    res.json({ success: true, data: results, count: results.length });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-});
-
-// List styles
-app.get('/api/styles', (req, res) => {
-  try {
-    const styles = library.listStyles();
-    res.json({ success: true, data: styles });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
-// Style mixing
-app.post('/api/prompts/mix', (req, res) => {
-  try {
-    const { styles, subject } = req.body;
-    if (!Array.isArray(styles) || styles.length < 2) {
-      return res.status(400).json({ success: false, error: 'At least 2 styles required for mixing' });
-    }
-    const result = library.generate({ style: styles[0], subject, randomizeVariables: true });
-    result.mixedStyles = styles;
-    res.json({ success: true, data: result });
-  } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
-  }
-});
-
-// Root endpoint info
-app.get('/api', (req, res) => {
+// ── API index ─────────────────────────────────────────────────────────────────
+app.get('/api', (_req, res) => {
   res.json({
     name: 'Perchance AI Prompt Library API',
     version: '7.0.0',
+    docs: '/api-docs',
     endpoints: {
-      health: 'GET /api/health',
-      generate: 'POST /api/prompts/generate',
-      batch: 'POST /api/prompts/batch',
-      mix: 'POST /api/prompts/mix',
-      styles: 'GET /api/styles',
+      health:    'GET  /api/health',
+      generate:  'POST /api/prompts/generate',
+      batch:     'POST /api/prompts/batch',
+      mix:       'POST /api/prompts/mix',
+      styles:    'GET  /api/styles',
       perchance: {
-        templates: 'GET /api/perchance/templates',
-        categories: 'GET /api/perchance/categories',
-        generate: 'POST /api/perchance/generate',
-        agentic: 'POST /api/perchance/agentic',
-        agenticPreview: 'GET /api/perchance/agentic/preview',
-        agenticStatus: 'GET /api/perchance/agentic/status',
-        refine: 'POST /api/perchance/refine',
-        ideas: 'POST /api/perchance/ideas',
-        validate: 'POST /api/perchance/validate',
-        packPlan: 'POST /api/perchance/pack/plan',
-        packBuild: 'POST /api/perchance/pack/build'
-      }
-    }
+        templates:      'GET  /api/perchance/templates',
+        categories:     'GET  /api/perchance/categories',
+        generate:       'POST /api/perchance/generate',
+        agentic:        'POST /api/perchance/agentic',
+        agenticPreview: 'GET  /api/perchance/agentic/preview',
+        agenticStatus:  'GET  /api/perchance/agentic/status',
+        refine:         'POST /api/perchance/refine',
+        ideas:          'POST /api/perchance/ideas',
+        validate:       'POST /api/perchance/validate',
+        packPlan:       'POST /api/perchance/pack/plan',
+        packBuild:      'POST /api/perchance/pack/build',
+      },
+    },
   });
 });
 
+// ── Start ─────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log('\n🚀 Perchance AI Prompt Library v7.0');
-  console.log(`📡 API Server: http://localhost:${PORT}`);
-  console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
-  console.log(`⚡ Perchance AI: http://localhost:${PORT}/api/perchance/generate`);
-  console.log(`🧠 Ultra Agentic: http://localhost:${PORT}/api/perchance/agentic`);
-  console.log(`🎲 Pack Builder: http://localhost:${PORT}/api/perchance/pack/plan`);
-  console.log(`📚 Templates: http://localhost:${PORT}/api/perchance/templates`);
+  console.log(`📡 API:      http://localhost:${PORT}/api`);
+  console.log(`❤️  Health:   http://localhost:${PORT}/api/health`);
+  console.log(`📚 Swagger:  http://localhost:${PORT}/api-docs`);
+  console.log(`🧠 Agentic:  http://localhost:${PORT}/api/perchance/agentic`);
+  console.log(`🎲 Pack:     http://localhost:${PORT}/api/perchance/pack/plan`);
   const hasGroq = !!process.env.GROQ_API_KEY;
-  console.log(`🤖 Groq AI: ${hasGroq ? '✓ Ready' : '✗ Set GROQ_API_KEY to enable'}`);
+  console.log(`🤖 Groq AI:  ${hasGroq ? '✓ Ready' : '✗ Set GROQ_API_KEY to enable'}`);
 });
 
 module.exports = app;
