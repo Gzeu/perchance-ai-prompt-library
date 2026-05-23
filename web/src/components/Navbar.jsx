@@ -5,6 +5,7 @@ const NAV_LINKS = [
   { path: '/', label: 'Dashboard', icon: '🏠' },
   { path: '/generator', label: 'Generator', icon: '✨' },
   { path: '/studio', label: 'Studio', icon: '⚡', highlight: true },
+  { path: '/agentic', label: 'Agentic', icon: '🧠', highlight: true },
   { path: '/pack', label: 'Pack Builder', icon: '🎲', highlight: true },
   { path: '/templates', label: 'Templates', icon: '📚' },
   { path: '/batch', label: 'Batch', icon: '📦' },

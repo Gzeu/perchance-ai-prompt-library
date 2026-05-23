@@ -11,7 +11,7 @@ const os = require('os');
 // Advanced CLI utilities
 class AdvancedCLI {
   constructor() {
-    this.version = '2.2.3';
+    this.version = '7.0.0';
     this.configDir = path.join(os.homedir(), '.perchance');
     this.configFile = path.join(this.configDir, 'config.json');
     this.metricsFile = path.join(this.configDir, 'metrics.log');
@@ -979,6 +979,69 @@ program
       console.log(`   ${chalk.gray(time)}`);
       console.log(`   ${chalk.white(entry.result)}\n`);
     });
+  });
+
+// Ultra Agentic brainstorm command
+program
+  .command('agentic')
+  .description('🧠 Ultra Agentic multi-agent Perchance generator')
+  .argument('<description>', 'What to generate (e.g. fantasy tavern name generator)')
+  .option('-c, --category <cat>', 'Category (characters, locations, names, etc.)', 'writing')
+  .option('-i, --iterations <n>', 'Debate rounds (1-3)', '2')
+  .option('--complexity <level>', 'simple | medium | master', 'medium')
+  .option('--theme <theme>', 'Optional theme')
+  .option('--json', 'Output raw JSON')
+  .option('--api <url>', 'API base URL', 'http://localhost:3000')
+  .action(async (description, options) => {
+    const spinner = cli.createSpinner('Running Ultra Agentic brainstorm...');
+    spinner.start();
+    await cli.logMetric('agentic', { category: options.category });
+
+    const body = {
+      description,
+      category: options.category,
+      iterations: Math.min(3, Math.max(1, parseInt(options.iterations, 10) || 2)),
+      complexity: options.complexity,
+      theme: options.theme
+    };
+
+    try {
+      const url = `${options.api.replace(/\/$/, '')}/api/perchance/agentic`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      spinner.stop();
+
+      if (!res.ok || !data.success) {
+        console.error(chalk.red('✗'), data.error || res.statusText);
+        process.exit(1);
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify(data.data, null, 2));
+        return;
+      }
+
+      console.log(chalk.green('\n✓ Ultra Agentic generation complete\n'));
+      console.log(chalk.cyan('Agents:'), data.data.agentsUsed.join(', '));
+      console.log(chalk.cyan('Score:'), data.data.finalScore?.toFixed(2));
+      console.log(chalk.cyan('Time:'), `${data.data.generationTime}ms`);
+      if (data.data.validation) {
+        const v = data.data.validation;
+        console.log(chalk.cyan('Valid:'), v.valid ? chalk.green('yes') : chalk.red('no'));
+        if (v.warnings?.length) console.log(chalk.yellow('Warnings:'), v.warnings.join('; '));
+      }
+      console.log(chalk.gray('\n--- Perchance code ---\n'));
+      console.log(data.data.code);
+    } catch (err) {
+      spinner.fail('Agentic request failed');
+      console.error(chalk.red(err.message));
+      console.log(chalk.gray('Tip: start the API with npm start or npm run dev'));
+      process.exit(1);
+    }
   });
 
 console.log(chalk.gray('🔧 Advanced CLI ready. Use --help for comprehensive command list.\n'));

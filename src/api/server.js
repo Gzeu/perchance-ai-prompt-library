@@ -57,9 +57,9 @@ app.get('/', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
-    version: '8.0.0',
+    version: '7.0.0',
     timestamp: new Date().toISOString(),
-    features: ['api', 'batch', 'styles', 'perchance-generators', 'ai-groq', 'pack-builder']
+    features: ['api', 'batch', 'styles', 'perchance-generators', 'ai-groq', 'agentic', 'pack-builder']
   });
 });
 
@@ -114,7 +114,7 @@ app.post('/api/prompts/mix', (req, res) => {
 app.get('/api', (req, res) => {
   res.json({
     name: 'Perchance AI Prompt Library API',
-    version: '8.0.0',
+    version: '7.0.0',
     endpoints: {
       health: 'GET /api/health',
       generate: 'POST /api/prompts/generate',
@@ -125,6 +125,8 @@ app.get('/api', (req, res) => {
         templates: 'GET /api/perchance/templates',
         categories: 'GET /api/perchance/categories',
         generate: 'POST /api/perchance/generate',
+        agentic: 'POST /api/perchance/agentic',
+        agenticStatus: 'GET /api/perchance/agentic/status',
         refine: 'POST /api/perchance/refine',
         ideas: 'POST /api/perchance/ideas',
         validate: 'POST /api/perchance/validate',
@@ -136,10 +138,11 @@ app.get('/api', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log('\n🚀 Perchance AI Prompt Library v8.0');
+  console.log('\n🚀 Perchance AI Prompt Library v7.0');
   console.log(`📡 API Server: http://localhost:${PORT}`);
   console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
   console.log(`⚡ Perchance AI: http://localhost:${PORT}/api/perchance/generate`);
+  console.log(`🧠 Ultra Agentic: http://localhost:${PORT}/api/perchance/agentic`);
   console.log(`🎲 Pack Builder: http://localhost:${PORT}/api/perchance/pack/plan`);
   console.log(`📚 Templates: http://localhost:${PORT}/api/perchance/templates`);
   const hasGroq = !!process.env.GROQ_API_KEY;

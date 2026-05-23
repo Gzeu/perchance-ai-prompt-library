@@ -9,7 +9,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../api';
+import { api } from '../utils/api.js';
 
 export default function PackViewPage() {
   const { id } = useParams();

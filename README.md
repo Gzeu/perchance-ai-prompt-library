@@ -18,10 +18,29 @@ Agents with skills like NarrativeDepth, SyntacticPerfection, Originality, Consis
 ## Quick Start
 
 ```bash
-npm install -g perchance-ai-prompt-library
-perchance generate "your description here"
+git clone https://github.com/Gzeu/perchance-ai-prompt-library.git
+cd perchance-ai-prompt-library
+npm install && cd web && npm install && cd ..
+cp .env.example .env   # add GROQ_API_KEY
+npm run dev            # API :3000 + Web :5173
 ```
 
-See `AGENTIC-SYSTEM.md` for full architecture.
+**Ultra Agentic (CLI):**
+
+```bash
+npm start
+pai agentic "fantasy tavern name generator" --category names
+```
+
+**Web:** open `http://localhost:5173/agentic`
+
+See `AGENTIC-SYSTEM.md` for architecture, API curl examples, and deployment notes.
+
+### Deployment
+
+| Component | Host | Notes |
+|-----------|------|--------|
+| Web UI | [Vercel](https://perchance-ai-prompt-library.vercel.app) | Static Vite build |
+| API | Self-hosted | Set `VITE_API_URL` on web build to your API URL |
 
 MIT License © Gzeu

@@ -1,54 +1,31 @@
 'use strict';
 const { Router } = require('express');
+const rateLimit = require('express-rate-limit');
+const {
+  SYSTEM_PROMPT,
+  REVERSE_PROMPT,
+  callGroq,
+  cleanCode,
+  mapGroqError,
+  isGroqConfigured
+} = require('../../services/groqService');
+const { validateCode } = require('../../utils/perchanceValidate');
+const { runAgenticBrainstorm, getAgenticStatus } = require('../../agents/agenticRunner');
 
 const router = Router();
 
-// Groq client — no module-level singleton to avoid stale null on hot-reload
-function getGroq() {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return null;
-  try {
-    const Groq = require('groq-sdk');
-    return new Groq({ apiKey });
-  } catch {
-    return null;
-  }
+const groqLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Too many AI requests. Please wait a moment.' }
+});
+
+function handleGroqError(e, res) {
+  const mapped = mapGroqError(e);
+  return res.status(mapped.status).json({ success: false, error: mapped.message });
 }
-
-const SYSTEM_PROMPT = `You are an expert in Perchance.org generator syntax. Generate valid, working Perchance generators.
-
-PERCHANCE SYNTAX RULES:
-1. A generator is made of named lists. Each list name is on its own line, entries are indented 2 spaces.
-2. The first list is always "output" — shown when generating.
-3. Reference other lists with [listName].
-4. Inline choices: {a|b|c}. Random numbers: {1-10}.
-5. Import another generator: [^gen-name.listName].
-6. Weights: add number after entry space ("rare item  1", "common item  5").
-7. Newlines in output: \\n. HTML formatting allowed.
-8. Comments start with //
-9. Use \\s when you need a leading or trailing space in generated text.
-
-OUTPUT ONLY raw Perchance code. No markdown fences, no explanations. Always start with the output list.`;
-
-const REVERSE_PROMPT = `You are an expert in Perchance.org generator syntax. Your task is to REVERSE-ENGINEER a Perchance generator by analyzing sample outputs provided by the user.
-
-STEPS:
-1. Study the sample outputs carefully — identify patterns, recurring structures, vocabulary, and style.
-2. Decompose each output into its constituent parts (adjectives, nouns, verbs, qualifiers, formats, etc.).
-3. Build named lists that capture the vocabulary and patterns you found.
-4. Wire them together with an output list that reproduces the format of the examples.
-5. Add MORE items to each list beyond what the examples show — extrapolate creatively in the same style.
-6. Ensure every list has at least 10-15 items.
-
-PERCHANCE SYNTAX RULES:
-- List name on its own line (no indent), entries indented 2 spaces.
-- First list must be "output".
-- Reference lists with [listName].
-- Inline choices: {a|b|c}. Numbers: {1-10}.
-- Comments start with //
-- Use \\s when you need a leading or trailing space in generated text.
-
-OUTPUT ONLY raw Perchance code. No markdown fences, no explanations.`;
 
 // Load static template library
 let _templates = null;
@@ -62,64 +39,57 @@ function getTemplates() {
   return _templates;
 }
 
-function validateCode(code) {
-  const errors = [];
-  const warnings = [];
-  const lines = code.split('\n');
-  const lists = [];
-  let hasOutput = false;
+// GET /api/perchance/agentic/status
+router.get('/agentic/status', (_req, res) => {
+  try {
+    const status = getAgenticStatus();
+    res.json({ success: true, data: status });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
-  for (const line of lines) {
-    if (!line.trim() || line.trim().startsWith('//')) continue;
-    if (!line.startsWith(' ') && !line.startsWith('\t')) {
-      const name = line.trim();
-      lists.push(name);
-      if (name === 'output') hasOutput = true;
-    }
+// POST /api/perchance/agentic
+router.post('/agentic', groqLimiter, async (req, res) => {
+  const { description, category = 'writing', iterations = 2, complexity = 'medium', theme } = req.body;
+
+  if (!description || typeof description !== 'string') {
+    return res.status(400).json({ success: false, error: 'description is required' });
   }
 
-  if (!hasOutput) errors.push('Missing required "output" list');
-  if (lists[0] && lists[0] !== 'output') {
-    warnings.push('"output" should be the first list — Perchance shows the first list by default');
-  }
-  if (lists.length < 2) warnings.push('Generator has very few lists — add more for variety');
-
-  const refs = code.match(/\[([a-zA-Z][a-zA-Z0-9_-]*)\]/g) || [];
-  for (const ref of refs) {
-    const name = ref.slice(1, -1);
-    if (!name.startsWith('^') && !lists.includes(name)) {
-      warnings.push(`Reference [${name}] not found locally (may be an import)`);
-    }
+  if (!isGroqConfigured()) {
+    return res.status(503).json({
+      success: false,
+      error: 'GROQ_API_KEY not configured. Add it to your .env file to use Ultra Agentic mode.'
+    });
   }
 
-  return { valid: errors.length === 0, errors, warnings };
-}
+  const t0 = Date.now();
+  try {
+    const session = await runAgenticBrainstorm(description, {
+      category,
+      iterations: Math.min(Math.max(Number(iterations) || 2, 1), 3),
+      complexity,
+      theme
+    });
 
-async function callGroq(messages, maxTokens = 2048, model = 'llama-3.3-70b-versatile') {
-  const groq = getGroq();
-  if (!groq) throw new Error('GROQ_API_KEY not configured');
-  const completion = await groq.chat.completions.create({
-    model,
-    messages,
-    temperature: 0.8,
-    max_tokens: maxTokens,
-    top_p: 0.9
-  });
-  return completion.choices[0]?.message?.content?.trim() || '';
-}
-
-function cleanCode(raw) {
-  return raw.replace(/^```[a-z]*\n?/gm, '').replace(/^```$/gm, '').trim();
-}
-
-// Normalize Groq errors to a user-friendly HTTP response
-function handleGroqError(e, res) {
-  const status = e?.status || e?.error?.status || e?.response?.status || 500;
-  if (status === 429) {
-    return res.status(429).json({ success: false, error: 'Rate limit reached. Please wait a moment and try again.' });
+    res.json({
+      success: true,
+      data: {
+        code: session.code,
+        bestVariant: session.bestVariant,
+        allVariants: session.allVariants,
+        agentsUsed: session.agentsUsed,
+        debateRounds: session.debateRounds,
+        validation: session.validation,
+        finalScore: session.finalScore,
+        generationTime: session.generationTime || Date.now() - t0
+      }
+    });
+  } catch (e) {
+    return handleGroqError(e, res);
   }
-  return res.status(500).json({ success: false, error: e.message || 'Unexpected error' });
-}
+});
 
 // GET /api/perchance/templates
 router.get('/templates', (_req, res) => {
@@ -129,7 +99,7 @@ router.get('/templates', (_req, res) => {
 
 // GET /api/perchance/templates/:id
 router.get('/templates/:id', (req, res) => {
-  const tpl = getTemplates().find(t => t.id === req.params.id);
+  const tpl = getTemplates().find((t) => t.id === req.params.id);
   if (!tpl) return res.status(404).json({ success: false, error: 'Template not found' });
   res.json({ success: true, data: tpl });
 });
@@ -137,19 +107,21 @@ router.get('/templates/:id', (req, res) => {
 // GET /api/perchance/categories
 router.get('/categories', (_req, res) => {
   const tpl = getTemplates();
-  const cats = [...new Set(tpl.map(t => t.category))];
+  const cats = [...new Set(tpl.map((t) => t.category))];
   res.json({
     success: true,
-    data: cats.map(cat => ({
+    data: cats.map((cat) => ({
       name: cat,
-      count: tpl.filter(t => t.category === cat).length,
-      templates: tpl.filter(t => t.category === cat).map(t => ({ id: t.id, name: t.name, complexity: t.complexity }))
+      count: tpl.filter((t) => t.category === cat).length,
+      templates: tpl
+        .filter((t) => t.category === cat)
+        .map((t) => ({ id: t.id, name: t.name, complexity: t.complexity }))
     }))
   });
 });
 
 // POST /api/perchance/generate
-router.post('/generate', async (req, res) => {
+router.post('/generate', groqLimiter, async (req, res) => {
   const { category, description, complexity = 'medium', theme } = req.body;
   if (!category || !description) {
     return res.status(400).json({ success: false, error: 'category and description are required' });
@@ -158,7 +130,8 @@ router.post('/generate', async (req, res) => {
   const complexityMap = {
     simple: 'Create a simple generator with 3-5 lists, 8-12 items each.',
     medium: 'Create a medium generator with 5-8 lists, 10-15 items each. Use nested references.',
-    master: 'Create a MASTER generator combining multiple sub-generators via [^import]. 8-12 lists, 15-20 items each. Production-ready.'
+    master:
+      'Create a MASTER generator combining multiple sub-generators via [^import]. 8-12 lists, 15-20 items each. Production-ready.'
   };
 
   const userMsg = `Category: ${category}\nDescription: ${description}${theme ? `\nTheme: ${theme}` : ''}\nComplexity: ${complexity}\n\n${complexityMap[complexity] || complexityMap.medium}\n\nGenerate the Perchance code:`;
@@ -166,18 +139,29 @@ router.post('/generate', async (req, res) => {
   const t0 = Date.now();
   try {
     const raw = await callGroq(
-      [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: userMsg }],
+      [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userMsg }
+      ],
       complexity === 'master' ? 4096 : 2048
     );
     const code = cleanCode(raw);
-    res.json({ success: true, data: { code, model: 'llama-3.3-70b-versatile', generationTime: Date.now() - t0, validation: validateCode(code) } });
+    res.json({
+      success: true,
+      data: {
+        code,
+        model: 'llama-3.3-70b-versatile',
+        generationTime: Date.now() - t0,
+        validation: validateCode(code)
+      }
+    });
   } catch (e) {
     return handleGroqError(e, res);
   }
 });
 
 // POST /api/perchance/from-examples
-router.post('/from-examples', async (req, res) => {
+router.post('/from-examples', groqLimiter, async (req, res) => {
   const { examples, hints } = req.body;
 
   if (!examples || !Array.isArray(examples) || examples.length < 2) {
@@ -187,30 +171,30 @@ router.post('/from-examples', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Maximum 30 examples allowed' });
   }
 
-  const examplesBlock = examples
-    .map((ex, i) => `${i + 1}. ${String(ex).trim()}`)
-    .join('\n');
-
-  const hintsLine = hints && hints.trim()
-    ? `\n\nAdditional hints from the user: ${hints.trim()}`
-    : '';
+  const examplesBlock = examples.map((ex, i) => `${i + 1}. ${String(ex).trim()}`).join('\n');
+  const hintsLine = hints && hints.trim() ? `\n\nAdditional hints from the user: ${hints.trim()}` : '';
 
   const userMsg = `Here are ${examples.length} example outputs I want to generate randomly:\n\n${examplesBlock}${hintsLine}\n\nAnalyze the patterns and reverse-engineer a complete Perchance generator that can reproduce outputs in this style. Expand the lists with many more items in the same style. Output only the Perchance code:`;
 
   const t0 = Date.now();
   try {
     const raw = await callGroq(
-      [{ role: 'system', content: REVERSE_PROMPT }, { role: 'user', content: userMsg }],
+      [
+        { role: 'system', content: REVERSE_PROMPT },
+        { role: 'user', content: userMsg }
+      ],
       3000
     );
     const code = cleanCode(raw);
     const validation = validateCode(code);
 
-    // Count top-level lists consistently with validateCode()
-    const listCount = code.split('\n').filter(line => {
+    const listCount = code.split('\n').filter((line) => {
       if (!line.trim() || line.trim().startsWith('//')) return false;
-      return !line.startsWith(' ') && !line.startsWith('\t') &&
-        /^[a-zA-Z][a-zA-Z0-9_-]*\s*$/.test(line.trim());
+      return (
+        !line.startsWith(' ') &&
+        !line.startsWith('\t') &&
+        /^[a-zA-Z][a-zA-Z0-9_-]*\s*$/.test(line.trim())
+      );
     }).length;
 
     res.json({
@@ -220,10 +204,7 @@ router.post('/from-examples', async (req, res) => {
         model: 'llama-3.3-70b-versatile',
         generationTime: Date.now() - t0,
         validation,
-        meta: {
-          examplesAnalyzed: examples.length,
-          listsGenerated: listCount
-        }
+        meta: { examplesAnalyzed: examples.length, listsGenerated: listCount }
       }
     });
   } catch (e) {
@@ -232,7 +213,7 @@ router.post('/from-examples', async (req, res) => {
 });
 
 // POST /api/perchance/refine
-router.post('/refine', async (req, res) => {
+router.post('/refine', groqLimiter, async (req, res) => {
   const { code, request } = req.body;
   if (!code || !request) return res.status(400).json({ success: false, error: 'code and request are required' });
 
@@ -240,25 +221,47 @@ router.post('/refine', async (req, res) => {
   try {
     const raw = await callGroq([
       { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: `Existing generator:\n\n${code}\n\nModify it: ${request}\n\nOutput only the updated Perchance code:` }
+      {
+        role: 'user',
+        content: `Existing generator:\n\n${code}\n\nModify it: ${request}\n\nOutput only the updated Perchance code:`
+      }
     ]);
     const refined = cleanCode(raw);
-    res.json({ success: true, data: { code: refined, model: 'llama-3.3-70b-versatile', generationTime: Date.now() - t0, validation: validateCode(refined) } });
+    res.json({
+      success: true,
+      data: {
+        code: refined,
+        model: 'llama-3.3-70b-versatile',
+        generationTime: Date.now() - t0,
+        validation: validateCode(refined)
+      }
+    });
   } catch (e) {
     return handleGroqError(e, res);
   }
 });
 
 // POST /api/perchance/ideas
-router.post('/ideas', async (req, res) => {
+router.post('/ideas', groqLimiter, async (req, res) => {
   const { category, count = 5 } = req.body;
   if (!category) return res.status(400).json({ success: false, error: 'category is required' });
 
   try {
-    const raw = await callGroq([
-      { role: 'system', content: 'You generate creative ideas for Perchance.org generators. Output ONLY a JSON array of strings, no explanation.' },
-      { role: 'user', content: `Generate ${count} creative Perchance generator ideas for category: "${category}". JSON array of short titles.` }
-    ], 500, 'llama-3.1-8b-instant');
+    const raw = await callGroq(
+      [
+        {
+          role: 'system',
+          content:
+            'You generate creative ideas for Perchance.org generators. Output ONLY a JSON array of strings, no explanation.'
+        },
+        {
+          role: 'user',
+          content: `Generate ${count} creative Perchance generator ideas for category: "${category}". JSON array of short titles.`
+        }
+      ],
+      500,
+      'llama-3.1-8b-instant'
+    );
     const match = raw.match(/\[.*\]/s);
     const ideas = match ? JSON.parse(match[0]) : [];
     res.json({ success: true, data: ideas });

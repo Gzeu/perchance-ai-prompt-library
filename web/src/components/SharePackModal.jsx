@@ -7,7 +7,7 @@
  *   onClose    {function}
  */
 import { useState, useEffect } from 'react';
-import api from '../api';
+import { api } from '../utils/api.js';
 
 export default function SharePackModal({ pack, isOpen, onClose }) {
   const [shareUrl, setShareUrl] = useState('');

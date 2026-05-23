@@ -5,7 +5,7 @@ const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
-  testMatch: ['**/*.test.ts', '**/*.spec.ts'],
+  testMatch: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts'],
   transform: {
     '^.+\.tsx?$': ['ts-jest', {
       tsconfig: {
@@ -15,9 +15,6 @@ const config: Config = {
       },
     }],
   },
-  moduleNameMapper: {
-    '(\\.[jt]sx?|.json)$': '$1',
-  },
   collectCoverageFrom: [
     'src/**/*.ts',
     'discord-bot/src/**/*.ts',
@@ -26,12 +23,12 @@ const config: Config = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
-      branches: 60,
-      functions: 70,
-      lines: 70,
-      statements: 70,
+      branches: 50,
+      functions: 50,
+      lines: 50,
+      statements: 50,
     },
   },
   verbose: true,

@@ -25,3 +25,18 @@ export interface BrainstormSession {
   agentsUsed: string[];
   finalScore: number;
 }
+
+export interface PerchanceValidation {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export interface AgenticSessionResult extends BrainstormSession {
+  code: string;
+  validation: PerchanceValidation;
+  debateRounds: number;
+  generationTime: number;
+  category?: string;
+  complexity?: string;
+}

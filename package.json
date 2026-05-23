@@ -1,6 +1,6 @@
 {
   "name": "perchance-ai-prompt-library",
-  "version": "5.0.0",
+  "version": "7.0.0",
   "description": "🎨 Ultimate professional AI prompt library and generator with advanced CLI, TypeScript, batch processing, analytics, Discord integration, web interface, and enterprise-grade features - 2026 Edition",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -46,7 +46,7 @@
     "monitor": "node scripts/health-check.js",
     "health-check": "node scripts/health-check.js",
     "prepublishOnly": "npm run clean && npm run build && npm run validate",
-    "postinstall": "echo '✅ Perchance AI Prompt Library v5.0.0 installed successfully!'"
+    "postinstall": "echo '✅ Perchance AI Prompt Library v7.0.0 installed successfully!'"
   },
   "keywords": [
     "ai",
@@ -102,6 +102,7 @@
     "express-validator": "^7.2.1",
     "figlet": "^1.9.3",
     "gradient-string": "^3.0.0",
+    "groq-sdk": "^0.25.0",
     "helmet": "^8.1.0",
     "morgan": "^1.10.1",
     "react-markdown": "^10.1.0",
@@ -119,6 +120,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^24.6.2",
     "@types/react": "^18.3.12",
+    "@types/supertest": "^6.0.3",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
@@ -129,6 +131,7 @@
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
+    "supertest": "^7.2.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

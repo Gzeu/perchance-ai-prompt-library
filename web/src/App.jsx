@@ -13,6 +13,7 @@ import HistoryPage from './pages/HistoryPage';
 import FavoritesPage from './pages/FavoritesPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PerchanceStudio from './pages/PerchanceStudio';
+import AgenticStudio from './pages/AgenticStudio';
 import PackBuilder from './pages/PackBuilder';
 import PackViewPage from './pages/PackViewPage';
 import TemplateLibrary from './pages/TemplateLibrary';
@@ -51,6 +52,7 @@ function App() {
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/api" element={<ApiExplorer />} />
               <Route path="/studio" element={<PerchanceStudio />} />
+              <Route path="/agentic" element={<AgenticStudio />} />
               <Route path="/pack" element={<PackBuilder />} />
               <Route path="/pack/:id" element={<PackViewPage />} />
               <Route path="/templates" element={<TemplateLibrary />} />

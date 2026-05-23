@@ -1,3 +1,6 @@
+# Agentic session memory
+.perchance-agentic-memory/
+
 # Dependencies
 node_modules/
 *.log
