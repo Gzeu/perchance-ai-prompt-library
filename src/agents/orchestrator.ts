@@ -34,6 +34,16 @@ const COMPLEXITY_HINTS: Record<string, string> = {
     'Create a MASTER generator with 8-12 lists, 15-20 items each. Production-ready with rich variety.'
 };
 
+/** Run async tasks in batches to avoid overwhelming external APIs (e.g. Groq rate limits). */
+async function pLimit<T>(tasks: (() => Promise<T>)[], concurrency = 4): Promise<T[]> {
+  const results: T[] = [];
+  for (let i = 0; i < tasks.length; i += concurrency) {
+    const batch = tasks.slice(i, i + concurrency).map((t) => t());
+    results.push(...(await Promise.all(batch)));
+  }
+  return results;
+}
+
 export interface BrainstormOptions {
   category?: string;
   iterations?: number;
@@ -98,7 +108,8 @@ export class UltraAgenticOrchestrator {
 
     const validation = validateCode(best.content);
     const syntaxBonus = validation.valid ? 0.5 : -1;
-    best.score = Math.min(10, best.score + syntaxBonus);
+    // Score is on 0-10 scale; clamp to [0, 10]
+    best.score = Math.min(10, Math.max(0, best.score + syntaxBonus));
 
     this.saveToMemory(prompt, best);
 
@@ -186,20 +197,20 @@ export class UltraAgenticOrchestrator {
   ): Promise<GeneratedVariant[]> {
     const maxTokens = complexityHint.includes('MASTER') ? 4096 : 2048;
 
-    const results = await Promise.all(
-      agents.map((agent, index) =>
-        this.generateVariantForAgent(
-          agent,
-          index,
-          prompt,
-          category,
-          complexityHint,
-          theme,
-          memoryHint,
-          maxTokens
-        )
+    // Use pLimit to avoid bursting Groq API with all agents simultaneously
+    const tasks = agents.map((agent, index) => () =>
+      this.generateVariantForAgent(
+        agent,
+        index,
+        prompt,
+        category,
+        complexityHint,
+        theme,
+        memoryHint,
+        maxTokens
       )
     );
+    const results = await pLimit(tasks, 4);
 
     return results.sort((a, b) => b.score - a.score);
   }
@@ -224,9 +235,12 @@ export class UltraAgenticOrchestrator {
     );
     const content = groq.cleanCode(raw);
     const validation = validateCode(content);
+
+    // Score on 0-10 scale: average agent skill (1-10) + bonus for valid syntax (+1)
+    // NOT divided by 10 — keep the same scale as debate round critique scores
     const skillAvg =
       agent.skills.reduce((sum, s) => sum + s.score, 0) / Math.max(agent.skills.length, 1);
-    const score = skillAvg / 10 + (validation.valid ? 0.5 : 0);
+    const score = Math.min(10, skillAvg + (validation.valid ? 1 : 0));
 
     return {
       id: `var-${index}`,
@@ -241,38 +255,40 @@ export class UltraAgenticOrchestrator {
     const top = variants.slice(0, 2);
     if (top.length === 0) return;
 
-    await Promise.all(
-      top.flatMap((variant) =>
-        agents.map(async (agent) => {
-          try {
-            const raw = await groq.callGroq(
-              [
-                {
-                  role: 'system',
-                  content:
-                    'Critique Perchance generator code. Reply ONLY with JSON: {"score":1-10,"issues":[],"suggestion":""}'
-                },
-                {
-                  role: 'user',
-                  content: `Agent ${agent.name} reviews this code:\n\n${variant.content}\n\nScore 1-10 for quality, syntax, and fit.`
-                }
-              ],
-              300,
-              groq.FAST_MODEL
-            );
-            const match = raw.match(/\{[\s\S]*\}/);
-            if (match) {
-              const critique = JSON.parse(match[0]) as { score?: number };
-              if (typeof critique.score === 'number') {
-                variant.score = (variant.score + critique.score) / 2;
+    // Use pLimit to avoid sending all critique requests simultaneously
+    const tasks = top.flatMap((variant) =>
+      agents.map((agent) => async () => {
+        try {
+          const raw = await groq.callGroq(
+            [
+              {
+                role: 'system',
+                content:
+                  'Critique Perchance generator code. Reply ONLY with JSON: {"score":1-10,"issues":[],"suggestion":""}'
+              },
+              {
+                role: 'user',
+                content: `Agent ${agent.name} reviews this code:\n\n${variant.content}\n\nScore 1-10 for quality, syntax, and fit.`
               }
+            ],
+            300,
+            groq.FAST_MODEL
+          );
+          const match = raw.match(/\{[\s\S]*\}/);
+          if (match) {
+            const critique = JSON.parse(match[0]) as { score?: number };
+            if (typeof critique.score === 'number') {
+              // Both variant.score and critique.score are on 0-10 scale — average is safe
+              variant.score = (variant.score + critique.score) / 2;
             }
-          } catch {
-            // Debate round is best-effort
           }
-        })
-      )
+        } catch {
+          // Debate round is best-effort
+        }
+      })
     );
+
+    await pLimit(tasks, 4);
   }
 
   private async weightedVoting(variants: GeneratedVariant[]): Promise<GeneratedVariant[]> {
@@ -342,6 +358,20 @@ export class UltraAgenticOrchestrator {
       const slug = key.slice(0, 40).replace(/[^a-z0-9]+/gi, '-').toLowerCase();
       const file = path.join(this.memoryDir, `${Date.now()}-${slug}.json`);
       fs.writeFileSync(file, JSON.stringify({ key, variant: data, savedAt: new Date().toISOString() }, null, 2));
+
+      // TTL cleanup: delete memory files older than 7 days to prevent unbounded growth
+      const cutoffMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const allFiles = fs.readdirSync(this.memoryDir).filter((f) => f.endsWith('.json'));
+      for (const f of allFiles) {
+        const filePath = path.join(this.memoryDir, f);
+        try {
+          if (fs.statSync(filePath).mtimeMs < cutoffMs) {
+            fs.unlinkSync(filePath);
+          }
+        } catch {
+          // Skip files that can't be stat-ed
+        }
+      }
     } catch {
       // Silent fail for memory persistence
     }
@@ -363,4 +393,6 @@ export class UltraAgenticOrchestrator {
   }
 }
 
+// Lazy singleton — exported for convenience but instantiated on first import.
+// Ensure dotenv.config() runs before any module that imports this file.
 export const orchestrator = new UltraAgenticOrchestrator();
