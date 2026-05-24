@@ -59,7 +59,7 @@ jobs:
       - run: npm ci
       - run: npm run build:agents
       - name: Upload agent build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist-agents
           path: dist/agents/
