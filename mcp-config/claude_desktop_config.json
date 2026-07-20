@@ -1,0 +1,12 @@
+{
+  "_comment": "Add this to your Claude Desktop MCP config to use the Perchance AI Toolkit",
+  "mcpServers": {
+    "perchance": {
+      "command": "npx",
+      "args": ["perchance-mcp"],
+      "env": {
+        "GROQ_API_KEY": "your-groq-api-key-here"
+      }
+    }
+  }
+}

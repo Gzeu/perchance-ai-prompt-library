@@ -1,110 +1,104 @@
-# ⚡ Perchance AI Prompt Library v7.0
+# 🎲 Perchance AI Toolkit
 
-> **Advanced AI-powered Perchance.org generator** with an Ultra Agentic Multi-Agent Brainstorm System, REST API, CLI, Discord Bot, and web studio.
+> **The ultimate tool for building [Perchance.ai](https://perchance.ai) generators** — AI-powered syntax generation, 150+ templates, local preview, live browser execution, MCP server for Claude/OpenClaw agents, and Playwright automation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](package.json)
-[![Version](https://img.shields.io/badge/version-7.0.0-blue)](CHANGELOG.md)
-[![Live Demo](https://img.shields.io/badge/demo-Vercel-black)](https://perchance-ai-prompt-library.vercel.app)
+[![Version](https://img.shields.io/badge/version-8.0.0-blue)](CHANGELOG.md)
+[![MCP](https://img.shields.io/badge/MCP-compatible-purple)](mcp-config/)
 
 ---
 
-## Features
+## What is this?
 
-| Surface | What it does |
-|---|---|
-| **CLI** (`pai`) | Interactive terminal — generate, batch, style-mix, agentic mode |
-| **REST API** | Express 5 + Swagger docs at `/api-docs`, rate-limited, helmet-secured |
-| **Web Studio** | Vite/React UI at `http://localhost:5173`, Agentic view at `/agentic` |
-| **Discord Bot** | Slash commands: `/generate`, `/batch`, `/agentic` via discord.js v14 |
-| **Agentic System** | 7+ specialized agents with skill scoring, debate & weighted voting |
-| **Templates** | 150+ categorized Perchance generators ready to use or extend |
+A focused toolkit for [Perchance.ai](https://perchance.ai) — the creative random generator platform.
+
+- **Generate** `.perchance` syntax with AI (Groq LLaMA 3.3)
+- **150+ templates** for characters, scenes, items, dialogue, image prompts
+- **Validate** syntax before running
+- **Preview** results locally without a browser
+- **Run live** on perchance.ai via Playwright automation
+- **Scrape** existing public generators
+- **MCP server** — call all features from Claude Desktop, OpenClaw, or any MCP agent
 
 ---
 
 ## Quick Start
 
-### Prerequisites
-
-- Node.js ≥ 20, npm ≥ 10
-- A free [Groq API key](https://console.groq.com) for AI generation
-
-### Install & Run
-
 ```bash
-git clone https://github.com/Gzeu/perchance-ai-prompt-library.git
-cd perchance-ai-prompt-library
-npm install
-cd web && npm install && cd ..
-cp .env.example .env        # add your GROQ_API_KEY
-npm run dev                 # API :3000 + Web Studio :5173
-```
+npm install -g perchance-ai-prompt-library
+export GROQ_API_KEY=your-key
 
-### CLI
+# Create a generator
+perchance-gen create "fantasy tavern name" --style weighted
 
-```bash
-# Install globally (optional)
-npm install -g .
+# Preview rolls from a file
+perchance-gen preview ./output/fantasy-tavern-name.perchance
 
-# Generate a single prompt
-pai generate "cyberpunk city" --style photorealistic
+# Validate syntax
+perchance-gen validate ./my-generator.perchance
 
-# Ultra Agentic mode — multi-agent brainstorm
-pai agentic "fantasy tavern name generator" --category names
+# Run live on perchance.ai (requires Playwright)
+perchance-gen run ./my-generator.perchance --rolls 20
 
-# Batch generation
-pai batch "space explorer" --count 10 --export json
-```
-
-### REST API
-
-```bash
-# Health check
-curl http://localhost:3000/api/health
-
-# Generate a prompt
-curl -X POST http://localhost:3000/api/prompts/generate \
-  -H "Content-Type: application/json" \
-  -d '{"style": "anime", "subject": "dragon"}'
-
-# Agentic generation
-curl -X POST http://localhost:3000/api/perchance/agentic \
-  -H "Content-Type: application/json" \
-  -d '{"topic": "dungeon loot table", "category": "items"}'
-
-# Full API reference
-open http://localhost:3000/api-docs
-```
-
-### Discord Bot
-
-```bash
-cd discord-bot
-cp .env.example .env    # add DISCORD_TOKEN + DISCORD_CLIENT_ID
-npm install
-npm run dev
-```
-
-### Docker
-
-```bash
-# Development
-npm run docker:dev
-
-# Production (optimized image)
-docker build -f Dockerfile.optimized -t perchance-ai:prod .
-docker run -p 3000:3000 --env-file .env perchance-ai:prod
+# Scrape & clone a public generator
+perchance-gen scrape https://perchance.ai/some-generator
 ```
 
 ---
 
-## Deployment
+## MCP Server (Claude Desktop / OpenClaw)
 
-| Component | Host | Notes |
-|---|---|---|
-| **Web UI** | [Vercel](https://perchance-ai-prompt-library.vercel.app) | Static Vite build, auto-deploy on push |
-| **API** | Self-hosted / Railway / Render | Set `VITE_API_URL` on web build to your API URL |
-| **Discord Bot** | Any VPS | Keep process alive with `pm2` or systemd |
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "perchance": {
+      "command": "npx",
+      "args": ["perchance-mcp"],
+      "env": { "GROQ_API_KEY": "your-key" }
+    }
+  }
+}
+```
+
+### Available MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `generate_perchance` | AI-generate a generator from a topic |
+| `list_templates` | Browse 150+ templates by category |
+| `get_template` | Get full code of a template |
+| `validate_syntax` | Check code for errors/warnings |
+| `preview_rolls` | Local preview without browser |
+| `run_on_perchance` | Live run on perchance.ai via Playwright |
+
+---
+
+## CLI Reference
+
+```
+perchance-gen create <topic>    Create generator with AI
+  --category  names|characters|scenes|items|dialogue|images|loot|quests|custom
+  --style     simple|weighted|nested|complex
+  --count     Items per list (default: 15)
+  --output    Output directory
+  --clipboard Copy to clipboard
+  --run       Run on perchance.ai after generating
+
+perchance-gen preview <file>    Preview rolls locally
+  --count     Number of rolls (default: 10)
+
+perchance-gen validate <file>   Validate .perchance syntax
+
+perchance-gen run <file>        Run on perchance.ai via Playwright
+  --rolls     Number of rolls (default: 10)
+  --screenshot Save screenshot
+
+perchance-gen scrape <url>      Scrape & clone a public generator
+  --output    Output directory
+```
 
 ---
 
@@ -112,50 +106,54 @@ docker run -p 3000:3000 --env-file .env perchance-ai:prod
 
 ```
 src/
-├── agents/        Ultra Agentic multi-agent system
-├── api/
-│   ├── middleware/ helmet · cors · morgan · rateLimit · auth · errorHandler
-│   ├── routes/    health · prompts · styles · images · perchance · perchance-pack
-│   └── server.js  Express 5 entry point
-├── cli/           commander CLI (pai / perchance-prompts)
-├── generators/    Core prompt generation engine
-├── services/      Groq AI + Pollinations integration
-├── types/         TypeScript types
-└── validators/    Zod schemas
+├── core/           Syntax builder, validator, exporter, weighted lists
+├── generators/     AI-assisted generator engine (Groq)
+├── mcp/            MCP server + 5 tools
+├── playwright/     Browser automation (loader, roller, scraper)
+├── agent/          OpenClaw skill + Claude system prompt + workflows
+├── cli/            CLI entry point
+├── services/       Groq AI + Pollinations.ai
+└── types/          TypeScript types for Perchance syntax
 
-discord-bot/       Isolated Discord.js v14 bot
-web/               Vite + React studio UI
-templates/         150+ Perchance generator templates
+templates/          150+ ready-to-use .perchance generators
+skills/             OpenClaw skill manifest
+mcp-config/         MCP server configs (Claude Desktop, OpenClaw)
 ```
 
-See [`AGENTIC-SYSTEM.md`](AGENTIC-SYSTEM.md) for the full multi-agent architecture and design rationale.
+---
+
+## OpenClaw Skill
+
+Install the skill in any OpenClaw agent:
+
+```json
+{
+  "skills": ["perchance-generator"],
+  "env": { "GROQ_API_KEY": "your-key" }
+}
+```
+
+See [`skills/perchance-skill/README.md`](skills/perchance-skill/README.md) for full docs.
+
+---
+
+## Playwright Setup
+
+Required only for `run` and `scrape` commands:
+
+```bash
+npm install playwright
+npx playwright install chromium
+```
 
 ---
 
 ## Environment Variables
 
 | Variable | Required | Description |
-|---|---|---|
+|----------|----------|-------------|
 | `GROQ_API_KEY` | Yes | Groq API key for AI generation |
-| `PORT` | No | API port (default: `3000`) |
-| `CORS_ORIGIN` | No | Restrict CORS to a specific origin |
-| `NODE_ENV` | No | `production` disables HTTP logs verbosity |
-
-Copy `.env.example` to `.env` and fill in values.
-
----
-
-## Scripts
-
-| Command | Description |
-|---|---|
-| `npm run dev` | API + Web Studio in parallel |
-| `npm run build` | Compile TypeScript |
-| `npm run build:agents` | Compile agents module (required for production) |
-| `npm test` | Jest test suite with coverage |
-| `npm run lint` | ESLint |
-| `npm run docker:dev` | Docker Compose development profile |
-| `npm run docker:prod` | Docker Compose production profile |
+| `PLAYWRIGHT_HEADLESS` | No | Set to `false` to see the browser |
 
 ---
 

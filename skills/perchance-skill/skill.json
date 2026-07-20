@@ -1,0 +1,41 @@
+{
+  "name": "perchance-generator",
+  "version": "1.0.0",
+  "description": "Perchance.ai generator builder skill for OpenClaw agents",
+  "author": "Gzeu",
+  "type": "mcp-skill",
+  "mcp_server": "perchance-mcp",
+  "install": "npm install -g perchance-ai-prompt-library",
+  "actions": {
+    "create-generator": {
+      "description": "Create a new Perchance.ai generator from a topic",
+      "tool": "generate_perchance",
+      "example": "Create a fantasy character name generator with weighted rarities"
+    },
+    "browse-templates": {
+      "description": "Browse 150+ built-in generator templates",
+      "tool": "list_templates",
+      "example": "Show me all scene generator templates"
+    },
+    "validate-generator": {
+      "description": "Check .perchance code for syntax errors",
+      "tool": "validate_syntax",
+      "example": "Is this generator code valid?"
+    },
+    "preview-generator": {
+      "description": "Preview sample results from a generator",
+      "tool": "preview_rolls",
+      "example": "Show me 10 sample results from this generator"
+    },
+    "run-on-perchance": {
+      "description": "Run generator on real perchance.ai site via Playwright",
+      "tool": "run_on_perchance",
+      "example": "Test this generator on perchance.ai and show me live results"
+    },
+    "scrape-generator": {
+      "description": "Scrape and clone an existing public perchance.ai generator",
+      "tool": "run_on_perchance",
+      "example": "Clone this perchance.ai generator: https://perchance.ai/..."
+    }
+  }
+}
