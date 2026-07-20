@@ -1,47 +1,60 @@
-# Project Status
+# Project Status — Perchance AI Toolkit v8.0.0
 
-**Project:** Perchance AI Prompt Library  
-**Version:** 7.0.0  
-**Last Updated:** May 23, 2026  
-**Status:** Active development — Ultra Agentic v7 release
+> Last updated: 2026-07-20
 
----
+## ✅ Stable — v8.0.0
 
-## v7.0 highlights
-
-- **Ultra Agentic pipeline** — 7 specialists, smart selection (max 3), parallel Groq generation, debate, weighted voting, SyntaxMaster refine, session memory
-- **API** — `POST /api/perchance/agentic`, `GET /api/perchance/agentic/preview`, `GET /api/perchance/agentic/status`
-- **CLI** — `pai agentic "<description>"`
-- **Web** — `/agentic` Ultra Agentic Studio page
-- **Groq service** — shared module with retry/backoff on 429 and 5xx
-- **Version alignment** — package, API, CLI, README at v7.0.0
+The project has been fully rewritten as a focused **Perchance.ai toolkit** with MCP server, agent layer, Playwright automation, and OpenClaw skill support.
 
 ---
 
-## Requirements
+## Architecture
 
-- Node.js >= 20
-- `GROQ_API_KEY` for AI and agentic features
-- API: `npm start` (port 3000)
-- Web: `npm run dev` (port 5173, proxies `/api`)
+```
+src/
+├── core/          Syntax builder, validator, exporter, weighted-list
+├── mcp/           MCP server + 6 tools (generate, templates, validate, preview, run)
+├── playwright/    Browser automation (loader, roller, scraper, exporter)
+├── agent/         OpenClaw skill + Claude system prompt + 3 workflows
+├── cli/           perchance-gen CLI (create|preview|validate|run|scrape)
+├── services/      Groq AI integration
+└── types/         TypeScript types
+
+skills/            OpenClaw skill manifest + README
+mcp-config/        Claude Desktop + OpenClaw MCP configs
+templates/         150+ .perchance generator templates
+```
+
+## Feature Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| MCP Server | ✅ Stable | `npx perchance-mcp` |
+| CLI | ✅ Stable | `perchance-gen create\|preview\|validate\|run\|scrape` |
+| AI Generation (Groq) | ✅ Stable | LLaMA 3.3 70B |
+| Syntax Validator | ✅ Stable | Errors + warnings + stats |
+| Local Preview | ✅ Stable | No browser required |
+| Playwright Automation | ✅ Stable | Requires `playwright install chromium` |
+| OpenClaw Skill | ✅ Stable | `skills/perchance-skill/` |
+| Claude Desktop MCP | ✅ Stable | `mcp-config/claude_desktop_config.json` |
+| 150+ Templates | ✅ Available | `templates/` directory |
+
+## What was removed in v8.0.0
+
+| Feature | Reason |
+|---------|--------|
+| Discord Bot | Out of scope for focused toolkit |
+| Express REST API | Replaced by MCP server |
+| Vite/React Web Studio | Out of scope |
+| Docker configs | Not needed for CLI/MCP tool |
+| Multi-agent brainstorm | Replaced by focused agent workflows |
 
 ---
 
-## Deployment notes
+## Roadmap
 
-- **Vercel** hosts the static web build only (`vercel.json`)
-- Full-stack demo: set `VITE_API_URL` to a separately hosted API (Railway, Render, IBM Cloud, etc.)
-
----
-
-## Links
-
-| Resource | URL |
-|----------|-----|
-| Repository | https://github.com/Gzeu/perchance-ai-prompt-library |
-| Live web (static) | https://perchance-ai-prompt-library.vercel.app |
-| NPM | https://www.npmjs.com/package/perchance-ai-prompt-library |
-
----
-
-*Maintained by [George Pricop (@Gzeu)](https://github.com/Gzeu)*
+- [ ] `npm publish` — make available as `npx perchance-mcp`
+- [ ] GitHub Release v8.0.0 with binary assets
+- [ ] Add more templates (images, TTRPG, worldbuilding)
+- [ ] Perchance.ai API integration when/if available
+- [ ] Test suite for core validator + exporter

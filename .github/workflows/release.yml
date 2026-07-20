@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Create GitHub Release
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install & Build
+        run: npm ci && npm run build
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## Perchance AI Toolkit ${{ github.ref_name }}
+
+            ### Install
+            ```bash
+            npm install -g perchance-ai-prompt-library
+            ```
+
+            ### MCP Server (Claude Desktop / OpenClaw)
+            ```json
+            {
+              "mcpServers": {
+                "perchance": {
+                  "command": "npx",
+                  "args": ["perchance-mcp"],
+                  "env": { "GROQ_API_KEY": "your-key" }
+                }
+              }
+            }
+            ```
+
+            See [README](https://github.com/Gzeu/perchance-ai-prompt-library#readme) for full docs.
