@@ -1,0 +1,49 @@
+{
+  "name": "perchance-generator",
+  "version": "1.0.0",
+  "description": "Create, validate, preview and run Perchance.ai generators with AI assistance. Supports full .perchance syntax generation, 150+ templates, local preview and live browser execution via Playwright.",
+  "author": "Gzeu",
+  "homepage": "https://github.com/Gzeu/perchance-ai-prompt-library",
+  "capabilities": [
+    "generate_perchance_syntax",
+    "browse_templates",
+    "validate_perchance_code",
+    "preview_rolls_locally",
+    "run_on_perchance_ai_browser",
+    "scrape_public_generators"
+  ],
+  "mcp_server": "perchance-mcp",
+  "mcp_command": "npx perchance-mcp",
+  "tools": [
+    {
+      "name": "generate_perchance",
+      "description": "AI-generate a complete .perchance generator from a topic"
+    },
+    {
+      "name": "list_templates",
+      "description": "List all 150+ built-in templates by category"
+    },
+    {
+      "name": "get_template",
+      "description": "Get full code of a specific template"
+    },
+    {
+      "name": "validate_syntax",
+      "description": "Validate .perchance syntax and get errors/warnings"
+    },
+    {
+      "name": "preview_rolls",
+      "description": "Preview generator results locally without a browser"
+    },
+    {
+      "name": "run_on_perchance",
+      "description": "Run generator on perchance.ai via Playwright and capture real results"
+    }
+  ],
+  "workflows": [
+    "create-generator",
+    "improve-generator",
+    "scrape-and-clone"
+  ],
+  "tags": ["perchance", "generator", "prompt", "ai", "creative", "text-generation"]
+}
