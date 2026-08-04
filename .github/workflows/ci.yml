@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: ['20.x', '22.x']
 
     steps:
       - name: Checkout
@@ -36,12 +36,14 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          CI: true
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
-        if: matrix.node-version == '20.x'
         with:
-          directory: ./coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
   build:
