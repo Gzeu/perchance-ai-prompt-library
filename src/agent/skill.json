@@ -1,20 +1,42 @@
 {
   "name": "perchance-generator",
-  "version": "1.0.0",
-  "description": "Create, validate, preview and run Perchance.ai generators with AI assistance. Supports full .perchance syntax generation, 150+ templates, local preview and live browser execution via Playwright.",
+  "version": "2.0.0",
+  "description": "Fully autonomous Perchance.ai generator system with AI-powered decision engine, self-improvement, batch processing, and multi-format support. Create, validate, improve, test, and deploy generators without user intervention.",
   "author": "Gzeu",
   "homepage": "https://github.com/Gzeu/perchance-ai-prompt-library",
   "capabilities": [
-    "generate_perchance_syntax",
-    "browse_templates",
-    "validate_perchance_code",
-    "preview_rolls_locally",
-    "run_on_perchance_ai_browser",
-    "scrape_public_generators"
+    "autonomous_generation",
+    "self_improvement",
+    "batch_processing",
+    "autonomous_testing",
+    "multi_format_generation",
+    "decision_engine",
+    "quality_assurance",
+    "cross_platform_compatibility"
   ],
   "mcp_server": "perchance-mcp",
   "mcp_command": "npx perchance-mcp",
   "tools": [
+    {
+      "name": "autonomous_generate",
+      "description": "Fully autonomous generator creation with intelligent decision-making"
+    },
+    {
+      "name": "batch_generate",
+      "description": "Generate multiple related generators in parallel with coordination"
+    },
+    {
+      "name": "improve_generator",
+      "description": "Self-improvement workflow with iterative refinement"
+    },
+    {
+      "name": "autonomous_test",
+      "description": "Comprehensive automated testing suite"
+    },
+    {
+      "name": "multi_format_generate",
+      "description": "Intelligent multi-format generation (.perchance or HTML)"
+    },
     {
       "name": "generate_perchance",
       "description": "AI-generate a complete .perchance generator from a topic"
@@ -37,13 +59,15 @@
     },
     {
       "name": "run_on_perchance",
-      "description": "Run generator on perchance.ai via Playwright and capture real results"
+      "description": "Run generator on perchance.org via Playwright and capture real results"
     }
   ],
   "workflows": [
-    "create-generator",
-    "improve-generator",
-    "scrape-and-clone"
+    "autonomous-create",
+    "self-improve",
+    "batch-process",
+    "comprehensive-test",
+    "multi-format-convert"
   ],
-  "tags": ["perchance", "generator", "prompt", "ai", "creative", "text-generation"]
+  "tags": ["perchance", "generator", "autonomous", "ai", "self-improvement", "batch", "testing", "multi-format"]
 }

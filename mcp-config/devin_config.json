@@ -1,0 +1,13 @@
+{
+  "_comment": "Devin/Claude Code MCP server registration for the Perchance AI Toolkit with autonomous capabilities. Add to your MCP configuration for Claude Code or Devin agents.",
+  "mcpServers": {
+    "perchance": {
+      "command": "npx",
+      "args": ["perchance-mcp"],
+      "env": {
+        "GROQ_API_KEY": "your-groq-api-key-here",
+        "PLAYWRIGHT_HEADLESS": "true"
+      }
+    }
+  }
+}

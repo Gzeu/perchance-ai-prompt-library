@@ -85,7 +85,7 @@ place
     const userPrompt = `Create a ${req.style} Perchance.ai generator for: "${req.topic}"
 Category: ${req.category}
 Aim for ~${req.itemCount} items per list.
-Make it creative, varied, and immediately usable on perchance.ai.
+Make it creative, varied, and immediately usable on perchance.org.
 Return ONLY the .perchance code, no explanation.`;
 
     const completion = await groq.chat.completions.create({
@@ -115,7 +115,7 @@ Return ONLY the .perchance code, no explanation.`;
             warnings: validation.warnings.map((w) => w.message),
             stats: validation.stats,
             previewRolls: preview,
-            pasteUrl: 'https://perchance.ai/tools/generate',
+            pasteUrl: 'https://perchance.org/minimal#edit',
           }, null, 2),
         },
       ],

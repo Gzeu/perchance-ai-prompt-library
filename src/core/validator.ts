@@ -96,7 +96,7 @@ export function validatePerchance(code: string): ValidationResult {
   }
 
   if (!hasOutput) {
-    warnings.push({ line: 1, message: 'No "output" list found — generator may not display results on perchance.ai' });
+    warnings.push({ line: 1, message: 'No "output" list found — generator may not display results on perchance.org' });
   }
 
   return {

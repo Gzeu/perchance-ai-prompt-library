@@ -13,7 +13,7 @@ Transformed from a generic full-stack platform into a focused **Perchance.ai too
   - `list_templates` / `get_template` — browse 150+ built-in templates
   - `validate_syntax` — syntax errors + warnings + stats
   - `preview_rolls` — local preview without browser
-  - `run_on_perchance` — Playwright live run on perchance.ai
+  - `run_on_perchance` — Playwright live run on perchance.org
 - `src/playwright/` — Chromium controller, loader, roller, scraper, exporter
 - `src/agent/` — OpenClaw skill manifest, Claude system prompt, 3 workflows
 - `src/cli/` — CLI: `perchance-gen create|preview|validate|run|scrape`

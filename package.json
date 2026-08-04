@@ -1,7 +1,7 @@
 {
   "name": "perchance-ai-prompt-library",
   "version": "8.0.0",
-  "description": "Perchance.ai toolkit — AI-powered .perchance generator builder with MCP server, Playwright automation, OpenClaw skill, and 150+ templates",
+  "description": "Perchance.ai toolkit — AI-powered .perchance generator builder with MCP server, Playwright automation, CLI and skill for autonomous prompt generation",
   "type": "module",
   "bin": {
     "perchance-gen": "./dist/cli/index.js",
@@ -21,12 +21,12 @@
     "perchance",
     "perchance-ai",
     "generator",
-    "prompt-generator",
     "ai-tools",
     "mcp",
     "mcp-server",
     "playwright",
     "openclaw",
+    "opencode",
     "cli",
     "text-generation",
     "creative-writing"
@@ -34,20 +34,24 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "commander": "^12.0.0",
-    "groq-sdk": "^0.7.0",
-    "zod": "^3.22.0"
+    "groq-sdk": "^0.7.0"
   },
   "optionalDependencies": {
     "clipboardy": "^4.0.0",
     "playwright": "^1.45.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.4.0",
-    "jest": "^29.0.0",
     "@types/jest": "^29.0.0",
-    "eslint": "^8.0.0"
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.65.0",
+    "@typescript-eslint/parser": "^8.65.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "jest-util": "^30.4.1",
+    "ts-jest": "^29.4.11",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
   },
   "engines": {
     "node": ">=20"

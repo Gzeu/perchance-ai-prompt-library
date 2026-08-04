@@ -1,0 +1,22 @@
+// Întâlnire subacvatică — seed de scenă
+output
+  În [loc], [creatura] [actiune].
+
+loc
+  reciful de corali fosforescenți^3
+  peștera cu pereți de cuarț^2
+  rămășițele unui templu scufundat^3
+  câmpul de iarbă-de-mare^2
+  prăpăstia albastră fără fund^3
+
+creatura
+  un banc de pești sidefii țâșnește^3
+  o umbră uriașă se rotește^2
+  un nautil străveziu se desface^2
+  o manta-colac bate din aripi^2
+
+actiune
+  și te fixează cu un ochi de lună.^2
+  lăsând în urmă o dâră de lumină.^3
+  ca și cum te-ar fi așteptat.^2
+  înghițind o rază de lumină.^2

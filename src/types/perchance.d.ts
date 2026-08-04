@@ -79,3 +79,17 @@ export interface OpenClawSkillManifest {
   mcp_server: string;
   tools: string[];
 }
+
+export interface ValidationResult {
+  valid: boolean;
+  errors: Array<{ line: number; message: string; code?: string }>;
+  warnings: Array<{ line?: number; message: string }>;
+  stats: {
+    listCount: number;
+    totalItems: number;
+    hasOutput: boolean;
+    hasWeighted: boolean;
+    hasNested: boolean;
+    hasImports: boolean;
+  };
+}

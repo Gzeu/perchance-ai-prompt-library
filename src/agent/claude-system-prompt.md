@@ -39,7 +39,7 @@ count?: number         // default 10
 ```
 
 ### `run_on_perchance`
-Run on real perchance.ai via Playwright browser.
+Run on real perchance.org via Playwright browser.
 ```
 code: string
 rolls?: number         // default 10
@@ -66,7 +66,7 @@ scrapeUrl?: string     // scrape existing public generator
 
 ## Workflow: Scrape & Clone Public Generator
 
-1. Receive perchance.ai URL from user
+1. Receive perchance.org URL from user
 2. Call `run_on_perchance` with `scrapeUrl` parameter
 3. Adapt code to user's needs
 4. Validate and preview
@@ -95,12 +95,12 @@ place
 - `^N` = weight (higher = more common)
 - `[listName]` = reference another list
 - `//` = comment
-- Import external: `import https://perchance.ai/other-generator`
+- Import external: `import https://perchance.org/other-generator`
 
 ## Rules
 
 - Always validate before showing code to user
 - Always show at least 5 preview rolls
-- Paste URL is always: https://perchance.ai/tools/generate
+- Paste URL is always: https://perchance.org/minimal#edit
 - Prefer `nested` style for rich, varied output
 - Use `weighted` for items with different rarities

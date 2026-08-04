@@ -1,0 +1,141 @@
+<style>
+  html, body { margin: 0; padding: 0; min-height: 100%; background: #0a0710; }
+  body { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    color: #e6d8f0; display: flex; align-items: center; justify-content: center; padding: 30px 0; }
+
+  #frame { width: min(420px, 92vw); text-align: center;
+    padding: 26px 24px 28px; border-radius: 16px;
+    background: radial-gradient(120% 90% at 50% 0%, rgba(180,120,255,0.14), transparent 60%),
+                linear-gradient(180deg, #160f22, #0c0814);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(200,160,255,0.14); }
+
+  h1 { margin: 0 0 4px; font-size: 23px; color: #e8c8ff; letter-spacing: 0.5px; }
+  .sub { margin: 0 0 16px; font-size: 13px; color: #a98ec0; font-style: italic; }
+
+  #stage { position: relative; width: 320px; height: 320px; margin: 0 auto 14px; }
+  canvas { display: block; width: 320px; height: 320px; }
+
+  .name { font-size: 18px; color: #f0d8ff; margin-bottom: 2px; min-height: 22px; }
+  .power { font-size: 14px; color: #c3a8e0; font-style: italic; min-height: 20px; }
+
+  #castBtn { margin-top: 16px; font: inherit; font-size: 15px; letter-spacing: 0.4px;
+    color: #1a0a26; background: linear-gradient(180deg, #d9a6ff, #a86ad8);
+    border: none; border-radius: 999px; padding: 11px 26px; cursor: pointer;
+    box-shadow: 0 6px 16px rgba(180,120,255,0.3); transition: transform 0.15s ease; }
+  #castBtn:hover { transform: translateY(-1px); }
+  #castBtn:active { transform: translateY(1px); }
+</style>
+
+<div id="frame">
+  <h1>Sigiliu de Lumina</h1>
+  <p class="sub">fiecare tragere e un sigil de neinlocuit</p>
+
+  <div id="stage"><canvas id="sigil" width="320" height="320"></canvas></div>
+  <div class="name">—</div>
+  <div class="power"></div>
+
+  <button id="castBtn">Trasge un sigil</button>
+</div>
+
+<script type="module">
+const canvas = document.getElementById('sigil');
+const ctx = canvas.getContext('2d');
+const nameEl = document.querySelector('.name');
+const powerEl = document.querySelector('.power');
+const btn = document.getElementById('castBtn');
+const SIZE = 320;
+
+function pick(arr) {
+  const total = arr.reduce((s, x) => s + x.w, 0);
+  let r = Math.random() * total;
+  for (const x of arr) {
+    r -= x.w;
+    if (r < 0) return x;
+  }
+  return arr[arr.length - 1];
+}
+
+function makeState() {
+  const rays = [];
+  const n = 6 + Math.floor(Math.random() * 7);
+  for (let i = 0; i < n; i++) {
+    rays.push((i / n) * Math.PI * 2 + (Math.random() - 0.5) * 0.22);
+  }
+  const glyph = [];
+  const g = 3 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < g; i++) {
+    glyph.push({
+      x1: Math.random() - 0.5,
+      y1: Math.random() - 0.5,
+      cx: (Math.random() - 0.5) * 1.2,
+      cy: (Math.random() - 0.5) * 1.2,
+      x2: Math.random() - 0.5,
+      y2: Math.random() - 0.5
+    });
+  }
+  return { rays: rays, glyph: glyph, angle: 0, color: '#ffffff' };
+}
+
+let state = makeState();
+
+function draw() {
+  const cx = SIZE / 2;
+  const cy = SIZE / 2;
+  const R = SIZE * 0.37;
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(state.angle);
+  ctx.shadowColor = state.color;
+  ctx.shadowBlur = 16;
+  ctx.strokeStyle = state.color;
+  ctx.lineCap = 'round';
+
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(0, 0, R, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.arc(0, 0, R * 0.6, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.lineWidth = 2;
+  for (const a of state.rays) {
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * R * 0.6, Math.sin(a) * R * 0.6);
+    ctx.lineTo(Math.cos(a) * R * 1.06, Math.sin(a) * R * 1.06);
+    ctx.stroke();
+  }
+
+  ctx.lineWidth = 2.4;
+  for (const s of state.glyph) {
+    ctx.beginPath();
+    ctx.moveTo(s.x1 * R, s.y1 * R);
+    ctx.quadraticCurveTo(s.cx * R, s.cy * R, s.x2 * R, s.y2 * R);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function cast() {
+  const el = pick(root.elemente);
+  const pw = pick(root.puteri);
+  state = makeState();
+  state.color = el.c;
+  nameEl.textContent = 'Sigiliul ' + el.t + 'ului';
+  powerEl.textContent = '"' + pw.t + '"';
+}
+
+btn.addEventListener('click', cast);
+
+function loop() {
+  state.angle += 0.0035;
+  draw();
+  requestAnimationFrame(loop);
+}
+
+cast();
+loop();
+</script>

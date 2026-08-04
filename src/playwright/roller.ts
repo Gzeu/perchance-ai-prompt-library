@@ -1,9 +1,8 @@
 /**
  * Perchance Roller
- * Clicks generate button and captures results from perchance.ai
+ * Clicks generate button and captures results from perchance.org
  */
 
-import { Page } from 'playwright';
 import { PerchanceBrowser } from './perchance-browser.js';
 import { injectGeneratorCode } from './loader.js';
 import type { PlaywrightRunOptions, PlaywrightRunResult } from '../types/perchance.js';

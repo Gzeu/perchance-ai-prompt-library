@@ -1,0 +1,25 @@
+// ===== Sigiliu de Lumină — datele sigilului (root.*) =====
+// Keep main.pjs for the elements / powers users may want to tweak. UI lives in index.html.
+
+$meta
+  title = Sigiliu de Lumină
+  description = Generează un sigil de protecție — fiecare tragere e unică și nu se repetă.
+  tags = sigil, magic, generator, atmospheric, canvas
+
+// Elementul dictează culoarea și numele. w = weight.
+elemente = [
+  { t: "Foc",     c: "#ff7a3c", w: 3 },
+  { t: "Apă",     c: "#4fc3ff", w: 3 },
+  { t: "Vânt",    c: "#b6ff9c", w: 2 },
+  { t: "Pământ",  c: "#c9a26a", w: 2 },
+  { t: "Stea",    c: "#d9a6ff", w: 3 },
+];
+
+// Puterea invocată de sigil.
+puteri = [
+  { t: "păzește pragul",            w: 3 },
+  { t: "trezește cel adormit",        w: 2 },
+  { t: "leagă ecoul",                 w: 2 },
+  { t: "arată calea de sub apă",      w: 3 },
+  { t: "oprește uitarea",            w: 2 },
+];

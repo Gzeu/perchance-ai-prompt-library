@@ -19,8 +19,8 @@ export async function scrapeGenerator(
   url: string,
   headless = true
 ): Promise<ScrapedGenerator> {
-  if (!url.includes('perchance.ai')) {
-    throw new Error('Only perchance.ai URLs are supported');
+  if (!url.includes('perchance.org')) {
+    throw new Error('Only perchance.org URLs are supported');
   }
 
   const browser = new PerchanceBrowser();
@@ -82,7 +82,7 @@ export async function scrapeMultiple(urls: string[]): Promise<ScrapedGenerator[]
     try {
       const result = await scrapeGenerator(url);
       results.push(result);
-    } catch (err: any) {
+    } catch {
       results.push({ url, name: 'error', code: '', scrapedAt: new Date().toISOString() });
     }
   }

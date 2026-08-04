@@ -1,6 +1,6 @@
 /**
  * MCP Tool: run_on_perchance
- * Uses Playwright to load generator code on perchance.ai and capture results
+ * Uses Playwright to load generator code on perchance.org and capture results
  */
 
 import type { PlaywrightRunOptions, PlaywrightRunResult } from '../../types/perchance.js';
@@ -9,7 +9,7 @@ export const playwrightTool = {
   schema: {
     name: 'run_on_perchance',
     description:
-      'Load .perchance generator code on perchance.ai using a real browser (Playwright) and return generated results. Use for final testing before sharing.',
+      'Load .perchance generator code on perchance.org using a real browser (Playwright) and return generated results. Use for final testing before sharing.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -29,7 +29,7 @@ export const playwrightTool = {
         },
         scrapeUrl: {
           type: 'string',
-          description: 'Optional: scrape an existing public perchance.ai generator URL instead of running custom code',
+          description: 'Optional: scrape an existing public perchance.org generator URL instead of running custom code',
         },
       },
       required: ['code'],
@@ -59,7 +59,7 @@ export const playwrightTool = {
             count: result.results.length,
             screenshot: result.screenshot ? '[base64 PNG attached]' : undefined,
             error: result.error,
-            tip: 'Paste your code at https://perchance.ai/tools/generate to use it live',
+            tip: 'Paste your code at https://perchance.org/minimal#edit to use it live',
           }, null, 2),
         }],
       };

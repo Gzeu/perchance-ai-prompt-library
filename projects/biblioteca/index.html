@@ -1,0 +1,115 @@
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #140d08; }
+  body { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    color: #e8d6b8; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+  #shelf {
+    position: relative; width: min(560px, 92vw); padding: 34px 30px 30px;
+    border-radius: 14px;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(255,196,120,0.16), transparent 60%),
+      linear-gradient(180deg, #251708, #160d05);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,210,150,0.12);
+    text-align: center;
+  }
+  #shelf::before {
+    content: ""; position: absolute; left: 8%; right: 8%; top: -6px; height: 10px;
+    background: linear-gradient(180deg, #3a2611, #241608); border-radius: 6px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+  }
+
+  h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: 0.5px; color: #f2d9a8;
+    text-shadow: 0 2px 10px rgba(255,170,90,0.25); }
+  .sub { margin: 0 0 20px; font-size: 13px; color: #b89a6a; font-style: italic; }
+
+  /* candle glow behind the book */
+  #glow { position: absolute; left: 50%; top: 46%; width: 320px; height: 320px; transform: translate(-50%,-50%);
+    background: radial-gradient(circle, rgba(255,180,90,0.28), transparent 62%);
+    pointer-events: none; animation: flicker 3.2s ease-in-out infinite; z-index: 0; }
+  @keyframes flicker { 0%,100% { opacity: 0.9; } 45% { opacity: 0.62; } 70% { opacity: 1; } }
+
+  #book {
+    position: relative; z-index: 1; min-height: 150px; margin: 0 auto 18px; padding: 22px 24px;
+    border-radius: 10px; text-align: left; opacity: 0; transform: translateY(14px) scale(0.97);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    background: linear-gradient(180deg, #f3e6c8, #e6d3a6); color: #3a2a16;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(120,80,40,0.4);
+  }
+  #book.show { opacity: 1; transform: translateY(0) scale(1); }
+  #book .titlu { font-size: 21px; font-weight: 700; margin-bottom: 4px; }
+  #book .meta { font-size: 13px; color: #6a4e26; font-style: italic; margin-bottom: 12px; }
+  #book .frag { font-size: 15px; line-height: 1.55; border-top: 1px dashed rgba(120,80,40,0.4); padding-top: 10px; }
+
+  #openBtn {
+    position: relative; z-index: 1; font: inherit; font-size: 15px; letter-spacing: 0.4px;
+    color: #1c1206; background: linear-gradient(180deg, #f2d49a, #d8a85a);
+    border: none; border-radius: 999px; padding: 11px 26px; cursor: pointer;
+    box-shadow: 0 6px 16px rgba(255,170,90,0.3); transition: transform 0.15s ease;
+  }
+  #openBtn:hover { transform: translateY(-1px); }
+  #openBtn:active { transform: translateY(1px); }
+
+  #log { list-style: none; padding: 0; margin: 18px auto 0; max-width: 90%; font-size: 12px; color: #9a7e58; }
+  #log li { padding: 3px 0; border-bottom: 1px solid rgba(255,210,150,0.08); }
+  #count { margin-top: 12px; font-size: 12px; color: #b89a6a; }
+</style>
+
+<div id="shelf">
+  <div id="glow"></div>
+  <h1>Biblioteca Viselor</h1>
+  <p class="sub">deschide o carte — fiecare pagină e alta</p>
+
+  <div id="book">
+    <div class="titlu">—</div>
+    <div class="meta"></div>
+    <div class="frag"></div>
+  </div>
+
+  <button id="openBtn">Deschide o carte</button>
+  <div id="count">Cărți deschise: 0</div>
+  <ul id="log"></ul>
+</div>
+
+<script type="module">
+const book = document.getElementById('book');
+const titluEl = book.querySelector('.titlu');
+const metaEl = book.querySelector('.meta');
+const fragEl = book.querySelector('.frag');
+const btn = document.getElementById('openBtn');
+const logEl = document.getElementById('log');
+const countEl = document.getElementById('count');
+let opened = 0;
+
+// weighted pick from a root.* array of {t, w}
+function pick(arr) {
+  const total = arr.reduce((s, x) => s + x.w, 0);
+  let r = Math.random() * total;
+  for (const x of arr) { r -= x.w; if (r < 0) return x.t; }
+  return arr[arr.length - 1].t;
+}
+
+function openBook() {
+  const titlu = pick(root.titluri);
+  const autor = pick(root.autori);
+  const gen = pick(root.genuri);
+  const frag = pick(root.fragmente);
+
+  titluEl.textContent = titlu;
+  metaEl.textContent = `${autor} — ${gen}`;
+  fragEl.textContent = `„${frag}"`;
+
+  book.classList.remove('show');
+  // restart the fade-in
+  void book.offsetWidth;
+  book.classList.add('show');
+
+  opened++;
+  countEl.textContent = `Cărți deschise: ${opened}`;
+  const li = document.createElement('li');
+  li.textContent = `${titlu} — ${autor}`;
+  logEl.prepend(li);
+  if (logEl.children.length > 8) logEl.lastChild.remove();
+}
+
+btn.addEventListener('click', openBook);
+</script>

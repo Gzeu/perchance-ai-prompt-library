@@ -1,36 +1,85 @@
 # Project Status
 
-**Project:** Perchance AI Prompt Library  
-**Version:** 7.0.0  
-**Last Updated:** May 23, 2026  
-**Status:** Active development — Ultra Agentic v7 release
+**Project:** Perchance AI Prompt Library
+**Version:** 8.0.0
+**Last Updated:** August 4, 2026
+**Status:** Active development — CLI + MCP Toolkit
 
 ---
 
-## v7.0 highlights
+## v8.0.0 Highlights
 
-- **Ultra Agentic pipeline** — 7 specialists, smart selection (max 3), parallel Groq generation, debate, weighted voting, SyntaxMaster refine, session memory
-- **API** — `POST /api/perchance/agentic`, `GET /api/perchance/agentic/preview`, `GET /api/perchance/agentic/status`
-- **CLI** — `pai agentic "<description>"`
-- **Web** — `/agentic` Ultra Agentic Studio page
-- **Groq service** — shared module with retry/backoff on 429 and 5xx
-- **Version alignment** — package, API, CLI, README at v7.0.0
+- **Complete rewrite** — Transformed from full-stack platform to focused CLI + MCP toolkit
+- **MCP Server** — 11 tools for Claude Desktop, OpenClaw, and any MCP-compatible agent
+- **CLI** — `perchance-gen` command with create, preview, validate, run, scrape commands
+- **Agent Layer** — Universal interface, decision engine, autonomous workflows
+- **Playwright Automation** — Live execution on perchance.org, scraping capabilities
+- **150+ Templates** — Ready-to-use generators for various categories
+- **OpenClaw Skill** — Native skill integration for autonomous agents
 
 ---
 
 ## Requirements
 
 - Node.js >= 20
-- `GROQ_API_KEY` for AI and agentic features
-- API: `npm start` (port 3000)
-- Web: `npm run dev` (port 5173, proxies `/api`)
+- `GROQ_API_KEY` for AI generation and autonomous features
+- Playwright (optional, for `run` and `scrape` commands)
 
 ---
 
-## Deployment notes
+## Architecture
 
-- **Vercel** hosts the static web build only (`vercel.json`)
-- Full-stack demo: set `VITE_API_URL` to a separately hosted API (Railway, Render, IBM Cloud, etc.)
+```
+src/
+├── core/           Syntax builder, validator, exporter, weighted lists
+├── mcp/            MCP server + 11 tools
+├── playwright/     Browser automation (loader, roller, scraper)
+├── agent/          Universal interface, decision engine, autonomous workflows
+├── cli/            CLI entry point
+└── types/          TypeScript types for Perchance syntax
+
+templates/          150+ ready-to-use .perchance generators
+skills/             OpenClaw skill manifest
+mcp-config/         MCP server configs (Claude Desktop, OpenClaw)
+```
+
+---
+
+## Key Features
+
+### CLI Commands
+- `perchance-gen create` — AI-powered generator creation
+- `perchance-gen preview` — Local preview without browser
+- `perchance-gen validate` — Syntax validation
+- `perchance-gen run` — Live execution on perchance.org
+- `perchance-gen scrape` — Clone public generators
+
+### MCP Tools
+- `generate_perchance` — AI generation from topic
+- `list_templates` / `get_template` — Template browsing
+- `validate_syntax` — Syntax checking
+- `preview_rolls` — Local preview
+- `run_on_perchance` — Live execution
+- `autonomous_generate` — Fully autonomous creation
+- `batch_generate` — Parallel batch generation
+- `improve_generator` — AI-powered improvement
+- `autonomous_test` — Automated testing
+- `multi_format_generate` — Optimal format selection
+
+### Agent Workflows
+- Decision engine for intelligent tool selection
+- Self-improvement system for iterative refinement
+- Batch coordinator for parallel processing
+- Autonomous testing suite
+- Multi-format generator (Perchance/HTML)
+
+---
+
+## Deployment
+
+- **NPM**: Global CLI installation
+- **MCP**: Direct integration with AI agents
+- **No web interface**: Focused on CLI + MCP integration
 
 ---
 
@@ -39,8 +88,14 @@
 | Resource | URL |
 |----------|-----|
 | Repository | https://github.com/Gzeu/perchance-ai-prompt-library |
-| Live web (static) | https://perchance-ai-prompt-library.vercel.app |
 | NPM | https://www.npmjs.com/package/perchance-ai-prompt-library |
+| Perchance.org | https://perchance.org |
+
+---
+
+## Migration from v7.0.0
+
+See [`MIGRATION.md`](MIGRATION.md) for detailed migration guide.
 
 ---
 

@@ -1,0 +1,39 @@
+// ===== Biblioteca Viselor — datele cărților (root.*) =====
+// Keep main.pjs for the book data users may want to tweak. UI lives in index.html.
+
+$meta
+  title = Biblioteca Viselor
+  description = O colectie ambulantă de cărți de vis — fiecare deschisă la o pagină necunoscută.
+  tags = library, books, dream, atmospheric, generator
+
+// Book data as root.* properties (arrays of {t: text, w: weight}).
+titluri = [
+  { t: "Cartea Care Plânge la Lună", w: 3 },
+  { t: "Atlasul Tăcerii", w: 2 },
+  { t: "Floarea de Ceară", w: 3 },
+  { t: "Jurnalul unui Ecou", w: 2 },
+  { t: "Marea fără Hărți", w: 3 },
+  { t: "Orologiul de Nisip Verde", w: 2 },
+];
+
+autori = [
+  { t: "de Inocențiu Vânătoriul", w: 2 },
+  { t: "anonim, legat în piele de lună", w: 3 },
+  { t: "de Doamna Care Șoptește", w: 2 },
+  { t: "transcris de un copist orb", w: 3 },
+];
+
+genuri = [
+  { t: "un tratat despre somnambuli", w: 2 },
+  { t: "o culegere de vise recuperate", w: 3 },
+  { t: "un manual al uitarilor de ceață", w: 2 },
+  { t: "un bestiar al lucrurilor uitate", w: 3 },
+];
+
+fragmente = [
+  { t: "Pe pagina trei, o ușă care nu duce nicăieri s-a deschis totuși.", w: 3 },
+  { t: "Cititorule, dacă ajungi aici, ai fost deja așteptat.", w: 2 },
+  { t: "Cuvintele se scurg din carte și țâșnesc în cameră ca aburi.", w: 3 },
+  { t: "Un personaj a plecat din carte și nu s-a mai întors.", w: 2 },
+  { t: "Fiecare recitire schimbă finalul, niciodată la fel.", w: 3 },
+];

@@ -1,0 +1,28 @@
+// Tavernă fantstică — nume, atmosferă, stăpân, secret
+output
+  [nume] — [atmosfera] [stapan] [secret]
+
+nume
+  Cronca Umbrelor^3
+  Capcana de Argint^2
+  Ultimul Far^3
+  Butoiul Incălzit^2
+  Șarpele de Lut^2
+  Ceasornicul Tăcut^3
+
+atmosfera
+  o încăpere caldă mirosind a lemn ars și a chihlimbar.^3
+  un donjon umed unde lumânările pâlpâie stingher.^2
+  o grădină acoperită unde plouă mereu.^2
+  o sală de piatră cu o vatră uriașă.^3
+
+stapan
+  O chelneriță cu o cicatrice de sticlă.^2
+  Un pitic care numără monede vechi.^3
+  O umbră care servește fără chip.^2
+  Un bătrân ce vorbește cu paharele.^2
+
+secret
+  În beci zace un contract nesemnat.^2
+  O tavă ascunde o hartă a lumii de dedesubt.^3
+  Mereu pleacă câte un oaspete și nu se mai întoarce.^2

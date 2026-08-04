@@ -1,0 +1,1341 @@
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #02101c; }
+  body { text-align: left; font-family: system-ui, sans-serif; touch-action: none; }
+  #app { position: fixed; inset: 0; }
+  #game { display: block; width: 100%; height: 100%; }
+
+  #hud {
+    position: fixed; left: 12px; top: 12px; z-index: 10;
+    color: #cfe6f5; font-size: 13px; line-height: 1.5;
+    background: rgba(4,16,28,0.55); padding: 10px 14px; border-radius: 8px;
+    backdrop-filter: blur(6px); border: 1px solid rgba(120,200,230,0.18);
+    pointer-events: none; user-select: none;
+  }
+  #hud b { color: #7fd4ff; }
+  #zoneLabel { color: #8fe6c0; font-style: italic; }
+
+  #depthBar { position: relative; height: 14px; margin-top: 6px; border-radius: 7px;
+    background: rgba(255,255,255,0.08); overflow: hidden; border: 1px solid rgba(120,200,230,0.12); }
+  #depthFill { position: absolute; left: 0; top: 0; bottom: 0; width: 20%;
+    background: linear-gradient(90deg, #7fd4ff, #1a4a6a); transition: width 0.3s, background 0.6s; }
+  #depthLabel { position: absolute; inset: 0; text-align: center; font-size: 10px; line-height: 14px;
+    color: #e0f0ff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+  #minimap {
+    position: fixed; right: 12px; top: 12px; z-index: 10;
+    width: 150px; height: 150px; border-radius: 8px;
+    border: 1px solid rgba(120,200,230,0.25);
+    background: rgba(4,16,28,0.6); backdrop-filter: blur(4px);
+  }
+
+  .ctrl { position: fixed; z-index: 20; user-select: none; -webkit-user-select: none;
+    touch-action: none; }
+
+  #joy {
+    left: 22px; bottom: 22px; width: 132px; height: 132px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(8,24,40,0.55), rgba(4,12,20,0.35));
+    border: 2px solid rgba(120,200,230,0.22);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #joyKnob {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #bfeaff, #3a7a9a);
+    border: 2px solid rgba(180,230,255,0.4);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+    pointer-events: none;
+  }
+
+  #boostBtn {
+    right: 22px; bottom: 22px; width: 78px; height: 78px; border-radius: 50%;
+    border: 2px solid rgba(120,200,230,0.22);
+    background: radial-gradient(circle, rgba(8,24,40,0.6), rgba(4,12,20,0.4));
+    color: #bfeaff; font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  #boostBtn.active { background: radial-gradient(circle, rgba(80,180,230,0.4), rgba(40,100,140,0.3)); }
+
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #7fd4ff; font-size: 18px; z-index: 50; background: #02101c; flex-direction: column; }
+  #loading .sub { display:block; color:#5a8aa6; font-size:13px; margin-top:6px; text-align:center; }
+
+  /* Bug Error Plugin badge — nudge below the minimap */
+  #bepBadge { top: 168px !important; }
+
+  #infoBtn {
+    position: fixed; left: 12px; top: 168px; z-index: 20;
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid rgba(120,200,230,0.22);
+    background: rgba(4,16,28,0.6); backdrop-filter: blur(4px);
+    color: #7fd4ff; font-size: 18px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; user-select: none;
+  }
+  #infoBtn:hover { background: rgba(8,24,40,0.8); }
+
+  #infoPanel {
+    position: fixed; inset: 0; z-index: 40;
+    background: rgba(2,8,16,0.72); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #infoPanel[hidden] { display: none; }
+  #infoCard {
+    width: min(460px, 92vw); max-height: 86vh; overflow-y: auto;
+    background: #0a1826; border: 1px solid rgba(120,200,230,0.18);
+    border-radius: 14px; padding: 0;
+    color: #cfe6f5; font-size: 14px; line-height: 1.6;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    position: relative;
+  }
+  #infoCard h2 { margin: 0 0 8px; color: #7fd4ff; font-size: 20px; }
+  #infoCard h3 { margin: 16px 0 6px; color: #8fe6c0; font-size: 14px; }
+  #infoCard p { margin: 6px 0; }
+  #infoClose {
+    position: absolute; right: 14px; top: 12px; z-index: 2;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid rgba(120,200,230,0.22); background: rgba(8,24,40,0.7);
+    color: #cfe6f5; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #infoTabs {
+    display: flex; border-bottom: 1px solid rgba(120,200,230,0.12);
+    position: sticky; top: 0; background: #0a1826; z-index: 1;
+    border-radius: 14px 14px 0 0;
+  }
+  .tabBtn {
+    flex: 1; padding: 14px 8px; background: none; border: none;
+    color: #5a8aa6; font-size: 14px; font-weight: 600; cursor: pointer;
+    border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+  }
+  .tabBtn:hover { color: #9fc8d8; }
+  .tabBtn.active { color: #7fd4ff; border-bottom-color: #7fd4ff; }
+  .tabBody { display: none; padding: 22px; }
+  .tabBody.active { display: block; }
+  #commentsCtn > div { width: 100% !important; max-width: 100% !important; }
+</style>
+
+<div id="app"><canvas id="game"></canvas></div>
+<div id="hud">
+  <b>Abis</b><br>
+  Move: <b>WASD</b> / joystick &nbsp; Boost: <b>Shift</b> / button<br>
+  <span id="zoneLabel">…</span>
+  <div id="depthBar"><div id="depthFill"></div><span id="depthLabel">0 m</span></div>
+</div>
+<canvas id="minimap" width="150" height="150"></canvas>
+<div id="joy" class="ctrl"><div id="joyKnob"></div></div>
+<button id="boostBtn" class="ctrl">BOOST</button>
+<div id="loading">Filling the sea…<span class="sub">growing reefs &amp; kelp</span></div>
+
+<button id="infoBtn" title="About &amp; Chat">ⓘ</button>
+<div id="infoPanel" hidden>
+  <div id="infoCard">
+    <button id="infoClose">✕</button>
+    <div id="infoTabs">
+      <button class="tabBtn active" data-tab="about">About</button>
+      <button class="tabBtn" data-tab="chats">Chats</button>
+    </div>
+    <div class="tabBody active" id="tabAbout">
+      <h2>Abis</h2>
+      <p>A serene top-down underwater exploration. Drift across coral reefs, glide through kelp forests, and descend into the dark abyss where bioluminescent creatures glow.</p>
+      <h3>Status</h3>
+      <p style="color:#8fe6c0;font-style:italic">Currently under development</p>
+      <p>Made by <b style="color:#7fd4ff">perchance-ai-prompt-library</b></p>
+      <p style="color:#5a8aa6;font-size:13px">No storyline yet — still improving the seascape, light and marine life. May be locked down later as the dive takes shape.</p>
+      <h3>Controls</h3>
+      <p><b style="color:#7fd4ff">WASD</b> / joystick — Swim &nbsp; <b style="color:#7fd4ff">Shift</b> / BOOST button — Boost</p>
+      <p>Glide through kelp, explore sunken ruins, watch schools of fish drift by. In the deep abyss your lantern is the only light.</p>
+    </div>
+    <div class="tabBody" id="tabChats">
+      <h2>Community Chat</h2>
+      <p style="color:#5a8aa6;font-size:13px">Leave a message, share feedback, or report what you find in the deep.</p>
+      <div id="commentsCtn"></div>
+    </div>
+  </div>
+</div>
+
+[BUG({showIcon: true, position: "top-right"})]
+
+<script type="module">
+if (window.__abisStarted) { /* skip duplicate exec */ }
+else { window.__abisStarted = true;
+(function(){
+
+// ---------- config ----------
+const TILE = root.tile;
+const WORLD_W = root.worldW;
+const WORLD_H = root.worldH;
+const WORLD_PX_W = WORLD_W * TILE;
+const WORLD_PX_H = WORLD_H * TILE;
+const PLAYER_SPEED = root.playerSpeed;
+const BOOST_SPEED = root.boostSpeed;
+function calcZoom() {
+  const minDim = Math.min(innerWidth, innerHeight);
+  const targetTiles = minDim < 500 ? 14 : minDim < 800 ? 16 : minDim < 1200 ? 18 : 22;
+  let z = (minDim / targetTiles) / TILE;
+  z *= root.cameraZoom;
+  return Math.max(0.8, Math.min(5, z));
+}
+let ZOOM = calcZoom();
+const PSCALE = root.playerScale;
+const SEED = root.worldSeed | 0;
+
+// biome ids
+const B_SHALLOW=0, B_REEF=1, B_KELP=2, B_SAND=3, B_DEEP=4, B_ABYSS=5, B_ROCK=6, B_RUIN=7;
+const BIOME_NAME = {0:'Shallows',1:'Coral Reef',2:'Kelp Forest',3:'Open Sand',4:'Deep Sea',5:'The Abyss',6:'Rocky Ridge',7:'Sunken Ruins'};
+function isSwimmable(b){ return b!==B_ROCK; }
+
+// ---------- canvas ----------
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const mini = document.getElementById('minimap');
+const mctx = mini.getContext('2d');
+const zoneLabel = document.getElementById('zoneLabel');
+const depthFill = document.getElementById('depthFill');
+const depthLabel = document.getElementById('depthLabel');
+
+let DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+function resize() {
+  DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+  canvas.width = Math.floor(innerWidth * DPR);
+  canvas.height = Math.floor(innerHeight * DPR);
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  ZOOM = calcZoom();
+}
+resize();
+addEventListener('resize', resize);
+
+// ---------- seeded PRNG + value noise ----------
+let _seed = SEED;
+function rnd() { _seed = (_seed * 1664525 + 1013904223) >>> 0; return _seed / 4294967296; }
+function rndInt(n) { return Math.floor(rnd() * n); }
+function hash2(x, y) {
+  let n = (x|0)*374761393 + (y|0)*668265263 + SEED*1013904223;
+  n = (n ^ (n>>>13)) >>> 0; n = (n * 1274126177) >>> 0;
+  return ((n ^ (n>>>16)) >>> 0) / 4294967295;
+}
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y);
+  const xf = x - xi, yf = y - yi;
+  const a = hash2(xi, yi), b = hash2(xi+1, yi), c = hash2(xi, yi+1), d = hash2(xi+1, yi+1);
+  const u = xf*xf*(3-2*xf), v = yf*yf*(3-2*yf);
+  return a*(1-u)*(1-v) + b*u*(1-v) + c*(1-u)*v + d*u*v;
+}
+function fbm(x, y, oct) {
+  let v = 0, a = 0.5, f = 1;
+  for (let i = 0; i < oct; i++) { v += a * vnoise(x*f, y*f); f *= 2; a *= 0.5; }
+  return v;
+}
+const lerp = (a,b,t) => a + (b-a)*t;
+const clamp = (v,lo,hi) => v<lo?lo:(v>hi?hi:v);
+
+// ---------- terrain frequency ----------
+const DFREQ = 0.0026;   // depth field
+const MFREQ = 0.0018;   // moisture/feature field
+
+const th = new Float32Array(WORLD_W * WORLD_H);   // depth (0 shallow .. 1 abyssal)
+const tm = new Float32Array(WORLD_W * WORLD_H);    // feature
+const biome = new Uint8Array(WORLD_W * WORLD_H);
+const solid = new Uint8Array(WORLD_W * WORLD_H);
+function Wb(x,y){ return biome[y*WORLD_W+x]; }
+
+// radial depth: center = shallow, edges = deep abyss
+const CX = WORLD_PX_W / 2, CY = WORLD_PX_H / 2;
+const MAXR = Math.min(WORLD_PX_W, WORLD_PX_H) / 2;
+function depthFalloff(px, py) {
+  const dx = (px - CX) / MAXR, dy = (py - CY) / MAXR;
+  const d = Math.sqrt(dx*dx + dy*dy);
+  return clamp(d*d * 1.3, 0, 1);
+}
+function depthAt(px, py) {
+  const n = fbm(px*DFREQ, py*DFREQ, 3);
+  const f = depthFalloff(px, py);
+  return clamp(n * 0.4 + f * 0.7 - 0.05, 0, 1);
+}
+
+function tileBiome(d, m) {
+  if (d < 0.18) return B_SHALLOW;
+  if (d < 0.42) {
+    if (m > 0.58) return B_KELP;
+    if (m > 0.40) return B_REEF;
+    return B_SAND;
+  }
+  if (d < 0.68) {
+    if (m > 0.72) return B_RUIN;
+    if (m > 0.30) return B_DEEP;
+    return B_SAND;
+  }
+  return B_ABYSS;
+}
+
+for (let ty = 0; ty < WORLD_H; ty++) {
+  for (let tx = 0; tx < WORLD_W; tx++) {
+    const cx = tx*TILE + TILE/2, cy = ty*TILE + TILE/2;
+    const d = depthAt(cx, cy);
+    const m = fbm(cx*MFREQ + 1000, cy*MFREQ + 1000, 2);
+    const i = ty*WORLD_W + tx;
+    th[i] = d; tm[i] = m;
+    biome[i] = tileBiome(d, m);
+  }
+}
+
+// carve a few rocky ridges (impassable walls) in deep areas
+for (let i = 0; i < 6; i++) {
+  let tx = rndInt(WORLD_W), ty = rndInt(WORLD_H);
+  if (th[ty*WORLD_W+tx] < 0.45) continue;
+  let ang = rnd() * Math.PI * 2;
+  const len = 8 + rndInt(14);
+  for (let s = 0; s < len; s++) {
+    if (tx<1||ty<1||tx>=WORLD_W-1||ty>=WORLD_H-1) break;
+    biome[ty*WORLD_W+tx] = B_ROCK;
+    th[ty*WORLD_W+tx] = Math.max(th[ty*WORLD_W+tx], 0.5);
+    const w = 1 + (rnd()<0.4?1:0);
+    for (let dy=-w; dy<=w; dy++) for (let dx=-w; dx<=w; dx++) {
+      const nx=tx+dx, ny=ty+dy;
+      if (nx>=0&&ny>=0&&nx<WORLD_W&&ny<WORLD_H && rnd()<0.5) {
+        biome[ny*WORLD_W+nx] = B_ROCK;
+      }
+    }
+    ang += (rnd()-0.5)*1.2;
+    tx += Math.round(Math.cos(ang)); ty += Math.round(Math.sin(ang));
+  }
+}
+
+// build solid array: only rock is impassable
+for (let i = 0; i < biome.length; i++) {
+  solid[i] = (biome[i] === B_ROCK) ? 1 : 0;
+}
+
+// ---------- world canvas (pre-rendered ONCE) ----------
+const worldCanvas = document.createElement('canvas');
+worldCanvas.width = WORLD_PX_W;
+worldCanvas.height = WORLD_PX_H;
+const wctx = worldCanvas.getContext('2d');
+
+// depth-based palette: bright turquoise shallow -> deep navy -> near-black abyss
+function depthColor(d, m, n) {
+  let r, g, b;
+  if (d < 0.18) {
+    const t = d / 0.18;
+    r = lerp(120, 90, t); g = lerp(220, 200, t); b = lerp(230, 215, t);
+  } else if (d < 0.42) {
+    const t = (d-0.18)/0.24;
+    r = lerp(90, 40, t); g = lerp(200, 130, t); b = lerp(215, 165, t);
+  } else if (d < 0.68) {
+    const t = (d-0.42)/0.26;
+    r = lerp(40, 14, t); g = lerp(130, 60, t); b = lerp(165, 100, t);
+  } else {
+    const t = (d-0.68)/0.32;
+    r = lerp(14, 3, t); g = lerp(60, 12, t); b = lerp(100, 28, t);
+  }
+  // feature tint: reefs warmer, kelp greener, ruins purplish, abyss bioluminescent specks handled separately
+  if (d < 0.68) {
+    if (m > 0.58) { g = clamp(g + (255-g)*0.05, 0, 255)|0; }            // kelp green tint
+    else if (m > 0.40) { r = clamp(r + (255-r)*0.10, 0, 255)|0; g = clamp(g + (255-g)*0.03,0,255)|0; } // reef warm
+    if (m > 0.72 && d > 0.42) { r = clamp(r+12,0,255)|0; b = clamp(b+14,0,255)|0; } // ruin stone tint
+  }
+  r = clamp(r + n*6, 0, 255) | 0;
+  g = clamp(g + n*6, 0, 255) | 0;
+  b = clamp(b + n*6, 0, 255) | 0;
+  return (255<<24) | (b<<16) | (g<<8) | r;
+}
+
+(function renderTerrain() {
+  const img = wctx.createImageData(WORLD_PX_W, WORLD_PX_H);
+  const u32 = new Uint32Array(img.data.buffer);
+  let idx = 0;
+  for (let py = 0; py < WORLD_PX_H; py++) {
+    for (let px = 0; px < WORLD_PX_W; px++) {
+      const ti = Math.floor(py / TILE) * WORLD_W + Math.floor(px / TILE);
+      let d = depthAt(px, py);
+      const m = fbm(px*MFREQ + 1000, py*MFREQ + 1000, 2);
+      const n = (hash2(px, py) - 0.5) * 2;
+      if (biome[ti] === B_ROCK) d = Math.max(d, 0.5);
+      u32[idx++] = depthColor(d, m, n);
+    }
+  }
+  wctx.putImageData(img, 0, 0);
+})();
+
+// ---------- sprite overlays (drawn once onto world canvas) ----------
+function rseed(s) { let x = (s|0) || 1; return () => { x = (x*1664525+1013904223)>>>0; return x/4294967296; }; }
+
+// BRAIN CORAL — bumpy rounded dome
+function drawBrainCoral(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.8 + r()*0.5;
+  const hue = [340, 10, 30, 300][Math.floor(r()*4)];
+  wctx.fillStyle = 'rgba(0,0,0,0.18)';
+  wctx.beginPath(); wctx.ellipse(cx+3, cy+3, 12*s*sc, 6*s*sc, 0, 0, Math.PI*2); wctx.fill();
+  wctx.fillStyle = `hsl(${hue},45%,42%)`;
+  wctx.beginPath(); wctx.arc(cx, cy, 11*s*sc, 0, Math.PI*2); wctx.fill();
+  wctx.strokeStyle = `hsl(${hue},50%,28%)`; wctx.lineWidth = 1.4*s*sc;
+  for (let i = 0; i < 5; i++) {
+    wctx.beginPath();
+    const y = cy - 8*s*sc + i*4*s*sc;
+    wctx.moveTo(cx-9*s*sc, y); wctx.bezierCurveTo(cx-4, y-3, cx+4, y-3, cx+9*s*sc, y); wctx.stroke();
+  }
+  wctx.fillStyle = `hsl(${hue},55%,58%)`;
+  wctx.beginPath(); wctx.arc(cx-3*s*sc, cy-4*s*sc, 3*s*sc, 0, Math.PI*2); wctx.fill();
+}
+
+// STAGHORN CORAL — branching antler-like fronds
+function drawStaghorn(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.8 + r()*0.5;
+  const hue = [160, 180, 200, 20][Math.floor(r()*4)];
+  wctx.fillStyle = 'rgba(0,0,0,0.16)';
+  wctx.beginPath(); wctx.ellipse(cx+3, cy+3, 9*s*sc, 5*s*sc, 0, 0, Math.PI*2); wctx.fill();
+  wctx.fillStyle = `hsl(${hue},45%,40%)`;
+  wctx.fillRect(cx-1.5, cy-2, 3, 8);
+  const branches = 4 + Math.floor(r()*3);
+  wctx.strokeStyle = `hsl(${hue},45%,40%)`; wctx.lineWidth = 3*s*sc; wctx.lineCap = 'round';
+  for (let i = 0; i < branches; i++) {
+    const ang = -Math.PI/2 + (i - branches/2)*0.5 + r()*0.2;
+    const len = 10*s*sc + r()*6*s*sc;
+    wctx.beginPath(); wctx.moveTo(cx, cy-2); wctx.lineTo(cx+Math.cos(ang)*len, cy-2+Math.sin(ang)*len); wctx.stroke();
+    const bx = cx+Math.cos(ang)*len, by = cy-2+Math.sin(ang)*len;
+    if (r()<0.7) { const a2 = ang + (r()-0.5)*1.2; const l2 = 6*s*sc; wctx.beginPath(); wctx.moveTo(bx,by); wctx.lineTo(bx+Math.cos(a2)*l2, by+Math.sin(a2)*l2); wctx.stroke(); }
+  }
+  wctx.fillStyle = `hsl(${hue},55%,58%)`;
+  for (let i = 0; i < branches; i++) { wctx.beginPath(); wctx.arc(cx+(r()-0.5)*14, cy-6*s*sc-r()*8*s*sc, 1.5*s*sc, 0, Math.PI*2); wctx.fill(); }
+}
+
+// FAN CORAL — wide flat fan
+function drawFanCoral(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.8 + r()*0.5;
+  const hue = [280, 320, 0, 200][Math.floor(r()*4)];
+  wctx.fillStyle = 'rgba(0,0,0,0.16)';
+  wctx.beginPath(); wctx.ellipse(cx+3, cy+3, 11*s*sc, 5*s*sc, 0, 0, Math.PI*2); wctx.fill();
+  wctx.fillStyle = `hsl(${hue},40%,45%)`;
+  wctx.beginPath();
+  wctx.moveTo(cx, cy+3*s*sc);
+  wctx.quadraticCurveTo(cx-13*s*sc, cy-4*s*sc, cx-9*s*sc, cy-14*s*sc);
+  wctx.quadraticCurveTo(cx, cy-20*s*sc, cx+9*s*sc, cy-14*s*sc);
+  wctx.quadraticCurveTo(cx+13*s*sc, cy-4*s*sc, cx, cy+3*s*sc);
+  wctx.fill();
+  wctx.strokeStyle = `hsl(${hue},50%,60%)`; wctx.lineWidth = 0.8*s*sc;
+  for (let i = 0; i < 6; i++) {
+    const a = -Math.PI + i/5*Math.PI;
+    wctx.beginPath(); wctx.moveTo(cx, cy); wctx.lineTo(cx+Math.cos(a)*11*s*sc, cy+Math.sin(a)*16*s*sc); wctx.stroke();
+  }
+}
+
+// TUBE SPONGE — tall translucent tubes
+function drawTubeSponge(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.8 + r()*0.4;
+  const hue = [180, 200, 160, 40][Math.floor(r()*4)];
+  wctx.fillStyle = 'rgba(0,0,0,0.14)';
+  wctx.beginPath(); wctx.ellipse(cx+3, cy+3, 8*s*sc, 4*s*sc, 0, 0, Math.PI*2); wctx.fill();
+  const tubes = 2 + Math.floor(r()*2);
+  for (let i = 0; i < tubes; i++) {
+    const ox = (i - tubes/2)*5*s*sc;
+    const hgt = 10*s*sc + r()*8*s*sc;
+    wctx.fillStyle = `hsl(${hue},35%,45%)`;
+    wctx.fillRect(cx+ox-2*s*sc, cy-hgt, 4*s*sc, hgt);
+    wctx.fillStyle = `hsl(${hue},45%,60%)`;
+    wctx.beginPath(); wctx.ellipse(cx+ox, cy-hgt, 2*s*sc, 1.5*s*sc, 0, 0, Math.PI*2); wctx.fill();
+    wctx.fillStyle = `hsl(${hue},25%,25%)`;
+    wctx.beginPath(); wctx.ellipse(cx+ox, cy-hgt+1, 1.2*s*sc, 0.8*s*sc, 0, 0, Math.PI*2); wctx.fill();
+  }
+}
+
+// SEA URCHIN — spiky dark ball
+function drawUrchin(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.7 + r()*0.4;
+  wctx.fillStyle = `hsl(${280+r()*40},20%,18%)`;
+  wctx.beginPath(); wctx.arc(cx, cy, 5*s*sc, 0, Math.PI*2); wctx.fill();
+  wctx.strokeStyle = `hsl(${280+r()*40},25%,12%)`; wctx.lineWidth = 1*s*sc;
+  for (let i = 0; i < 12; i++) {
+    const a = (i/12)*Math.PI*2;
+    wctx.beginPath(); wctx.moveTo(cx+Math.cos(a)*4*s*sc, cy+Math.sin(a)*4*s*sc);
+    wctx.lineTo(cx+Math.cos(a)*9*s*sc, cy+Math.sin(a)*9*s*sc); wctx.stroke();
+  }
+}
+
+// ANEMONE — tentacled blob
+function drawAnemone(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.7 + r()*0.4;
+  const hue = [160, 180, 300, 340][Math.floor(r()*4)];
+  wctx.fillStyle = `hsl(${hue},30%,30%)`;
+  wctx.beginPath(); wctx.arc(cx, cy, 6*s*sc, 0, Math.PI*2); wctx.fill();
+  wctx.strokeStyle = `hsl(${hue},50%,55%)`; wctx.lineWidth = 1.4*s*sc; wctx.lineCap = 'round';
+  for (let i = 0; i < 14; i++) {
+    const a = (i/14)*Math.PI*2 + r()*0.1;
+    const len = 7*s*sc + r()*4*s*sc;
+    wctx.beginPath(); wctx.moveTo(cx+Math.cos(a)*4*s*sc, cy+Math.sin(a)*4*s*sc);
+    const ex = cx+Math.cos(a)*(4*s*sc+len), ey = cy+Math.sin(a)*(4*s*sc+len);
+    wctx.quadraticCurveTo(cx+Math.cos(a+0.4)*len, cy+Math.sin(a+0.4)*len, ex, ey); wctx.stroke();
+  }
+}
+
+// CORAL BOMMIE — small lumpy rock-coral cluster
+function drawBommie(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.8 + r()*0.4;
+  wctx.fillStyle = 'rgba(0,0,0,0.18)';
+  wctx.beginPath(); wctx.ellipse(cx+3, cy+3, 10*s*sc, 5*s*sc, 0, 0, Math.PI*2); wctx.fill();
+  wctx.fillStyle = '#3a4a5a';
+  wctx.beginPath(); wctx.arc(cx-3*s*sc, cy, 6*s*sc, 0, Math.PI*2); wctx.fill();
+  wctx.beginPath(); wctx.arc(cx+3*s*sc, cy+1*s*sc, 7*s*sc, 0, Math.PI*2); wctx.fill();
+  wctx.fillStyle = '#5a6a7a';
+  wctx.beginPath(); wctx.arc(cx-2*s*sc, cy-2*s*sc, 3*s*sc, 0, Math.PI*2); wctx.fill();
+  wctx.fillStyle = '#4a8a6a';
+  for (let i = 0; i < 3; i++) wctx.beginPath(); wctx.arc(cx+(r()-0.5)*12, cy+(r()-0.5)*8, 1.5*s*sc, 0, Math.PI*2); wctx.fill();
+}
+
+// KELP STALK — recorded for runtime sway; base shadow drawn now
+const kelpStalks = [];
+function addKelp(tx, ty, jx, jy, seed) {
+  const cx = tx*TILE + TILE/2 + (jx||0), cy = ty*TILE + TILE/2 + (jy||0);
+  const r = rseed(seed);
+  const height = 28 + r()*22;
+  const blades = 3 + Math.floor(r()*4);
+  const hue = 80 + Math.floor(r()*40);
+  wctx.fillStyle = 'rgba(0,0,0,0.14)';
+  wctx.beginPath(); wctx.ellipse(cx+2, cy+2, 4, 2, 0, 0, Math.PI*2); wctx.fill();
+  kelpStalks.push({ x: cx, y: cy, height, blades, hue, phase: r()*Math.PI*2, seed });
+}
+
+// SEA GRASS — short tufts, static
+function drawSeaGrass(cx, cy, s, seed) {
+  const r = rseed(seed); const hue = 70 + Math.floor(r()*30);
+  wctx.strokeStyle = `hsl(${hue},40%,28%)`; wctx.lineWidth = 1.2*s;
+  for (let i = 0; i < 5; i++) {
+    const ox = (r()-0.5)*8;
+    wctx.beginPath(); wctx.moveTo(cx+ox, cy+2);
+    wctx.quadraticCurveTo(cx+ox+(r()-0.5)*3, cy-4, cx+ox+(r()-0.5)*5, cy-8-r()*4); wctx.stroke();
+  }
+}
+
+// RUIN COLUMN — broken stone pillar
+function drawColumn(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.8 + r()*0.3;
+  wctx.fillStyle = 'rgba(0,0,0,0.20)';
+  wctx.beginPath(); wctx.ellipse(cx+3, cy+3, 9*s*sc, 5*s*sc, 0, 0, Math.PI*2); wctx.fill();
+  wctx.fillStyle = '#5a5a6a';
+  wctx.fillRect(cx-4*s*sc, cy-18*s*sc, 8*s*sc, 20*s*sc);
+  wctx.fillStyle = '#6a6a7a';
+  wctx.fillRect(cx-5*s*sc, cy-20*s*sc, 10*s*sc, 3*s*sc);
+  wctx.fillRect(cx-5*s*sc, cy-2*s*sc, 10*s*sc, 4*s*sc);
+  wctx.fillStyle = '#4a4a5a';
+  wctx.fillRect(cx-3*s*sc, cy-14*s*sc, 2*s*sc, 2*s*sc);
+  wctx.fillRect(cx+1*s*sc, cy-8*s*sc, 2*s*sc, 2*s*sc);
+}
+
+// RUIN ARCH — toppled stone block
+function drawRuinBlock(cx, cy, s, seed) {
+  const r = rseed(seed); const sc = 0.8 + r()*0.3;
+  const ang = r()*0.5 - 0.25;
+  wctx.save(); wctx.translate(cx, cy); wctx.rotate(ang);
+  wctx.fillStyle = 'rgba(0,0,0,0.20)';
+  wctx.fillRect(-12*s*sc+2, -8*s*sc+2, 24*s*sc, 16*s*sc);
+  wctx.fillStyle = '#5a5a6a';
+  wctx.fillRect(-12*s*sc, -8*s*sc, 24*s*sc, 16*s*sc);
+  wctx.fillStyle = '#6a6a7a';
+  wctx.fillRect(-12*s*sc, -8*s*sc, 24*s*sc, 3*s*sc);
+  wctx.strokeStyle = '#3a3a4a'; wctx.lineWidth = 0.8;
+  wctx.strokeRect(-12*s*sc, -8*s*sc, 24*s*sc, 16*s*sc);
+  wctx.strokeStyle = '#4a4a5a'; wctx.lineWidth = 0.6;
+  wctx.beginPath(); wctx.moveTo(-4*s*sc, -8*s*sc); wctx.lineTo(-4*s*sc, 8*s*sc);
+  wctx.moveTo(4*s*sc, -8*s*sc); wctx.lineTo(4*s*sc, 8*s*sc); wctx.stroke();
+  wctx.restore();
+}
+
+// ABYSS CRYSTAL — bioluminescent crystal cluster (glows at runtime)
+const crystals = [];
+function addCrystal(tx, ty, jx, jy, seed) {
+  const cx = tx*TILE + TILE/2 + (jx||0), cy = ty*TILE + TILE/2 + (jy||0);
+  const r = rseed(seed);
+  const hue = [180, 200, 280, 320][Math.floor(r()*4)];
+  const size = 6 + r()*8;
+  wctx.fillStyle = 'rgba(0,0,0,0.30)';
+  wctx.beginPath(); wctx.ellipse(cx+2, cy+2, size*0.7, size*0.35, 0, 0, Math.PI*2); wctx.fill();
+  crystals.push({ x: cx, y: cy, size, hue, phase: r()*Math.PI*2 });
+}
+
+// ABYSS MUSHROOM — glowing cap on a stalk
+const glowShrooms = [];
+function addGlowShroom(tx, ty, jx, jy, seed) {
+  const cx = tx*TILE + TILE/2 + (jx||0), cy = ty*TILE + TILE/2 + (jy||0);
+  const r = rseed(seed);
+  const hue = [160, 180, 280, 320][Math.floor(r()*4)];
+  const size = 4 + r()*4;
+  glowShrooms.push({ x: cx, y: cy, size, hue, phase: r()*Math.PI*2 });
+}
+
+// ---------- place decorations, biome-specific ----------
+const obstacles = [];
+function tileJitter(tx, ty, slot) {
+  const rr = rseed((tx*293 + ty*419 + slot*97 + SEED) | 0);
+  return [ (rr()-0.5) * TILE * 0.8, (rr()-0.5) * TILE * 0.8 ];
+}
+function clusterNoise(tx, ty) { return fbm(tx*0.18 + 50, ty*0.18 + 50, 3); }
+
+for (let ty = 0; ty < WORLD_H; ty++) {
+  for (let tx = 0; tx < WORLD_W; tx++) {
+    const i = ty*WORLD_W + tx;
+    const b = biome[i];
+    const cx = tx*TILE + TILE/2, cy = ty*TILE + TILE/2;
+    const seed = (tx * 73 + ty * 131 + SEED) | 0;
+    const rr = rseed(seed);
+    const cn = clusterNoise(tx, ty);
+
+    if (b === B_REEF) {
+      const density = 0.25 + cn * 0.45;
+      if (rr() < density) {
+        const [jx,jy] = tileJitter(tx, ty, 0);
+        const roll = rr();
+        const x = cx+jx, y = cy+jy;
+        if (roll < 0.25) { drawBrainCoral(x, y, 1, seed); obstacles.push({x,y,r:5}); }
+        else if (roll < 0.50) { drawStaghorn(x, y, 1, seed); obstacles.push({x,y,r:4}); }
+        else if (roll < 0.70) { drawFanCoral(x, y, 1, seed); obstacles.push({x,y,r:4}); }
+        else if (roll < 0.85) { drawTubeSponge(x, y, 1, seed); obstacles.push({x,y,r:4}); }
+        else { drawBommie(x, y, 1, seed); obstacles.push({x,y,r:6}); }
+      } else if (rr() < 0.10) drawUrchin(cx + (rr()-0.5)*12, cy + (rr()-0.5)*12, 1, seed);
+      else if (rr() < 0.08) drawAnemone(cx, cy, 1, seed);
+    } else if (b === B_KELP) {
+      const density = 0.35 + cn * 0.5;
+      if (rr() < density) {
+        const [jx,jy] = tileJitter(tx, ty, 0);
+        addKelp(tx, ty, jx, jy, seed);
+        if (cn > 0.6 && rr() < 0.6) { const [j2x,j2y] = tileJitter(tx, ty, 3); addKelp(tx, ty, j2x, j2y, seed+7); }
+      } else if (rr() < 0.15) drawSeaGrass(cx, cy, 1, seed);
+      else if (rr() < 0.05) drawUrchin(cx, cy, 1, seed);
+    } else if (b === B_SAND) {
+      if (rr() < 0.04) drawSeaGrass(cx + (rr()-0.5)*12, cy + (rr()-0.5)*12, 1, seed);
+      else if (rr() < 0.03) { const [jx,jy] = tileJitter(tx, ty, 0); drawBommie(cx+jx, cy+jy, 1, seed); obstacles.push({x:cx+jx,y:cy+jy,r:5}); }
+    } else if (b === B_SHALLOW) {
+      if (rr() < 0.08) drawSeaGrass(cx, cy, 1, seed);
+      else if (rr() < 0.05) { const [jx,jy] = tileJitter(tx, ty, 0); drawBrainCoral(cx+jx, cy+jy, 1, seed); }
+    } else if (b === B_DEEP) {
+      if (rr() < 0.06) drawSeaGrass(cx + (rr()-0.5)*12, cy + (rr()-0.5)*12, 1, seed);
+      else if (rr() < 0.04) { const [jx,jy] = tileJitter(tx, ty, 0); drawBommie(cx+jx, cy+jy, 1, seed); obstacles.push({x:cx+jx,y:cy+jy,r:5}); }
+    } else if (b === B_ABYSS) {
+      if (rr() < 0.10) { const [jx,jy] = tileJitter(tx, ty, 0); addCrystal(tx, ty, jx, jy, seed); obstacles.push({x:cx+jx,y:cy+jy,r:3}); }
+      else if (rr() < 0.06) { const [jx,jy] = tileJitter(tx, ty, 1); addGlowShroom(tx, ty, jx, jy, seed); }
+    } else if (b === B_RUIN) {
+      if (rr() < 0.20) { const [jx,jy] = tileJitter(tx, ty, 0); drawColumn(cx+jx, cy+jy, 1, seed); obstacles.push({x:cx+jx,y:cy+jy,r:5}); }
+      else if (rr() < 0.15) { const [jx,jy] = tileJitter(tx, ty, 1); drawRuinBlock(cx+jx, cy+jy, 1, seed); obstacles.push({x:cx+jx,y:cy+jy,r:6}); }
+    }
+  }
+}
+
+// ---------- marine life (fish schools) ----------
+const FISH_TYPES = [
+  { hue: 40,  len: 8,  r: 3, speed: 22, school: 1 },   // yellow tang
+  { hue: 200, len: 10, r: 4, speed: 18, school: 1 },   // blue tang
+  { hue: 0,   len: 9,  r: 3, speed: 24, school: 1 },   // clownfish
+  { hue: 160, len: 14, r: 6, speed: 14, school: 0 },   // parrotfish
+  { hue: 280, len: 12, r: 5, speed: 16, school: 1 },   // angelfish
+  { hue: 0,   len: 30, r: 9, speed: 10, school: 0 },   // ray (slow, big)
+  { hue: 180, len: 6,  r: 2.5, speed: 30, school: 1 }, // tiny chromis
+];
+const fish = [];
+function spawnFish(typeIdx) {
+  const T = FISH_TYPES[typeIdx];
+  const tx = rndInt(WORLD_W), ty = rndInt(WORLD_H);
+  const i = ty*WORLD_W + tx;
+  if (biome[i] === B_ROCK) return;
+  const d = th[i];
+  if (d < 0.15 || d > 0.72) return; // keep fish in mid-water zones
+  const x = tx*TILE + TILE/2, y = ty*TILE + TILE/2;
+  const ang = rnd()*Math.PI*2;
+  const speed = T.speed * (0.8 + rnd()*0.4);
+  fish.push({ type: typeIdx, x, y, ang, speed, wob: rnd()*Math.PI*2, school: T.school ? 1+rndInt(3) : 0, phase: rnd()*Math.PI*2 });
+}
+for (let i = 0; i < 120; i++) spawnFish(rndInt(FISH_TYPES.length));
+
+function drawFish(ctx, x, y, ang, T, time, wob) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(ang);
+  const tail = Math.sin(time*8 + wob) * 0.4;
+  // tail
+  ctx.fillStyle = `hsl(${T.hue},50%,40%)`;
+  ctx.beginPath();
+  ctx.moveTo(-T.len*0.5, 0);
+  ctx.lineTo(-T.len*0.9, -T.len*1.5*0.0 + -T.r*1.5 + tail*3);
+  ctx.lineTo(-T.len*0.9, T.r*1.5 + tail*3);
+  ctx.closePath(); ctx.fill();
+  // body
+  ctx.fillStyle = `hsl(${T.hue},55%,52%)`;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, T.len*0.55, T.r, 0, 0, Math.PI*2); ctx.fill();
+  // stripe
+  ctx.fillStyle = `hsl(${(T.hue+180)%360},60%,55%)`;
+  ctx.fillRect(-T.len*0.2, -T.r*0.7, T.len*0.15, T.r*1.4);
+  // belly
+  ctx.fillStyle = `hsl(${T.hue},30%,75%)`;
+  ctx.beginPath();
+  ctx.ellipse(0, T.r*0.4, T.len*0.4, T.r*0.5, 0, 0, Math.PI); ctx.fill();
+  // eye
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(T.len*0.35, -T.r*0.3, T.r*0.35, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(T.len*0.4, -T.r*0.3, T.r*0.18, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ---------- jellyfish (drift in deep zones) ----------
+const jellies = [];
+for (let i = 0; i < 14; i++) {
+  let tx, ty, d;
+  do { tx = rndInt(WORLD_W); ty = rndInt(WORLD_H); d = th[ty*WORLD_W+tx]; } while (d < 0.4);
+  jellies.push({ x: tx*TILE+TILE/2, y: ty*TILE+TILE/2, phase: rnd()*Math.PI*2, hue: [180,280,320,200][rndInt(4)], size: 8+rnd()*8, vy: -3-rnd()*2 });
+}
+function drawJelly(ctx, x, y, j, time) {
+  const pulse = Math.sin(time*1.2 + j.phase) * 0.15 + 1;
+  ctx.save(); ctx.translate(x, y);
+  const g = ctx.createRadialGradient(0,0,0,0,0,j.size*3);
+  g.addColorStop(0, `hsla(${j.hue},60%,60%,0.25)`);
+  g.addColorStop(1, `hsla(${j.hue},60%,60%,0)`);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0,0,j.size*3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = `hsla(${j.hue},50%,65%,0.55)`;
+  ctx.beginPath(); ctx.ellipse(0,0,j.size*pulse,j.size*0.7,0,Math.PI,0); ctx.fill();
+  ctx.strokeStyle = `hsla(${j.hue},70%,75%,0.6)`; ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.strokeStyle = `hsla(${j.hue},50%,70%,0.4)`; ctx.lineWidth = 1.2;
+  for (let i = 0; i < 6; i++) {
+    const ox = -j.size*0.7 + i*(j.size*1.4/5);
+    ctx.beginPath(); ctx.moveTo(ox, 0);
+    for (let s = 1; s <= 4; s++) {
+      const sw = Math.sin(time*2 + j.phase + i + s) * 3;
+      ctx.lineTo(ox + sw, j.size*0.6 + s*j.size*0.4);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ---------- player (diver) ----------
+const player = {
+  x: WORLD_PX_W / 2, y: WORLD_PX_H / 2, r: 11,
+  vx: 0, vy: 0,
+  facing: 0, targetFacing: 0,
+  animTime: 0, moving: false, boosting: false,
+  lanternAngle: 0, finPhase: 0,
+};
+function findSpawn() {
+  for (let r = 0; r < 60; r++) {
+    for (let a = 0; a < 12; a++) {
+      const ang = (a/12) * Math.PI * 2;
+      const tx = Math.floor(player.x/TILE + Math.cos(ang)*r);
+      const ty = Math.floor(player.y/TILE + Math.sin(ang)*r);
+      if (tx>=0 && ty>=0 && tx<WORLD_W && ty<WORLD_H) {
+        const i = ty*WORLD_W + tx;
+        if (!solid[i]) {
+          player.x = tx*TILE + TILE/2;
+          player.y = ty*TILE + TILE/2;
+          return;
+        }
+      }
+    }
+  }
+}
+findSpawn();
+
+// ---------- input ----------
+const keys = {};
+const moveInput = { x: 0, y: 0 };
+let boosting = false;
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') boosting = true;
+});
+addEventListener('keyup', e => {
+  keys[e.code] = false;
+  if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') boosting = false;
+});
+
+const joy = document.getElementById('joy');
+const joyKnob = document.getElementById('joyKnob');
+let joyId = null, joyCx = 0, joyCy = 0;
+const JOY_R = 50;
+function joyStart(e) {
+  const t = e.changedTouches ? e.changedTouches[0] : e;
+  joyId = e.changedTouches ? t.identifier : 'mouse';
+  const r = joy.getBoundingClientRect();
+  joyCx = r.left + r.width/2; joyCy = r.top + r.height/2;
+  joyMove(e);
+}
+function joyMove(e) {
+  if (joyId === null) return;
+  let t;
+  if (e.changedTouches) { t = [...e.changedTouches].find(c => c.identifier === joyId); if (!t) return; }
+  else t = e;
+  let dx = t.clientX - joyCx, dy = t.clientY - joyCy;
+  const d = Math.hypot(dx, dy);
+  if (d > JOY_R) { dx = dx/d*JOY_R; dy = dy/d*JOY_R; }
+  joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+  moveInput.x = dx / JOY_R; moveInput.y = dy / JOY_R;
+}
+function joyEnd(e) {
+  if (e.changedTouches && ![...e.changedTouches].some(c => c.identifier === joyId) && joyId !== null) return;
+  joyId = null; joyKnob.style.transform = '';
+  moveInput.x = 0; moveInput.y = 0;
+}
+joy.addEventListener('touchstart', e => { e.preventDefault(); joyStart(e); }, {passive:false});
+joy.addEventListener('touchmove',  e => { e.preventDefault(); joyMove(e); }, {passive:false});
+joy.addEventListener('touchend',   e => { e.preventDefault(); joyEnd(e); }, {passive:false});
+joy.addEventListener('touchcancel',e => { e.preventDefault(); joyEnd(e); }, {passive:false});
+joy.addEventListener('mousedown', joyStart);
+addEventListener('mousemove', e => { if (joyId === 'mouse') joyMove(e); });
+addEventListener('mouseup',   e => { if (joyId === 'mouse') joyEnd(e); });
+
+const boostBtn = document.getElementById('boostBtn');
+let boostToggle = false;
+function setBoost(v) { boosting = v; boostBtn.classList.toggle('active', v); }
+boostBtn.addEventListener('touchstart', e => { e.preventDefault(); boostToggle = !boostToggle; setBoost(boostToggle); }, {passive:false});
+boostBtn.addEventListener('click', () => { boostToggle = !boostToggle; setBoost(boostToggle); });
+
+// ---------- camera ----------
+const cam = { x: player.x, y: player.y };
+function worldToScreen(wx, wy) {
+  return { x: (wx - cam.x) * ZOOM + canvas.width/2, y: (wy - cam.y) * ZOOM + canvas.height/2 };
+}
+
+// ---------- collision ----------
+function isBlocked(cx, cy, r) {
+   let tx0 = Math.floor((cx - r) / TILE);
+   let tx1 = Math.floor((cx + r) / TILE);
+   let ty0 = Math.floor((cy - r) / TILE);
+   let ty1 = Math.floor((cy + r) / TILE);
+   for(let ty=ty0; ty<=ty1; ty++) {
+     for(let tx=tx0; tx<=tx1; tx++) {
+       if (tx < 0 || ty < 0 || tx >= WORLD_W || ty >= WORLD_H) return true;
+       if (solid[ty*WORLD_W + tx] === 1) {
+         let rectX = tx*TILE, rectY = ty*TILE;
+         let testX = cx, testY = cy;
+         if (cx < rectX) testX = rectX;
+         else if (cx > rectX + TILE) testX = rectX + TILE;
+         if (cy < rectY) testY = rectY;
+         else if (cy > rectY + TILE) testY = rectY + TILE;
+         let distX = cx - testX, distY = cy - testY;
+         if ((distX*distX) + (distY*distY) < r*r) return true;
+       }
+     }
+   }
+   for (const o of obstacles) {
+     const dx = cx - o.x, dy = cy - o.y;
+     const rSum = r + o.r;
+     if (dx*dx + dy*dy < rSum*rSum) return true;
+   }
+   return false;
+}
+function tryMove(px, py, nx, ny) {
+  let movedX = true, movedY = true;
+  if (!isBlocked(nx, py, player.r)) { px = nx; } else { movedX = false; }
+  if (!isBlocked(px, ny, player.r)) { py = ny; } else { movedY = false; }
+  return { x: px, y: py, movedX, movedY };
+}
+
+// ---------- particles: marine snow (drifting motes) ----------
+const snow = [];
+const SNOW_CAP = 220;
+function spawnSnow() {
+  // spawn around camera
+  const ang = rnd()*Math.PI*2;
+  const dist = 300 + rnd()*400;
+  snow.push({
+    x: cam.x + Math.cos(ang)*dist,
+    y: cam.y + Math.sin(ang)*dist,
+    vx: (rnd()-0.5)*4,
+    vy: 2 + rnd()*5,
+    r: 0.4 + rnd()*1.4,
+    life: 8 + rnd()*10,
+    alpha: 0.15 + rnd()*0.4,
+  });
+}
+function updateSnow(dt) {
+  while (snow.length < SNOW_CAP) spawnSnow();
+  for (let i = snow.length-1; i >= 0; i--) {
+    const p = snow[i];
+    p.life -= dt;
+    p.x += p.vx * dt + Math.sin(p.y*0.02)*0.3;
+    p.y += p.vy * dt;
+    // despawn when far from camera
+    if (p.life <= 0 || Math.abs(p.x-cam.x) > 700 || Math.abs(p.y-cam.y) > 700) snow.splice(i,1);
+  }
+}
+function drawSnow() {
+  ctx.fillStyle = '#fff';
+  for (const p of snow) {
+    const s = worldToScreen(p.x, p.y);
+    if (s.x < -10 || s.x > canvas.width+10 || s.y < -10 || s.y > canvas.height+10) continue;
+    ctx.globalAlpha = p.alpha;
+    ctx.beginPath(); ctx.arc(s.x, s.y, p.r * ZOOM * 0.7, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- particles: bubbles (from diver) ----------
+const bubbles = [];
+function spawnBubbles(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    bubbles.push({ x: x+(rnd()-0.5)*6, y, vy: -12-rnd()*16, vx: (rnd()-0.5)*4, r: 1+rnd()*2.5, life: 2+rnd()*2 });
+  }
+}
+function updateBubbles(dt) {
+  for (let i = bubbles.length-1; i >= 0; i--) {
+    const b = bubbles[i];
+    b.life -= dt;
+    b.y += b.vy * dt;
+    b.x += b.vx * dt + Math.sin(b.y*0.05)*0.5;
+    b.vy += 6*dt; // slight buoyancy decel
+    if (b.life <= 0) bubbles.splice(i,1);
+  }
+}
+function drawBubbles() {
+  ctx.strokeStyle = 'rgba(200,230,255,0.5)';
+  ctx.fillStyle = 'rgba(200,230,255,0.12)';
+  ctx.lineWidth = 1;
+  for (const b of bubbles) {
+    const s = worldToScreen(b.x, b.y);
+    if (s.x < -10 || s.x > canvas.width+10 || s.y < -10 || s.y > canvas.height+10) continue;
+    ctx.beginPath(); ctx.arc(s.x, s.y, b.r*ZOOM, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  }
+}
+
+// ---------- diver drawing ----------
+function drawDiver(ctx, x, y, ang, time, moving, boosting) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(ang);
+  const fin = Math.sin(time * (boosting?14:7)) * (moving ? (boosting?5:3) : 1);
+  // shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.beginPath(); ctx.ellipse(3, 3, 12, 5, 0, 0, Math.PI*2); ctx.fill();
+  // flippers (behind)
+  ctx.fillStyle = '#1a2a3a';
+  ctx.save(); ctx.translate(-8, 0);
+  ctx.beginPath(); ctx.ellipse(-4, -5+fin*0.4, 7, 3, 0.3, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-4, 5-fin*0.4, 7, 3, -0.3, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+  // tank
+  ctx.fillStyle = '#2a3a4a'; ctx.fillRect(-6, -5, 5, 10);
+  ctx.fillStyle = '#4a5a6a'; ctx.fillRect(-6, -5, 5, 2);
+  // body (wetsuit)
+  ctx.fillStyle = '#0a1a28';
+  ctx.beginPath(); ctx.ellipse(0, 0, 8, 7, 0, 0, Math.PI*2); ctx.fill();
+  // head/helmet
+  ctx.fillStyle = '#3a5a7a';
+  ctx.beginPath(); ctx.arc(6, 0, 5, 0, Math.PI*2); ctx.fill();
+  // visor
+  ctx.fillStyle = '#0a1a2a';
+  ctx.beginPath(); ctx.arc(7, 0, 3.5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(150,220,255,0.5)';
+  ctx.beginPath(); ctx.arc(8, -1, 2, 0, Math.PI*2); ctx.fill();
+  // lantern (front)
+  ctx.fillStyle = '#ffd98a';
+  ctx.beginPath(); ctx.arc(11, 0, 2.5, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ---------- runtime kelp sway ----------
+const current = { x: 0, y: 0, tx: 0, ty: 0 };
+function updateCurrent(dt, time) {
+  if (rnd() < dt * 0.2) {
+    const ang = rnd()*Math.PI*2;
+    current.tx = Math.cos(ang)*6;
+    current.ty = Math.sin(ang)*6;
+  }
+  current.x += (current.tx - current.x) * Math.min(1, dt*0.3);
+  current.y += (current.ty - current.y) * Math.min(1, dt*0.3);
+}
+function drawKelp(time) {
+  for (const k of kelpStalks) {
+    const s = worldToScreen(k.x, k.y);
+    if (s.x < -40 || s.x > canvas.width+40 || s.y < -40 || s.y > canvas.height+40) continue;
+    const sway = Math.sin(time*0.8 + k.phase) * 4 + current.x*1.5;
+    ctx.strokeStyle = `hsl(${k.hue},45%,22%)`;
+    ctx.lineWidth = 2.5 * ZOOM * 0.9;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    const segs = 4;
+    for (let i = 1; i <= segs; i++) {
+      const t = i/segs;
+      const x = s.x + sway*t*t;
+      const y = s.y - k.height*ZOOM*t;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    // blades
+    ctx.strokeStyle = `hsl(${k.hue+10},50%,32%)`;
+    ctx.lineWidth = 1.5*ZOOM;
+    for (let b = 0; b < k.blades; b++) {
+      const t = 0.3 + b/k.blades*0.6;
+      const bx = s.x + sway*t*t;
+      const by = s.y - k.height*ZOOM*t;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + (b%2?-1:1)*8*ZOOM + sway*0.3, by - 6*ZOOM);
+      ctx.stroke();
+    }
+  }
+}
+
+// ---------- bioluminescent crystals & shrooms ----------
+function drawCrystals(time) {
+  for (const c of crystals) {
+    const s = worldToScreen(c.x, c.y);
+    if (s.x < -40 || s.x > canvas.width+40 || s.y < -40 || s.y > canvas.height+40) continue;
+    const pulse = 0.6 + Math.sin(time*1.5 + c.phase)*0.4;
+    // glow
+    const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, c.size*3*ZOOM);
+    g.addColorStop(0, `hsla(${c.hue},80%,65%,${0.5*pulse})`);
+    g.addColorStop(1, `hsla(${c.hue},80%,65%,0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(s.x, s.y, c.size*3*ZOOM, 0, Math.PI*2); ctx.fill();
+    // crystal shards
+    ctx.fillStyle = `hsl(${c.hue},70%,55%)`;
+    for (let i = 0; i < 3; i++) {
+      const a = i/3*Math.PI*2 + c.phase;
+      const ox = Math.cos(a)*c.size*0.5, oy = Math.sin(a)*c.size*0.5;
+      ctx.beginPath();
+      ctx.moveTo(s.x+ox, s.y+oy-c.size*ZOOM);
+      ctx.lineTo(s.x+ox-c.size*0.4*ZOOM, s.y+oy);
+      ctx.lineTo(s.x+ox+c.size*0.4*ZOOM, s.y+oy);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = `hsl(${c.hue},80%,75%)`;
+    ctx.beginPath(); ctx.arc(s.x, s.y-c.size*0.6*ZOOM, c.size*0.4*ZOOM, 0, Math.PI*2); ctx.fill();
+  }
+}
+function drawGlowShrooms(time) {
+  for (const sh of glowShrooms) {
+    const s = worldToScreen(sh.x, sh.y);
+    if (s.x < -20 || s.x > canvas.width+20 || s.y < -20 || s.y > canvas.height+20) continue;
+    const pulse = 0.5 + Math.sin(time*2 + sh.phase)*0.5;
+    const g = ctx.createRadialGradient(s.x, s.y-sh.size*ZOOM, 0, s.x, s.y-sh.size*ZOOM, sh.size*4*ZOOM);
+    g.addColorStop(0, `hsla(${sh.hue},70%,60%,${0.6*pulse})`);
+    g.addColorStop(1, `hsla(${sh.hue},70%,60%,0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(s.x, s.y-sh.size*ZOOM, sh.size*4*ZOOM, 0, Math.PI*2); ctx.fill();
+    // stalk
+    ctx.fillStyle = '#3a4a4a';
+    ctx.fillRect(s.x-1, s.y-sh.size*ZOOM, 2, sh.size*ZOOM);
+    // cap
+    ctx.fillStyle = `hsl(${sh.hue},60%,50%)`;
+    ctx.beginPath(); ctx.arc(s.x, s.y-sh.size*ZOOM, sh.size*ZOOM, Math.PI, 0); ctx.fill();
+  }
+}
+
+// ---------- god rays (volumetric light shafts from surface) ----------
+function drawGodRays(time) {
+  // only visible in shallower zones; strength fades with depth
+  const pDepth = th[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)] || 0;
+  const strength = clamp(1 - pDepth/0.5, 0, 1);
+  if (strength <= 0.02) return;
+  const num = 5;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < num; i++) {
+    const baseX = canvas.width * (0.1 + i*0.2) + Math.sin(time*0.3 + i)*40;
+    const w = 60 + Math.sin(time*0.5 + i*2)*30;
+    const len = canvas.height * 1.5;
+    const g = ctx.createLinearGradient(baseX, 0, baseX + 60, len);
+    g.addColorStop(0, `rgba(180,230,255,${0.06*strength})`);
+    g.addColorStop(0.5, `rgba(180,230,255,${0.03*strength})`);
+    g.addColorStop(1, `rgba(180,230,255,0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(baseX - w/2, 0);
+    ctx.lineTo(baseX + w/2, 0);
+    ctx.lineTo(baseX + w/2 + 80, len);
+    ctx.lineTo(baseX - w/2 + 80, len);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ---------- caustics (animated light pattern overlay near surface) ----------
+function drawCaustics(time) {
+  const pDepth = th[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)] || 0;
+  const strength = clamp(1 - pDepth/0.45, 0, 1);
+  if (strength <= 0.02) return;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const step = 48;
+  for (let py = 0; py < canvas.height; py += step) {
+    for (let px = 0; px < canvas.width; px += step) {
+      const wx = (px - canvas.width/2)/ZOOM + cam.x;
+      const wy = (py - canvas.height/2)/ZOOM + cam.y;
+      const c = Math.sin(wx*0.05 + time*1.2) * Math.cos(wy*0.05 + time*0.9) + Math.sin((wx+wy)*0.03 + time*0.7);
+      const a = clamp((c-1)*0.5, 0, 1) * 0.08 * strength;
+      if (a > 0.005) {
+        ctx.fillStyle = `rgba(200,240,255,${a})`;
+        ctx.fillRect(px, py, step, step);
+      }
+    }
+  }
+  ctx.restore();
+}
+
+// ---------- depth vignette (darkens edges + tints with depth) ----------
+function drawDepthTint() {
+  const pDepth = th[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)] || 0;
+  // overall tint
+  const tintA = clamp(pDepth*0.6, 0, 0.7);
+  if (tintA > 0.01) {
+    ctx.fillStyle = `rgba(2,8,20,${tintA})`;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  // vignette
+  const g = ctx.createRadialGradient(canvas.width/2, canvas.height/2, Math.min(canvas.width,canvas.height)*0.3, canvas.width/2, canvas.height/2, Math.max(canvas.width,canvas.height)*0.75);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, `rgba(0,0,0,${0.35 + pDepth*0.3})`);
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+// ---------- lantern light (diver's personal glow, strongest in abyss) ----------
+function drawLantern() {
+  const pDepth = th[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)] || 0;
+  // lantern always glows, but matters most in deep water
+  const s = worldToScreen(player.x, player.y);
+  const radius = (80 + pDepth*180) * ZOOM;
+  const g = ctx.createRadialGradient(
+    s.x + Math.cos(player.facing)*14*ZOOM, s.y + Math.sin(player.facing)*14*ZOOM, 0,
+    s.x + Math.cos(player.facing)*14*ZOOM, s.y + Math.sin(player.facing)*14*ZOOM, radius
+  );
+  g.addColorStop(0, `rgba(255,230,160,${0.25 + pDepth*0.35})`);
+  g.addColorStop(0.4, `rgba(255,210,130,${0.08 + pDepth*0.15})`);
+  g.addColorStop(1, 'rgba(255,200,120,0)');
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(s.x + Math.cos(player.facing)*14*ZOOM, s.y + Math.sin(player.facing)*14*ZOOM, radius, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// ---------- minimap ----------
+function drawMinimap() {
+  const mw = mini.width, mh = mini.height;
+  mctx.clearRect(0,0,mw,mh);
+  const scale = mw / WORLD_PX_W;
+  const px = mh / WORLD_PX_H;
+  const sc = Math.min(scale, px);
+  const offX = (mw - WORLD_PX_W*sc)/2, offY = (mh - WORLD_PX_H*sc)/2;
+  // sample biome colors sparsely
+  const step = 2;
+  for (let ty = 0; ty < WORLD_H; ty += step) {
+    for (let tx = 0; tx < WORLD_W; tx += step) {
+      const d = th[ty*WORLD_W+tx];
+      let r,g,b;
+      if (d < 0.18) { r=120;g=220;b=230; }
+      else if (d < 0.42) { r=60;g=170;b=190; }
+      else if (d < 0.68) { r=25;g=90;b=130; }
+      else { r=8;g=20;b=50; }
+      if (biome[ty*WORLD_W+tx]===B_ROCK) { r=60;g=60;b=70; }
+      mctx.fillStyle = `rgb(${r},${g},${b})`;
+      mctx.fillRect(offX+tx*TILE*sc, offY+ty*TILE*sc, step*TILE*sc, step*TILE*sc);
+    }
+  }
+  // player
+  mctx.fillStyle = '#ffd98a';
+  mctx.beginPath(); mctx.arc(offX+player.x*sc, offY+player.y*sc, 3, 0, Math.PI*2); mctx.fill();
+}
+
+// ---------- main loop ----------
+let lastT = performance.now();
+let timeAcc = 0;
+let bubbleTimer = 0;
+function tick(now) {
+  const dt = Math.min(0.05, (now - lastT) / 1000);
+  lastT = now;
+  timeAcc += dt;
+
+  // input → movement vector
+  let ix = 0, iy = 0;
+  if (keys['KeyW']||keys['ArrowUp']) iy -= 1;
+  if (keys['KeyS']||keys['ArrowDown']) iy += 1;
+  if (keys['KeyA']||keys['ArrowLeft']) ix -= 1;
+  if (keys['KeyD']||keys['ArrowRight']) ix += 1;
+  if (Math.abs(moveInput.x)+Math.abs(moveInput.y) > 0.1) { ix = moveInput.x; iy = moveInput.y; }
+  const mag = Math.hypot(ix, iy);
+  const pDepth = th[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)] || 0;
+  // speed varies by depth: slower in the deep abyss
+  let speedMul = 1;
+  if (pDepth > 0.68) speedMul = root.abyssSpeed;
+  else if (pDepth > 0.42) speedMul = root.deepSpeed;
+  else if (pDepth > 0.18 && pDepth < 0.42) {
+    const b = biome[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)];
+    if (b === B_KELP) speedMul = root.kelpSpeed;
+    else if (b === B_REEF) speedMul = root.reefSpeed;
+  }
+  const baseSpeed = boosting ? BOOST_SPEED : PLAYER_SPEED;
+  const speed = baseSpeed * speedMul;
+
+  player.moving = mag > 0.1;
+  player.boosting = boosting && player.moving;
+  if (mag > 0.1) {
+    const nx = player.x + (ix/mag) * speed * dt;
+    const ny = player.y + (iy/mag) * speed * dt;
+    const res = tryMove(player.x, player.y, nx, ny);
+    player.x = res.x; player.y = res.y;
+    player.targetFacing = Math.atan2(iy, ix);
+    // smooth facing
+    let df = player.targetFacing - player.facing;
+    while (df > Math.PI) df -= Math.PI*2;
+    while (df < -Math.PI) df += Math.PI*2;
+    player.facing += df * Math.min(1, dt*8);
+  }
+  player.animTime += dt;
+  player.finPhase += dt;
+
+  // bubbles when boosting
+  bubbleTimer += dt;
+  if (player.boosting && bubbleTimer > 0.08) {
+    bubbleTimer = 0;
+    spawnBubbles(player.x - Math.cos(player.facing)*10, player.y - Math.sin(player.facing)*10, 2);
+  } else if (player.moving && bubbleTimer > 0.4) {
+    bubbleTimer = 0;
+    spawnBubbles(player.x - Math.cos(player.facing)*10, player.y - Math.sin(player.facing)*10, 1);
+  }
+
+  // camera follow
+  cam.x += (player.x - cam.x) * Math.min(1, dt*3);
+  cam.y += (player.y - cam.y) * Math.min(1, dt*3);
+
+  // update particles & creatures
+  updateSnow(dt);
+  updateBubbles(dt);
+  updateCurrent(dt, timeAcc);
+
+  // update fish
+  for (const f of fish) {
+    const T = FISH_TYPES[f.type];
+    f.wob += dt;
+    // gentle wandering
+    if (rnd() < dt * 0.5) f.ang += (rnd()-0.5)*0.8;
+    // mild schooling: drift toward nearby same-type fish (cheap: just nudge heading toward camera-center group)
+    f.x += Math.cos(f.ang) * T.speed * dt;
+    f.y += Math.sin(f.ang) * T.speed * dt;
+    // wrap if too far from camera
+    if (Math.abs(f.x-cam.x) > 900 || Math.abs(f.y-cam.y) > 900) {
+      const ang = Math.atan2(cam.y - f.y, cam.x - f.x);
+      f.x = cam.x + Math.cos(ang+Math.PI)*700;
+      f.y = cam.y + Math.sin(ang+Math.PI)*700;
+      f.ang = ang;
+    }
+    // avoid rocks
+    const ti = Math.floor(f.y/TILE)*WORLD_W + Math.floor(f.x/TILE);
+    if (ti>=0 && ti<biome.length && biome[ti]===B_ROCK) {
+      f.ang += Math.PI*0.5; f.x += Math.cos(f.ang)*5; f.y += Math.sin(f.ang)*5;
+    }
+  }
+
+  // update jellies (slowly drift up, wrap down)
+  for (const j of jellies) {
+    j.y += j.vy * dt;
+    if (j.y < 0) { j.y = WORLD_PX_H; j.x = rnd()*WORLD_PX_W; }
+  }
+
+  // ---------- render ----------
+  ctx.fillStyle = '#02101c';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // world
+  ctx.imageSmoothingEnabled = true;
+  const sx = (cam.x - canvas.width/2/ZOOM);
+  const sy = (cam.y - canvas.height/2/ZOOM);
+  const sw = canvas.width/ZOOM;
+  const sh = canvas.height/ZOOM;
+  ctx.drawImage(worldCanvas, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+  // kelp (behind fish)
+  drawKelp(timeAcc);
+
+  // crystals & glow shrooms (in abyss)
+  drawCrystals(timeAcc);
+  drawGlowShrooms(timeAcc);
+
+  // fish
+  for (const f of fish) {
+    const T = FISH_TYPES[f.type];
+    const s = worldToScreen(f.x, f.y);
+    if (s.x < -30 || s.x > canvas.width+30 || s.y < -30 || s.y > canvas.height+30) continue;
+    drawFish(ctx, s.x, s.y, f.ang, T, timeAcc, f.wob);
+  }
+
+  // jellyfish
+  for (const j of jellies) {
+    const s = worldToScreen(j.x, j.y);
+    if (s.x < -50 || s.x > canvas.width+50 || s.y < -50 || s.y > canvas.height+50) continue;
+    drawJelly(ctx, s.x, s.y, j, timeAcc);
+  }
+
+  // player
+  const ps = worldToScreen(player.x, player.y);
+  // scale in kelp
+  const b = biome[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)];
+  let pscale = PSCALE;
+  if (b === B_KELP) pscale = PSCALE * root.kelpPlayerScale;
+  ctx.save();
+  ctx.translate(ps.x, ps.y);
+  ctx.scale(ZOOM*pscale, ZOOM*pscale);
+  drawDiver(ctx, 0, 0, player.facing, timeAcc, player.moving, player.boosting);
+  ctx.restore();
+
+  // bubbles
+  drawBubbles();
+
+  // marine snow
+  drawSnow();
+
+  // lighting overlays
+  drawGodRays(timeAcc);
+  drawCaustics(timeAcc);
+  drawLantern();
+  drawDepthTint();
+
+  // minimap
+  drawMinimap();
+
+  // HUD
+  const cbiome = biome[Math.floor(player.y/TILE)*WORLD_W + Math.floor(player.x/TILE)];
+  zoneLabel.textContent = BIOME_NAME[cbiome] || '…';
+  const depthM = Math.floor(pDepth * 120);
+  depthLabel.textContent = depthM + ' m';
+  const pct = clamp(pDepth*100, 0, 100);
+  depthFill.style.width = pct + '%';
+  depthFill.style.background = `linear-gradient(90deg, hsl(${190 - pDepth*190},60%,60%), hsl(${210 - pDepth*210},70%,30%))`;
+
+  requestAnimationFrame(tick);
+}
+
+document.getElementById('loading').style.display = 'none';
+
+// info panel + tabs + comments (PCP)
+const infoBtn = document.getElementById('infoBtn');
+const infoPanel = document.getElementById('infoPanel');
+const infoClose = document.getElementById('infoClose');
+let commentsLoaded = false;
+function switchTab(name) {
+  for (const btn of document.querySelectorAll('.tabBtn')) {
+    btn.classList.toggle('active', btn.dataset.tab === name);
+  }
+  for (const body of document.querySelectorAll('.tabBody')) {
+    body.classList.toggle('active', body.id === 'tab' + name.charAt(0).toUpperCase() + name.slice(1));
+  }
+  if (name === 'chats' && !commentsLoaded) {
+    commentsLoaded = true;
+    document.getElementById('commentsCtn').innerHTML = root.PCP({
+      channel: 'abis',
+      height: "500px",
+      width: '100%',
+      accentColor: '#7fd4ff',
+      headerText: 'Dive Log',
+    });
+  }
+}
+for (const btn of document.querySelectorAll('.tabBtn')) {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+}
+infoBtn.addEventListener('click', () => { infoPanel.hidden = false; });
+infoClose.addEventListener('click', () => { infoPanel.hidden = true; });
+infoPanel.addEventListener('click', (e) => { if (e.target === infoPanel) infoPanel.hidden = true; });
+
+requestAnimationFrame(tick);
+
+})();
+}
+</script>

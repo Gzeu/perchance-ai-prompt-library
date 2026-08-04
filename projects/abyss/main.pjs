@@ -1,0 +1,41 @@
+// ===== Abis — underwater exploration (tunable config) =====
+// Keep main.pjs for params users may want to tweak. Game logic lives in index.html.
+
+$meta
+  title = Abis
+  description = A serene top-down underwater exploration across reefs, kelp forests, sunken ruins and the deep abyss.
+  tags = underwater, diving, exploration, atmospheric, ocean
+
+// World size in tiles (each tile = 32px).
+worldW = 72
+worldH = 72
+tile = 32
+
+// Player base swim speed (px/s). "Boost" is faster.
+playerSpeed = 44
+boostSpeed = 72
+
+// Diver sprite scale.
+playerScale = 1.0
+
+// Camera zoom factor (multiplied on top of the screen-adaptive zoom; 1.0 = default).
+cameraZoom = 0.85
+
+// Ambient drift cycle in seconds (subtle current / light shift).
+tideCycle = 320
+
+// Speed multipliers per biome (1 = normal).
+abyssSpeed = 0.55
+deepSpeed = 0.8
+reefSpeed = 0.95
+kelpSpeed = 0.7
+
+// How small the diver shrinks when gliding through dense kelp.
+kelpPlayerScale = 0.7
+
+// World generation seed (change for a different seascape).
+worldSeed = 3311
+
+// ---- Dev tools ----
+BUG = {import:bug-error-plugin}
+PCP = {import:public-comment-plugin}

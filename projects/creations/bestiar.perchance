@@ -1,0 +1,22 @@
+// Bestiar abisal — intrare de enciclopedie
+output
+  [specie] — [trasatura] Habitat: [habitat].
+
+specie
+  Peștele-Lanternă^3
+  Anemona de Sticlă^2
+  Crabul-Pelerin^2
+  Meduza-Codecă^3
+  Șarpele-de-Mare^2
+
+trasatura
+  plutind nemișcat, doar ochii clipesc.^2
+  învârtindu-se în jurul unei surse de lumină.^3
+  ascuns în spatele unui stâlp de corali.^2
+  desenând spirale de bioluminiscență.^3
+
+habitat
+  peșterile de la marginea abisului^3
+  reciful de corali de la adâncime medie^2
+  epava unui vas antic^2
+  câmpurile de iarbă-de-mare^2

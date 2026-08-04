@@ -1,15 +1,20 @@
 {
-  "_comment": "OpenClaw MCP server registration for Perchance AI Toolkit",
+  "_comment": "OpenClaw MCP server registration for Perchance AI Toolkit with autonomous capabilities",
   "server": {
     "name": "perchance-mcp",
-    "version": "1.0.0",
-    "description": "Perchance.ai generator toolkit — AI generation, templates, validation, Playwright execution",
+    "version": "2.0.0",
+    "description": "Perchance.ai generator toolkit — Fully autonomous AI generation, self-improvement, batch processing, multi-format support, validation, Playwright execution",
     "command": "npx perchance-mcp",
     "transport": "stdio",
     "env_required": ["GROQ_API_KEY"],
     "env_optional": ["PLAYWRIGHT_HEADLESS"]
   },
   "tools": [
+    "autonomous_generate",
+    "batch_generate",
+    "improve_generator",
+    "autonomous_test",
+    "multi_format_generate",
     "generate_perchance",
     "list_templates",
     "get_template",

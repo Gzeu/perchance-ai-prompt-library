@@ -1,6 +1,6 @@
 # Perchance Generator — OpenClaw Skill
 
-This skill gives any OpenClaw agent the ability to create, validate, preview and run [Perchance.ai](https://perchance.ai) generators.
+This skill gives any OpenClaw agent the ability to create, validate, preview and run [Perchance.ai](https://perchance.org) generators.
 
 ## Install
 
@@ -26,7 +26,7 @@ Add to your OpenClaw agent config:
 | `browse-templates` | Browse 150+ built-in templates |
 | `validate-generator` | Validate syntax before using |
 | `preview-generator` | See local sample results |
-| `run-on-perchance` | Run on real perchance.ai via Playwright |
+| `run-on-perchance` | Run on real perchance.org via Playwright |
 | `scrape-generator` | Clone a public generator from URL |
 
 ## Example agent conversations
@@ -34,5 +34,5 @@ Add to your OpenClaw agent config:
 > "Create a dungeon loot table generator with rare/common/legendary items"
 > "Show me all character templates"
 > "Validate this perchance code: output\n  hello\n  world"
-> "Run my generator on perchance.ai and show me 20 results"
-> "Clone this generator: https://perchance.ai/fantasy-name-generator"
+> "Run my generator on perchance.org and show me 20 results"
+> "Clone this generator: https://perchance.org/fantasy-name-generator"

@@ -35,7 +35,7 @@ export const validateTool = {
           warnings: result.warnings,
           stats: result.stats,
           suggestion: !result.stats.hasOutput
-            ? 'Add an "output" list as the first list so results display on perchance.ai'
+            ? 'Add an "output" list as the first list so results display on perchance.org'
             : undefined,
         }, null, 2),
       }],

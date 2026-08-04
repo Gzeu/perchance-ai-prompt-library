@@ -1,0 +1,13 @@
+{
+  "_comment": "OpenCode MCP server registration for the Perchance AI Toolkit with autonomous capabilities. Merge this into your opencode.json (or ~/.config/opencode/opencode.jsonc) under 'mcpServers'. Requires the project to be built first: npm run build",
+  "mcpServers": {
+    "perchance": {
+      "command": "node",
+      "args": ["/home/i5/perchance-ai-prompt-library/dist/mcp/server.js"],
+      "env": {
+        "GROQ_API_KEY": "your-groq-api-key-here",
+        "PLAYWRIGHT_HEADLESS": "true"
+      }
+    }
+  }
+}

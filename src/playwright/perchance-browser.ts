@@ -1,12 +1,12 @@
 /**
  * Perchance Browser Controller
- * Manages a Playwright Chromium instance for perchance.ai automation
+ * Manages a Playwright Chromium instance for perchance.org automation
  */
 
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
 
-const PERCHANCE_GENERATE_URL = 'https://perchance.ai/tools/generate';
-const PERCHANCE_BASE_URL = 'https://perchance.ai';
+const PERCHANCE_GENERATE_URL = 'https://perchance.org/minimal#edit';
+const PERCHANCE_BASE_URL = 'https://perchance.org';
 
 export class PerchanceBrowser {
   private browser: Browser | null = null;

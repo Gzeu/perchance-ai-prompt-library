@@ -1,12 +1,37 @@
 {
   "name": "perchance-generator",
-  "version": "1.0.0",
-  "description": "Perchance.ai generator builder skill for OpenClaw agents",
+  "version": "2.0.0",
+  "description": "Fully autonomous Perchance.ai generator system with AI-powered decision engine, self-improvement, batch processing, and multi-format support",
   "author": "Gzeu",
   "type": "mcp-skill",
   "mcp_server": "perchance-mcp",
   "install": "npm install -g perchance-ai-prompt-library",
   "actions": {
+    "autonomous-create": {
+      "description": "Fully autonomous generator creation with intelligent decision-making",
+      "tool": "autonomous_generate",
+      "example": "Create a fantasy character name generator with optimal settings"
+    },
+    "batch-process": {
+      "description": "Generate multiple related generators in parallel",
+      "tool": "batch_generate",
+      "example": "Create 5 variations of fantasy weapon generators"
+    },
+    "self-improve": {
+      "description": "Improve existing generator through iterative refinement",
+      "tool": "improve_generator",
+      "example": "Improve this generator to achieve 0.9 quality score"
+    },
+    "comprehensive-test": {
+      "description": "Run comprehensive automated testing suite",
+      "tool": "autonomous_test",
+      "example": "Test this generator for edge cases and quality"
+    },
+    "multi-format": {
+      "description": "Generate in optimal format (.perchance or HTML)",
+      "tool": "multi_format_generate",
+      "example": "Create an interactive character creator in HTML format"
+    },
     "create-generator": {
       "description": "Create a new Perchance.ai generator from a topic",
       "tool": "generate_perchance",
@@ -28,14 +53,12 @@
       "example": "Show me 10 sample results from this generator"
     },
     "run-on-perchance": {
-      "description": "Run generator on real perchance.ai site via Playwright",
+      "description": "Run generator on real perchance.org site via Playwright",
       "tool": "run_on_perchance",
-      "example": "Test this generator on perchance.ai and show me live results"
-    },
-    "scrape-generator": {
-      "description": "Scrape and clone an existing public perchance.ai generator",
-      "tool": "run_on_perchance",
-      "example": "Clone this perchance.ai generator: https://perchance.ai/..."
+      "example": "Test this generator on perchance.org and show me live results"
     }
-  }
+  },
+  "platforms": ["openclaw", "claude-desktop", "opencode", "devin"],
+  "opencode_config": "mcp-config/opencode.json",
+  "skill_doc": "SKILL.md"
 }

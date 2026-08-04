@@ -17,6 +17,36 @@ program
   .description('🎲 Perchance.ai Generator Toolkit — AI-powered .perchance generator builder')
   .version('8.0.0');
 
+// Error handling helper
+function handleError(error: unknown, context: string): void {
+  console.error(`\n❌ Error in ${context}:`);
+
+  if (error instanceof Error) {
+    console.error(`   ${error.message}`);
+
+    // Provide helpful suggestions based on error type
+    if (error.message.includes('GROQ_API_KEY')) {
+      console.error('\n💡 Solution: Set GROQ_API_KEY environment variable');
+      console.error('   export GROQ_API_KEY=your-key-here');
+    } else if (error.message.includes('ENOENT') || error.message.includes('file not found')) {
+      console.error('\n💡 Solution: Check that the file path is correct');
+      console.error('   Use absolute path or ensure you\'re in the right directory');
+    } else if (error.message.includes('EACCES')) {
+      console.error('\n💡 Solution: Check file permissions');
+      console.error('   Ensure you have read/write access to the file/directory');
+    } else if (error.message.includes('playwright') || error.message.includes('browser')) {
+      console.error('\n💡 Solution: Install Playwright');
+      console.error('   npm install playwright');
+      console.error('   npx playwright install chromium');
+    }
+  } else {
+    console.error('   Unknown error occurred');
+  }
+
+  console.error('\n📚 For help, run: perchance-gen --help');
+  process.exit(1);
+}
+
 // CREATE command
 program
   .command('create <topic>')
@@ -26,31 +56,35 @@ program
   .option('-n, --count <number>', 'Items per list', '15')
   .option('-o, --output <dir>', 'Output directory', './output')
   .option('--clipboard', 'Copy to clipboard')
-  .option('--run', 'Run on perchance.ai after generating (requires Playwright)')
+  .option('--run', 'Run on perchance.org after generating (requires Playwright)')
   .action(async (topic, opts) => {
-    console.log(`\n🎲 Generating: "${topic}"\n`);
-    const result = await createGeneratorWorkflow(topic, {
-      category: opts.category,
-      style: opts.style,
-      itemCount: parseInt(opts.count),
-    });
-    await exportGenerator(result.code, {
-      filename: result.filename,
-      outputDir: opts.output,
-      clipboard: opts.clipboard,
-    });
-    console.log('\n✅ Generator created!');
-    console.log(`📁 Saved to: ${opts.output}/${result.filename}`);
-    console.log(`\n🎯 Preview rolls:`);
-    result.previewRolls?.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
-    console.log(`\n🌐 Paste at: https://perchance.ai/tools/generate`);
+    try {
+      console.log(`\n🎲 Generating: "${topic}"\n`);
+      const result = await createGeneratorWorkflow(topic, {
+        category: opts.category,
+        style: opts.style,
+        itemCount: parseInt(opts.count),
+      });
+      await exportGenerator(result.code, {
+        filename: result.filename,
+        outputDir: opts.output,
+        clipboard: opts.clipboard,
+      });
+      console.log('\n✅ Generator created!');
+      console.log(`📁 Saved to: ${opts.output}/${result.filename}`);
+      console.log('\n🎯 Preview rolls:');
+      result.previewRolls?.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+      console.log('\n🌐 Paste at: https://perchance.org/minimal#edit');
 
-    if (opts.run) {
-      console.log('\n🚀 Running on perchance.ai...');
-      const { runOnPerchance } = await import('../playwright/roller.js');
-      const run = await runOnPerchance({ code: result.code, rolls: 10 });
-      console.log('\n🎲 Live results:');
-      run.results.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+      if (opts.run) {
+        console.log('\n🚀 Running on perchance.org...');
+        const { runOnPerchance } = await import('../playwright/roller.js');
+        const run = await runOnPerchance({ code: result.code, rolls: 10 });
+        console.log('\n🎲 Live results:');
+        run.results.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+      }
+    } catch (error) {
+      handleError(error, 'create command');
     }
   });
 
@@ -60,10 +94,14 @@ program
   .description('Preview rolls from a .perchance file')
   .option('-n, --count <number>', 'Number of rolls', '10')
   .action((file, opts) => {
-    const code = fs.readFileSync(file, 'utf-8');
-    const results = previewRolls(code, parseInt(opts.count));
-    console.log(`\n🎲 Preview (${results.length} rolls):`);
-    results.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+    try {
+      const code = fs.readFileSync(file, 'utf-8');
+      const results = previewRolls(code, parseInt(opts.count));
+      console.log(`\n🎲 Preview (${results.length} rolls):`);
+      results.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+    } catch (error) {
+      handleError(error, 'preview command');
+    }
   });
 
 // VALIDATE command
@@ -71,53 +109,70 @@ program
   .command('validate <file>')
   .description('Validate .perchance syntax')
   .action((file) => {
-    const code = fs.readFileSync(file, 'utf-8');
-    const result = validatePerchance(code);
-    console.log(`\n${result.valid ? '✅ Valid' : '❌ Invalid'}`);
-    if (result.errors.length) {
-      console.log('\nErrors:');
-      result.errors.forEach(e => console.log(`  Line ${e.line}: ${e.message}`));
+    try {
+      const code = fs.readFileSync(file, 'utf-8');
+      const result = validatePerchance(code);
+      console.log(`\n${result.valid ? '✅ Valid' : '❌ Invalid'}`);
+      if (result.errors.length) {
+        console.log('\nErrors:');
+        result.errors.forEach(e => console.log(`  Line ${e.line}: ${e.message}`));
+      }
+      if (result.warnings.length) {
+        console.log('\nWarnings:');
+        result.warnings.forEach(w => console.log(`  Line ${w.line}: ${w.message}`));
+      }
+      console.log(`\nStats: ${result.stats.listCount} lists, ${result.stats.totalItems} items`);
+    } catch (error) {
+      handleError(error, 'validate command');
     }
-    if (result.warnings.length) {
-      console.log('\nWarnings:');
-      result.warnings.forEach(w => console.log(`  Line ${w.line}: ${w.message}`));
-    }
-    console.log(`\nStats: ${result.stats.listCount} lists, ${result.stats.totalItems} items`);
   });
 
 // RUN command (Playwright)
 program
   .command('run <file>')
-  .description('Run .perchance file on perchance.ai via Playwright')
+  .description('Run .perchance file on perchance.org via Playwright')
   .option('-n, --rolls <number>', 'Number of rolls', '10')
   .option('--screenshot', 'Save screenshot')
   .action(async (file, opts) => {
-    const code = fs.readFileSync(file, 'utf-8');
-    console.log('\n🚀 Running on perchance.ai...');
-    const { runOnPerchance } = await import('../playwright/roller.js');
-    const result = await runOnPerchance({
-      code, rolls: parseInt(opts.rolls), screenshot: opts.screenshot
-    });
-    if (result.error) {
-      console.error(`\n❌ Error: ${result.error}`);
-      return;
+    try {
+      const code = fs.readFileSync(file, 'utf-8');
+      console.log('\n🚀 Running on perchance.org...');
+      const { runOnPerchance } = await import('../playwright/roller.js');
+      const result = await runOnPerchance({
+        code, rolls: parseInt(opts.rolls), screenshot: opts.screenshot
+      });
+      if (result.error) {
+        console.error(`\n❌ Error: ${result.error}`);
+        return;
+      }
+      console.log(`\n🎲 Results (${result.results.length}):`);
+      result.results.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+    } catch (error) {
+      handleError(error, 'run command');
     }
-    console.log(`\n🎲 Results (${result.results.length}):`);
-    result.results.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
   });
 
 // SCRAPE command
 program
   .command('scrape <url>')
-  .description('Scrape a public perchance.ai generator')
+  .description('Scrape a public perchance.org generator')
   .option('-o, --output <dir>', 'Output directory', './output/cloned')
-  .action(async (url, opts) => {
-    console.log(`\n🔍 Scraping: ${url}`);
-    const { scrapeAndCloneWorkflow } = await import('../agent/workflows/scrape-and-clone.js');
-    const result = await scrapeAndCloneWorkflow(url);
-    console.log(`\n✅ Scraped! Saved to: ${result.savedTo}`);
-    console.log('\n🎲 Preview:');
-    result.preview.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+  .action(async (url, _opts) => {
+    try {
+      console.log(`\n🔍 Scraping: ${url}`);
+      const { scrapeAndCloneWorkflow } = await import('../agent/workflows/scrape-and-clone.js');
+      const result = await scrapeAndCloneWorkflow(url);
+      console.log(`\n✅ Scraped! Saved to: ${result.savedTo}`);
+      console.log('\n🎲 Preview:');
+      result.preview.forEach((r, i) => console.log(`  ${i + 1}. ${r}`));
+    } catch (error) {
+      handleError(error, 'scrape command');
+    }
   });
+
+// Global error handler
+process.on('unhandledRejection', (error) => {
+  handleError(error, 'unhandled promise rejection');
+});
 
 program.parse();

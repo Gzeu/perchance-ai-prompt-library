@@ -1,12 +1,12 @@
 /**
  * Perchance Loader
- * Injects .perchance generator code into the perchance.ai editor
+ * Injects .perchance generator code into the perchance.org editor
  */
 
 import { Page } from 'playwright';
 
 export async function injectGeneratorCode(page: Page, code: string, timeout = 15000): Promise<void> {
-  await page.goto('https://perchance.ai/tools/generate', { waitUntil: 'networkidle', timeout });
+  await page.goto('https://perchance.org/minimal#edit', { waitUntil: 'networkidle', timeout });
 
   // Wait for the code editor (CodeMirror or textarea)
   const editorSelector = '.CodeMirror, textarea[name="code"], #generator-code, .editor-content';
