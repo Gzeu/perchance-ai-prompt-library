@@ -1,11 +1,12 @@
-# 🎲 Perchance AI Toolkit
+# ⚡ Perchance AI Toolkit v8.0.0
 
-> **The ultimate tool for building [Perchance.ai](https://perchance.ai) generators** — AI-powered syntax generation, 150+ templates, local preview, live browser execution, MCP server for Claude/OpenClaw agents, and Playwright automation.
+> **The ultimate toolkit for building [Perchance.ai](https://perchance.ai) generators** — AI-powered syntax generation, 150+ templates, local preview, live browser execution, MCP server for Claude/OpenClaw agents, and Playwright automation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](package.json)
 [![Version](https://img.shields.io/badge/version-8.0.0-blue)](CHANGELOG.md)
 [![MCP](https://img.shields.io/badge/MCP-compatible-purple)](mcp-config/)
+[![npm](https://img.shields.io/badge/npm-perchance--ai--prompt--library-red)](https://www.npmjs.com/package/perchance-ai-prompt-library)
 
 ---
 
@@ -19,7 +20,9 @@ A focused toolkit for [Perchance.ai](https://perchance.ai) — the creative rand
 - **Preview** results locally without a browser
 - **Run live** on perchance.ai via Playwright automation
 - **Scrape** existing public generators
-- **MCP server** — call all features from Claude Desktop, OpenClaw, or any MCP agent
+- **MCP server** — call all features from Claude Desktop, OpenClaw, or any MCP-compatible agent
+
+> ⚠️ **v8.0.0 Breaking Changes:** Discord Bot, REST API, and Web Studio have been removed. Use the new `perchance-gen` CLI and `perchance-mcp` server instead.
 
 ---
 
@@ -107,11 +110,12 @@ perchance-gen scrape <url>      Scrape & clone a public generator
 ```
 src/
 ├── core/           Syntax builder, validator, exporter, weighted lists
-├── generators/     AI-assisted generator engine (Groq)
-├── mcp/            MCP server + 5 tools
+├── generators/     AI-assisted generator engine (Groq LLaMA 3.3)
+├── mcp/            MCP server + 6 tools
 ├── playwright/     Browser automation (loader, roller, scraper)
 ├── agent/          OpenClaw skill + Claude system prompt + workflows
-├── cli/            CLI entry point
+├── cli/            CLI entry point (perchance-gen)
+├── middleware/     Centralized security middleware
 ├── services/       Groq AI + Pollinations.ai
 └── types/          TypeScript types for Perchance syntax
 
@@ -153,7 +157,27 @@ npx playwright install chromium
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `GROQ_API_KEY` | Yes | Groq API key for AI generation |
-| `PLAYWRIGHT_HEADLESS` | No | Set to `false` to see the browser |
+| `PLAYWRIGHT_HEADLESS` | No | Set to `false` to see the browser (default: `true`) |
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for full version history.
+
+| Version | Highlights |
+|---------|-----------|
+| **v8.0.0** | MCP Toolkit, Playwright automation, OpenClaw skill, new CLI — removes Discord bot, REST API, Web Studio |
+| v7.0.0 | Ultra Agentic multi-agent system, Groq pipeline, Pack Builder |
+| v5.0.0 | Full TypeScript migration, middleware layer |
+| v4.0.0 | Discord Bot TS, Jest tests |
+| v1.0.0 | Initial release — 150+ templates, CLI |
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Please open an issue before submitting large PRs.
 
 ---
 
