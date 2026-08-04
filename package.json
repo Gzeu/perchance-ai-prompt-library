@@ -9,13 +9,24 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/types/perchance.d.ts",
+  "files": [
+    "dist/",
+    "templates/",
+    "skills/",
+    "mcp-config/",
+    "src/agent/skill.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
+    "prebuild": "tsc -p tsconfig.agents.json",
     "dev": "tsx watch src/cli/index.ts",
     "mcp": "tsx src/mcp/server.ts",
     "mcp:build": "tsc && node dist/mcp/server.js",
     "lint": "eslint src --ext .ts",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "perchance",
@@ -31,6 +42,10 @@
     "text-generation",
     "creative-writing"
   ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "commander": "^12.0.0",
