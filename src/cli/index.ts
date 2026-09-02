@@ -183,7 +183,9 @@ process.on('unhandledRejection', (error) => {
   handleError(error, 'unhandled promise rejection');
 });
 
+// Resolve symlinks so the global bin (`perchance-gen`) also works.
+const mainPath = fs.realpathSync(process.argv[1]);
 // Only parse when run directly (not when imported by tests)
-if (import.meta.url === `file://${process.argv[1]}`) {
-  program.parse();
+if (import.meta.url === `file://${mainPath}`) {
+  program.parseAsync(process.argv);
 }
