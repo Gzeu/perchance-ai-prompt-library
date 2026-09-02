@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Perchance AI Toolkit — Web Scraper</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    .subtitle { color: #94a3b8; font-size: 0.9rem; margin-bottom: 24px; }
+    .input-group {
+      display: flex; gap: 12px; margin-bottom: 20px;
+    }
+    #urlInput {
+      flex: 1;
+      padding: 12px 16px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 1rem;
+    }
+    #urlInput:focus { outline: none; border-color: #38bdf8; }
+    #scrapeBtn {
+      padding: 12px 24px;
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    #scrapeBtn:hover { opacity: 0.9; }
+    #scrapeBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .result-section {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid #334155;
+    }
+    .result-section h2 { font-size: 1.1rem; margin-bottom: 12px; color: #f1f5f9; }
+    .meta { display: flex; gap: 16px; margin-bottom: 12px; font-size: 0.85rem; color: #94a3b8; }
+    .meta span { background: #0f172a; padding: 4px 12px; border-radius: 16px; }
+    #codeDisplay {
+      width: 100%;
+      height: 300px;
+      padding: 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #cbd5e1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+      white-space: pre;
+    }
+    .validation { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .valid-badge { color: #4ade80; font-weight: 600; }
+    .invalid-badge { color: #f87171; font-weight: 600; }
+    .stats { display: flex; gap: 16px; font-size: 0.85rem; color: #94a3b8; margin-top: 8px; }
+    .preview-list { list-style: none; }
+    .preview-list li {
+      padding: 6px 0;
+      border-bottom: 1px solid #334155;
+      font-size: 0.9rem;
+    }
+    .preview-list li:last-child { border-bottom: none; }
+    .actions { display: flex; gap: 12px; margin-top: 12px; }
+    #downloadBtn, #copyBtn {
+      padding: 8px 16px;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      background: #0f172a;
+      color: #e2e8f0;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    #downloadBtn:hover, #copyBtn:hover { background: #1e293b; }
+    .status {
+      text-align: center;
+      color: #64748b;
+      padding: 40px;
+      font-size: 0.9rem;
+    }
+    .loading { opacity: 0.5; pointer-events: none; }
+    .error { color: #f87171; }
+    .success-msg { color: #4ade80; }
+  </style>
+</head>
+<body>
+  <h1>🎲 Perchance Scraper</h1>
+  <p class="subtitle">Scrape any public perchance.org generator → get full source code, validate, preview rolls, and download — all locally with jsdom (no browser needed).</p>
+
+  <div class="input-group">
+    <input type="url" id="urlInput" placeholder="https://perchance.org/generator-name" />
+    <button id="scrapeBtn">Scrape</button>
+  </div>
+
+  <div id="statusArea" class="status">
+    Enter a perchance.org URL and click Scrape.
+  </div>
+
+  <div id="resultArea" style="display:none;">
+    <div class="result-section">
+      <h2>Generator Code (.perchance)</h2>
+      <div class="meta">
+        <span id="genName"></span>
+        <span id="genStatus"></span>
+      </div>
+      <textarea id="codeDisplay" readonly></textarea>
+      <div class="validation">
+        <span id="validBadge"></span>
+        <span id="stats"></span>
+      </div>
+    </div>
+
+    <div class="result-section">
+      <h2>Local Preview (8 rolls)</h2>
+      <ul id="previewList" class="preview-list"></ul>
+      <div class="actions">
+        <button id="downloadBtn">Download .perchance</button>
+        <button id="copyBtn">Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById('urlInput');
+    const scrapeBtn = document.getElementById('scrapeBtn');
+    const statusArea = document.getElementById('statusArea');
+    const resultArea = document.getElementById('resultArea');
+    const codeDisplay = document.getElementById('codeDisplay');
+    const genName = document.getElementById('genName');
+    const genStatus = document.getElementById('genStatus');
+    const validBadge = document.getElementById('validBadge');
+    const statsEl = document.getElementById('stats');
+    const previewList = document.getElementById('previewList');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyBtn = document.getElementById('copyBtn');
+
+    let scrapedCode = '';
+
+    scrapeBtn.addEventListener('click', async () => {
+      const url = urlInput.value.trim();
+      if (!url) { statusArea.textContent = 'Please enter a perchance.org URL.'; return; }
+
+      scrapeBtn.disabled = true;
+      statusArea.textContent = '🔍 Scraping... (jsdom, no browser)';
+      resultArea.style.display = 'none';
+
+      try {
+        const resp = await fetch(`/api/scrape?url=${encodeURIComponent(url)}`);
+        const data = await resp.json();
+
+        if (!data.success) throw new Error(data.error);
+
+        scrapedCode = data.code;
+        genName.textContent = data.name;
+        codeDisplay.value = data.code;
+        genStatus.textContent = data.scrapedAt;
+
+        validBadge.textContent = data.validation.valid ? '✅ Valid' : '❌ Invalid';
+        validBadge.className = data.validation.valid ? 'valid-badge' : 'invalid-badge';
+
+        const s = data.validation.stats;
+        statsEl.textContent = `${s.listCount} lists, ${s.totalItems} items`;
+
+        previewList.innerHTML = '';
+        data.preview.forEach(r => {
+          const li = document.createElement('li');
+          li.textContent = r;
+          previewList.appendChild(li);
+        });
+
+        resultArea.style.display = 'block';
+        statusArea.innerHTML = '<span class="success-msg">✅ Scraped successfully — full source code extracted via jsdom</span>';
+      } catch (err) {
+        statusArea.innerHTML = `<span class="error">❌ Error: ${err.message}</span>`;
+      } finally {
+        scrapeBtn.disabled = false;
+      }
+    });
+
+    downloadBtn.addEventListener('click', async () => {
+      const resp = await fetch('/api/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: scrapedCode, filename: `${scrapeBtn.dataset.name || 'generator'}.perchance` }),
+      });
+      const blob = await resp.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'generator.perchance';
+      link.click();
+    });
+
+    copyBtn.addEventListener('click', () => {
+      codeDisplay.select();
+      document.execCommand('copy');
+      statusArea.innerHTML = '<span class="success-msg">✅ Code copied to clipboard</span>';
+    });
+
+    urlInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') scrapeBtn.click();
+    });
+  </script>
+</body>
+</html>

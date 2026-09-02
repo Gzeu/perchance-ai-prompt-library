@@ -170,6 +170,17 @@ program
     }
   });
 
+// UI command — launch web interface
+program
+  .command('ui')
+  .description('Launch web UI for scraping perchance.org generators')
+  .option('-p, --port <number>', 'Port to listen on', '3000')
+  .action(async (opts) => {
+    const port = parseInt(opts.port, 10);
+    const { createUiServer } = await import('../ui/server.js');
+    await createUiServer(port);
+  });
+
 // Global error handler
 process.on('unhandledRejection', (error) => {
   handleError(error, 'unhandled promise rejection');
