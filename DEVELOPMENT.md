@@ -25,7 +25,8 @@
 3. **Set up environment variables**
    ```bash
    cp .env.example .env
-   # Edit .env and add your GROQ_API_KEY
+    # No API keys needed — everything is local
+    # Optional: set PLAYWRIGHT_HEADLESS=true
    ```
 
 4. **Build the project**
@@ -357,7 +358,7 @@ npx playwright codegen https://perchance.org
 ### Unit Tests
 
 - Test individual functions in isolation
-- Mock external dependencies (Groq API, Playwright)
+- Mock external dependencies (Perchance API, Playwright)
 - Test edge cases and error conditions
 - Keep tests fast and focused
 
@@ -372,14 +373,14 @@ npx playwright codegen https://perchance.org
 
 - Test complete workflows
 - Use real CLI commands
-- Mock external services (Groq API)
+- Mock external services (Perchance API)
 - Test error recovery
 
 ## Performance Considerations
 
 ### API Rate Limiting
 
-- Respect Groq API rate limits
+- Respect Perchance.org rate limits
 - Implement caching where appropriate
 - Use batch operations for multiple requests
 - Add retry logic for transient failures
@@ -420,11 +421,10 @@ npm run build
 
 ### Runtime Errors
 
-**Groq API errors:**
-- Check GROQ_API_KEY is set
-- Verify API key is valid
-- Check rate limits
-- Review error messages for specific issues
+**Scraping errors:**
+- Check the Perchance URL is valid and public
+- If jsdom fails, the Playwright fallback will be used
+- Check network connectivity
 
 **Playwright errors:**
 - Ensure Playwright is installed: `npm install playwright`
@@ -512,7 +512,7 @@ self-improvement and testing capabilities.
 - **Node.js Documentation**: https://nodejs.org/docs/
 - **MCP Specification**: https://modelcontextprotocol.io/
 - **Playwright Documentation**: https://playwright.dev/
-- **Groq API Documentation**: https://console.groq.com/docs
+- **Perchance.org API**: https://perchance.org/api
 
 ## Getting Help
 

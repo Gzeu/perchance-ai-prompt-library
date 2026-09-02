@@ -1,5 +1,5 @@
 // MCP server integration tests
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 
 describe('MCP Server Integration', () => {
   describe('Server Initialization', () => {
@@ -105,11 +105,6 @@ describe('MCP Server Integration', () => {
 
   describe('Error Handling', () => {
     it('should handle missing arguments', async () => {
-      const mockRequest = {
-        name: 'generate_perchance',
-        arguments: {}, // Missing required 'topic'
-      };
-
       const mockError = {
         content: [
           {
@@ -125,11 +120,6 @@ describe('MCP Server Integration', () => {
     });
 
     it('should handle invalid argument types', async () => {
-      const mockRequest = {
-        name: 'generate_perchance',
-        arguments: { topic: 123 }, // Should be string
-      };
-
       const mockError = {
         content: [
           {
@@ -143,8 +133,8 @@ describe('MCP Server Integration', () => {
       expect(mockError.isError).toBe(true);
     });
 
-    it('should handle Groq API failures', async () => {
-      const mockError = new Error('Groq API: rate limit exceeded');
+    it('should handle API failures', async () => {
+      const mockError = new Error('API: rate limit exceeded');
       const mockResponse = {
         content: [
           {

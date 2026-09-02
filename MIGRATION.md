@@ -64,8 +64,8 @@ Version 8.0.0 represents a complete architectural shift from a full-stack platfo
 
 ### 5. Environment Variables Simplified
 
-**v7.0.0**: Complex `.env` with many options (POLLINATIONS_TOKEN, DB_PATH, etc.)
-**v8.0.0**: Simplified to just `GROQ_API_KEY` and `PLAYWRIGHT_HEADLESS`
+**v7.0.0**: Complex `.env` with many options (POLLINATIONS_TOKEN, GROQ_API_KEY, etc.)
+**v8.0.0**: 100% local — only `PLAYWRIGHT_HEADLESS` (optional)
 
 **Impact**:
 - Some environment variables no longer read
@@ -122,15 +122,7 @@ Improvements:
 
 2. **Update Environment**
    ```bash
-   # Old .env (v7.0.0)
-   POLLINATIONS_TOKEN=xxx
-   NODE_ENV=development
-   PORT=3000
-   DB_PATH=./data/prompts.db
-   # ... many more
-
-   # New .env (v8.0.0)
-   GROQ_API_KEY=your_groq_key
+   # New .env (v8.0.0 — 100% local, no API keys)
    PLAYWRIGHT_HEADLESS=true
    ```
 
@@ -154,7 +146,7 @@ Improvements:
        "perchance": {
          "command": "npx",
          "args": ["perchance-mcp"],
-         "env": { "GROQ_API_KEY": "your-key" }
+          "env": { "PLAYWRIGHT_HEADLESS": "true" }
        }
      }
    }

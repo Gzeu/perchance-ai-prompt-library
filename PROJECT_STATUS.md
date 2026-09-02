@@ -22,8 +22,8 @@
 ## Requirements
 
 - Node.js >= 20
-- `GROQ_API_KEY` for AI generation and autonomous features
-- Playwright (optional, for `run` and `scrape` commands)
+- Playwright (optional, for `run` and `scrape` fallback commands)
+- No external API keys required — all generation is 100% local
 
 ---
 

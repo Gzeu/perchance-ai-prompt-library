@@ -116,7 +116,7 @@ document.getElementById('commentsCtn').innerHTML = root.PCP({ channel: 'abis' })
    - simple random output → **list format** (`.perchance`);
    - interactive / visual / game → **HTML generator** (`index.html` + `main.pjs`).
 2. Build the code:
-   - list format: use `generate_perchance` (needs `GROQ_API_KEY`) or template-based
+    - list format: use `generate_perchance` (local, no API key) or template-based
      from the syntax above;
    - HTML format: write `main.pjs` (params + `$meta` + plugin imports) and
      `index.html` (markup + style + module script).
@@ -142,7 +142,7 @@ Styles: `simple | weighted | nested | complex | html-canvas`
 | `improve_generator` | Self-improvement workflow with iterative refinement |
 | `autonomous_test` | Comprehensive automated testing suite |
 | `multi_format_generate` | Intelligent multi-format generation (.perchance or HTML) |
-| `generate_perchance` | AI-generate a full generator from a topic (needs `GROQ_API_KEY`) |
+| `generate_perchance` | Generate a full generator from a topic (local templates, no API key) |
 | `list_templates` / `get_template` | browse/read built-in templates |
 | `validate_syntax` | check `.perchance` list code for errors/warnings |
 | `preview_rolls` | show sample outputs locally (no browser) |

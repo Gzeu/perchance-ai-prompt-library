@@ -8,7 +8,7 @@ import { validateTool } from '../src/mcp/tools/validate-tool.js';
 import { previewTool } from '../src/mcp/tools/preview-tool.js';
 
 // 1) The agent decides a topic and builds a .perchance generator (offline,
-//    template-based — the AI path needs GROQ_API_KEY via generate_perchance).
+//    template-based — no external API keys required).
 const topic = 'fantasy tavern name';
 const code = `// ${topic}
 // Paste at https://perchance.org/minimal#edit

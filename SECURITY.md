@@ -94,7 +94,8 @@ Please include the following information in your report:
 - Web interface serves static files
 
 ### Network Communications
-- API calls to Pollinations.ai (when using image generation)
+- No external API calls — all generation is 100% local
+- Web scraping to perchance.org only for generator extraction
 - Web interface runs local server
 - No telemetry or tracking by default
 

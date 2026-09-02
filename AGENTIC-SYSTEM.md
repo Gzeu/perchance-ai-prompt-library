@@ -5,8 +5,8 @@ Multi-agent collaborative pipeline for generating superior Perchance.org generat
 ## Architecture
 
 ```
-User request → selectAgents (max 3) → parallel Groq generation
-  → debate rounds (fast model critiques) → weighted voting
+User request → selectAgents (max 3) → parallel local generation
+  → debate rounds (template selection) → weighted voting
   → SyntaxMaster refine → validate → persist memory
 ```
 
@@ -32,7 +32,7 @@ Agent definitions live in `src/agents/specialists/` and `src/agents/registry.ts`
 curl http://localhost:3000/api/perchance/agentic/status
 ```
 
-### Preview selected agents (no Groq call)
+### Preview selected agents (no external API call)
 
 ```bash
 curl "http://localhost:3000/api/perchance/agentic/preview?description=fantasy%20tavern%20names&category=names"
@@ -53,7 +53,7 @@ curl -X POST http://localhost:3000/api/perchance/agentic \
   }'
 ```
 
-Requires `GROQ_API_KEY` in the API server `.env`.
+No external API keys required — all generation is local.
 
 ## CLI
 
@@ -71,8 +71,7 @@ Run `npm run dev`, open `/agentic` for the Ultra Agentic UI with step timeline a
 
 - At most **3 agents** per request (not all 7)
 - **1–3 debate rounds** (`iterations` body param)
-- Groq routes rate-limited (30 req/min per IP)
-- Debate uses `llama-3.1-8b-instant`; generation uses `llama-3.3-70b-versatile`
+- Perchance.org routes may rate-limit heavy scraping (use cache)
 
 ## Memory
 

@@ -8,7 +8,7 @@ import { spawn } from 'node:child_process';
 const server = spawn('node', ['dist/mcp/server.js'], {
   cwd: new URL('..', import.meta.url).pathname,
   stdio: ['pipe', 'pipe', 'inherit'],
-  env: { ...process.env, GROQ_API_KEY: '' },
+  env: { ...process.env },
 });
 
 let buf = '';

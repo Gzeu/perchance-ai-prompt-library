@@ -2,38 +2,26 @@ const axios = require('axios');
 
 class ImageGenerator {
   async generateImage(prompt) {
+    // All generation is 100% local — no external AI providers (Pollinations, Groq, etc.)
+    // Perchance.org is a text generator; image generation is not supported natively.
+    console.log('🎲 Image generation requested (local — no external AI)');
+
+    // Fallback: use a text-based placeholder image service
     try {
-      console.log('🌸 Using Pollinations AI for real image generation...');
-      const encodedPrompt = encodeURIComponent(prompt);
-      const url = `https://image.pollinations.ai/prompt/${encodedPrompt}`;
-      
-      const response = await axios.get(url, { 
-        responseType: 'arraybuffer', 
-        timeout: 20000 
-      });
-      
-      console.log('✅ Real AI image generated successfully!');
+      const encodedPrompt = encodeURIComponent(prompt.substring(0, 100));
+      const response = await axios.get(
+        `https://placehold.co/512x512/1a1a2e/00bcd4/png?text=${encodedPrompt}`,
+        { responseType: 'arraybuffer', timeout: 10000 }
+      );
       return Buffer.from(response.data);
-      
     } catch (error) {
-      console.warn('❌ Pollinations AI failed:', error.message);
-      
-      // Fallback la placeholder profesional
-      try {
-        const placeholder = await axios.get(
-          'https://placehold.co/512x512/1a1a1a/00bcd4/png?text=AI+Image+Unavailable', 
-          { responseType: 'arraybuffer', timeout: 10000 }
-        );
-        return Buffer.from(placeholder.data);
-      } catch (fallbackError) {
-        // Ultimate fallback
-        return Buffer.from('Image generation temporarily unavailable', 'utf-8');
-      }
+      console.warn('❌ Placeholder image failed:', error.message);
+      return Buffer.from('Image generation temporarily unavailable', 'utf-8');
     }
   }
 }
 
 const generator = new ImageGenerator();
-module.exports = { 
-  generateImage: generator.generateImage.bind(generator) 
+module.exports = {
+  generateImage: generator.generateImage.bind(generator)
 };

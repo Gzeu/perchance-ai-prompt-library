@@ -11,10 +11,7 @@ npm install -g perchance-ai-prompt-library
 Add to your OpenClaw agent config:
 ```json
 {
-  "skills": ["perchance-generator"],
-  "env": {
-    "GROQ_API_KEY": "your-key"
-  }
+  "skills": ["perchance-generator"]
 }
 ```
 

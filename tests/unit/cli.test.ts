@@ -139,20 +139,14 @@ describe('CLI Module', () => {
   });
 
   describe('CLI Environment Handling', () => {
-    it('should read GROQ_API_KEY from environment', () => {
-      const testKey = 'test-api-key';
-      process.env.GROQ_API_KEY = testKey;
-      expect(process.env.GROQ_API_KEY).toBe(testKey);
-    });
-
-    it('should handle missing API key gracefully', () => {
-      delete process.env.GROQ_API_KEY;
-      expect(process.env.GROQ_API_KEY).toBeUndefined();
-    });
-
     it('should read PLAYWRIGHT_HEADLESS from environment', () => {
       process.env.PLAYWRIGHT_HEADLESS = 'true';
       expect(process.env.PLAYWRIGHT_HEADLESS).toBe('true');
+    });
+
+    it('should handle missing PLAYWRIGHT_HEADLESS', () => {
+      delete process.env.PLAYWRIGHT_HEADLESS;
+      expect(process.env.PLAYWRIGHT_HEADLESS).toBeUndefined();
     });
   });
 });

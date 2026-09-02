@@ -6,7 +6,6 @@ global.TextEncoder = TextEncoder as any;
 global.TextDecoder = TextDecoder as any;
 
 // Mock environment variables
-process.env.GROQ_API_KEY = 'test-api-key';
 process.env.PLAYWRIGHT_HEADLESS = 'true';
 
 // Mock console methods to reduce noise in tests

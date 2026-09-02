@@ -9,7 +9,7 @@ Transformed from a generic full-stack platform into a focused **Perchance.ai too
 #### Added
 - `src/core/` — syntax builder, weighted-list roller, validator, exporter
 - `src/mcp/` — MCP server (`npx perchance-mcp`) with 6 tools:
-  - `generate_perchance` — AI generate via Groq LLaMA 3.3
+   - `generate_perchance` — generate via local templates (no external AI)
   - `list_templates` / `get_template` — browse 150+ built-in templates
   - `validate_syntax` — syntax errors + warnings + stats
   - `preview_rolls` — local preview without browser

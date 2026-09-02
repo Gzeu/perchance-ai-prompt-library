@@ -1,7 +1,7 @@
 /**
  * Template Library — perchance-native generation
  * Generates .perchance code from topic + category using curated word banks.
- * No external AI (Groq/Polination) required — everything is perchance-generated.
+ * No external AI required — everything is perchance-generated.
  */
 
 import type { PerchanceCategory, GeneratorStyle } from '../types/perchance.js';

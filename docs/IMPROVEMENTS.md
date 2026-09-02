@@ -1,8 +1,8 @@
-# Suggested Improvements for v6.0
+# Suggested Improvements for v8.0
 
 ## High Priority
 - Add MultiversX payment integration for premium prompt packs
-- Improve error handling and retry logic for Groq API
+- Improve error handling and retry logic for web scraping
 - Add more comprehensive tests
 - Release official GitHub version tags
 

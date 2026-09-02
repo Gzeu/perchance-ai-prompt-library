@@ -1,8 +1,7 @@
 /**
  * Autonomous perchance generator — the agent picks topics, builds
  * .perchance generators, validates and previews them, then outputs
- * ready-to-paste code. (AI path = generate_perchance needs GROQ_API_KEY;
- * offline we build from the Perchance syntax rules.)
+ * ready-to-paste code. (100% local — no external API keys required.)
  */
 import { validateTool } from '../src/mcp/tools/validate-tool.js';
 import { previewTool } from '../src/mcp/tools/preview-tool.js';

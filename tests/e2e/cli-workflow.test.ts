@@ -231,10 +231,10 @@ describe('CLI Workflow E2E Tests', () => {
     });
 
     it('should handle API failures', async () => {
-      const mockError = new Error('Groq API: service unavailable');
+      const mockError = new Error('Scraping API: service unavailable');
       const recoveryAction = 'retry_with_backoff';
 
-      expect(mockError.message).toContain('Groq API');
+      expect(mockError.message).toContain('Scraping API');
       expect(recoveryAction).toBe('retry_with_backoff');
     });
 

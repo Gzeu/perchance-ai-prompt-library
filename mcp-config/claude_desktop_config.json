@@ -5,7 +5,6 @@
       "command": "npx",
       "args": ["perchance-mcp"],
       "env": {
-        "GROQ_API_KEY": "your-groq-api-key-here",
         "PLAYWRIGHT_HEADLESS": "true"
       }
     }

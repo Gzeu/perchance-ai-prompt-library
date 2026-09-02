@@ -6,6 +6,7 @@ discord-bot/node_modules/
 # Build output
 dist/
 *.js.map
+*.tsbuildinfo
 
 # Generator output
 output/

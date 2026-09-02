@@ -210,9 +210,9 @@ describe('MCP Tools', () => {
   });
 
   describe('Tool Error Handling', () => {
-    it('should handle Groq API errors', () => {
-      const mockError = new Error('Groq API error: rate limit exceeded');
-      expect(mockError.message).toContain('Groq API');
+    it('should handle scraping errors', () => {
+      const mockError = new Error('Scraping error: rate limit exceeded');
+      expect(mockError.message).toContain('Scraping error');
     });
 
     it('should handle validation errors', () => {

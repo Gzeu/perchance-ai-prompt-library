@@ -7,12 +7,13 @@ const config: Config = {
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts'],
   transform: {
-    '^.+\.tsx?$': ['ts-jest', {
+    '^.+\\.tsx?$': ['ts-jest', {
       tsconfig: {
         strict: true,
         esModuleInterop: true,
         resolveJsonModule: true,
         module: 'ESNext',
+        moduleResolution: 'bundler',
         target: 'ES2020',
       },
       useESM: true,

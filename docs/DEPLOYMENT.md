@@ -122,8 +122,6 @@ cat > .env << EOF
 NODE_ENV=production
 PORT=3000
 LOG_LEVEL=info
-POLLINATIONS_TOKEN=your_token_here
-DB_PATH=/data/prompts.db
 EOF
 ```
 
@@ -367,7 +365,7 @@ heroku create perchance-ai-app
 # Set environment variables
 heroku config:set NODE_ENV=production
 heroku config:set NPM_CONFIG_PRODUCTION=false
-heroku config:set POLLINATIONS_TOKEN=your_token
+# No API tokens needed — all generation is local
 
 # Deploy
 git push heroku main
@@ -422,7 +420,7 @@ npm install -g vercel
 vercel --prod
 
 # Set environment variables
-vercel env add POLLINATIONS_TOKEN
+vercel env add PLAYWRIGHT_HEADLESS
 ```
 
 ### Railway
@@ -447,7 +445,8 @@ railway init
 railway up
 
 # Set environment variables
-railway variables set POLLINATIONS_TOKEN=your_token
+railway variables set PLAYWRIGHT_HEADLESS=true
+# No API tokens needed — all generation is local
 ```
 
 ### DigitalOcean App Platform
@@ -468,8 +467,8 @@ services:
   env:
   - key: NODE_ENV
     value: production
-  - key: POLLINATIONS_TOKEN
-    value: ${POLLINATIONS_TOKEN}
+  - key: PLAYWRIGHT_HEADLESS
+    value: "true"
     type: SECRET
 static_sites:
 - name: web
@@ -532,8 +531,8 @@ NODE_ENV=production                    # Environment mode
 PORT=3000                             # Server port
 LOG_LEVEL=info                        # Logging level
 
-# API Keys
-POLLINATIONS_TOKEN=your_token_here    # Pollinations.ai API token
+# Environment (no API keys needed — all generation is local)
+PLAYWRIGHT_HEADLESS=true                 # Set false to see the browser
 
 # Database
 DB_PATH=./data/prompts.db             # SQLite database path

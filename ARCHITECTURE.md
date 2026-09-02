@@ -37,8 +37,8 @@ Perchance AI Toolkit v8.0.0 is a focused CLI and MCP toolkit for building Percha
 ┌─────────────────────────────────────────────────────────────────┐
 │                    External Services                             │
 ├─────────────────────────────────────────────────────────────────┤
-│  Groq AI (LLaMA 3.3)    Playwright (Browser)    Templates       │
-│  groq-sdk                playwright              templates/       │
+│  Local Template Library    Playwright (Browser)    jsdom (Scraping)  │
+│  TemplateLibrary            playwright              jsdom             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -191,7 +191,7 @@ Perchance AI Toolkit v8.0.0 is a focused CLI and MCP toolkit for building Percha
 ### CLI Generation Flow
 ```
 User Command → CLI Parser → Agent Workflow → Decision Engine
-→ Groq AI → Syntax Builder → Validator → Exporter → User Output
+→ Local Templates → Syntax Builder → Validator → Exporter → User Output
 ```
 
 ### MCP Tool Flow
@@ -221,7 +221,7 @@ Request → Universal Interface → Decision Engine → Generate
 - **@modelcontextprotocol/sdk** 1.0+ - MCP protocol
 
 ### AI
-- **Groq SDK** 0.7+ - AI generation (LLaMA 3.3)
+- **TemplateLibrary** — 150+ local templates for generation
 
 ### Browser Automation
 - **Playwright** 1.45+ - Browser control (optional)
@@ -341,7 +341,7 @@ Request → Universal Interface → Decision Engine → Generate
 
 ### MCP Server
 - Available via `npx perchance-mcp`
-- Requires `GROQ_API_KEY` environment variable
+- No external API keys required — all generation is local
 - Stdio transport for communication
 
 ### CLI Installation
