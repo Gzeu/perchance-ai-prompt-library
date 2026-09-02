@@ -147,6 +147,7 @@ Styles: `simple | weighted | nested | complex | html-canvas`
 | `validate_syntax` | check `.perchance` list code for errors/warnings |
 | `preview_rolls` | show sample outputs locally (no browser) |
 | `run_on_perchance` | run live on perchance.org via Playwright (needs browser) |
+| `scrape_generator` | scrape any public perchance.org generator — extract full source via lightweight jsdom (no browser), validate, preview, download |
 
 > Note: `validate_syntax` / `preview_rolls` only understand the **list format**.
 > For HTML generators, validate the JS yourself and verify on perchance.org.
@@ -158,7 +159,29 @@ perchance-gen preview ./output/generators/fantasy-tavern-name.perchance
 perchance-gen validate ./my-generator.perchance
 perchance-gen run ./my-generator.perchance --rolls 20
 perchance-gen scrape https://perchance.org/some-generator
+perchance-gen ui                      # launch web UI for scraping
 ```
+
+## Scraping any public generator (NEW)
+
+You can **clone the entire generator** from any public perchance.org page — not just images.
+Use `scrape_generator` (MCP), `perchance-gen scrape` (CLI), or `perchance-gen ui` (web UI).
+
+The scraper uses **jsdom** (no browser needed) and hits the official download API
+(`perchance.org/api/downloadGenerator`) to bypass Cloudflare. It extracts the full
+`.perchance` source code, description, validates it, and generates preview rolls — all locally.
+
+**Example:**
+```
+perchance-gen scrape https://perchance.org/fdqirttayk
+```
+This saves the complete generator source to `output/cloned/` and shows 8 preview rolls.
+
+Or in the web UI:
+```
+perchance-gen ui
+```
+Then paste any perchance.org URL in your browser — no CLI needed.
 
 ## Autonomous workflows (NEW)
 

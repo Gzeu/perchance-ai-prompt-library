@@ -56,6 +56,11 @@
       "description": "Run generator on real perchance.org site via Playwright",
       "tool": "run_on_perchance",
       "example": "Test this generator on perchance.org and show me live results"
+    },
+    "scrape-generator": {
+      "description": "Scrape any public perchance.org generator and extract its full source code via lightweight jsdom (no browser needed)",
+      "tool": "scrape_generator",
+      "example": "Scrape https://perchance.org/fdqirttayk and show me the code"
     }
   },
   "platforms": ["openclaw", "claude-desktop", "opencode", "devin"],
