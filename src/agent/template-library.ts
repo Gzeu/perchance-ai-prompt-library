@@ -14,7 +14,7 @@ const WORD_BANKS: Record<PerchanceCategory, Record<string, string[]>> = {
     modifier: ['Cel Rătăcios', 'Cel Curajos', 'Cel Înțelept', 'Cel Puternic', 'Cel Rapid', 'Cel Înalt'],
   },
   characters: {
-    title: ['Găluștean', 'Vânător', 'Negustor', 'Arcanist', 'Pescar', ' Cioban', 'Focareală', 'Oamă de Piatră', 'Cavaler', 'Pelerin'],
+    title: ['Găluștean', 'Vânător', 'Negustor', 'Arcanist', 'Pescar', 'Cioban', 'Focareală', 'Oamă de Piatră', 'Cavaler', 'Pelerin'],
     trait: ['înțelept', 'curajos', 'învinovățitor', 'țelțuros', 'misterios', 'îndrăzneal', 'pțelitor', 'cinstit', 'rătăcios', 'înscrutabil'],
     weapon: ['Săgeata Luminii', 'țigară de Foc', 'Cimitirul Vremii', 'Înțelesul Întunericului', 'Codria Stelelor', 'Talismanul Vântului'],
   },
@@ -64,6 +64,24 @@ export interface GenerateOptions {
 
 export class TemplateLibrary {
   /**
+   * List all available template categories and the word bank lists within each.
+   * Useful for browsing templates programmatically (MCP `list_templates` / UI).
+   */
+  listTemplates(): { category: PerchanceCategory; lists: string[] }[] {
+    return Object.entries(WORD_BANKS).map(([category, bank]) => ({
+      category: category as PerchanceCategory,
+      lists: Object.keys(bank),
+    }));
+  }
+
+  /**
+   * Get the word bank for a specific category — all lists and their items.
+   */
+  getTemplate(category: PerchanceCategory): Record<string, string[]> {
+    return WORD_BANKS[category] || {};
+  }
+
+  /**
    * Generate .perchance code from topic + category + style using word banks.
    */
   generate(options: GenerateOptions): string {
@@ -86,7 +104,7 @@ export class TemplateLibrary {
 
     // Output list
     code += 'output\n';
-    code += `  ${this.renderOutputTemplate(bank, category)}\n`;
+    code += `  ${this.renderOutputTemplate(bank, category, topic)}\n`;
 
     // List definitions
     for (const [listName, items] of Object.entries(bank)) {
@@ -109,7 +127,11 @@ export class TemplateLibrary {
   /**
    * Render the output template for a given category.
    */
-  private renderOutputTemplate(bank: Record<string, string[]>, category: PerchanceCategory): string {
+  private renderOutputTemplate(
+    bank: Record<string, string[]>,
+    category: PerchanceCategory,
+    topic: string,
+  ): string {
     if (category === 'names') {
       return '[prefix][suffix]';
     }
@@ -126,15 +148,15 @@ export class TemplateLibrary {
       return '[question]';
     }
     if (category === 'images') {
-      return 'a ${topic} image, ${style} style, ${detail}';
+      return `${topic} [style], ${topic} [detail] — [prompt]`;
     }
     if (category === 'loot') {
-      return '[rarity] ${topic} — [property]';
+      return `[rarity] ${topic} — [item]`;
     }
     if (category === 'quests') {
       return '[type]: [objective] — recompensă: [reward]';
     }
-    return '[subject] [adjective] [descriptor] ${topic}';
+    return `[subject] [adjective] [descriptor] ${topic}`;
   }
 
   /**

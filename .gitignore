@@ -29,6 +29,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# CommandCode taste/config (local-only, never committed)
+.commandcode/
+
 # Test coverage
 coverage/
 
