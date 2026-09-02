@@ -55,12 +55,6 @@ export class RateLimiter {
   }
 }
 
-// Groq API rate limiter (30 requests per minute)
-export const groqRateLimiter = new RateLimiter({
-  maxRequests: 30,
-  windowMs: 60 * 1000, // 1 minute
-});
-
 // General purpose rate limiter (can be configured)
 export function createRateLimiter(maxRequests: number, windowMs: number): RateLimiter {
   return new RateLimiter({ maxRequests, windowMs });

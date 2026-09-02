@@ -94,7 +94,7 @@ describe('MCP Tools', () => {
     });
 
     it('should handle missing required arguments', () => {
-      const mockArgs = { topic: 'test' };
+      const mockArgs = { topic: 'test' } as any;
       expect(mockArgs.category).toBeUndefined();
     });
 

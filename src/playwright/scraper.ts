@@ -29,13 +29,16 @@ export interface ScrapedGenerator {
  * generator code embedded in a <script id="preloaded-generator-data"> element.
  */
 export async function scrapeGeneratorWithJsdom(url: string): Promise<ScrapedGenerator> {
-  if (!url.includes('perchance.org')) {
-    throw new Error('Only perchance.org URLs are supported');
-  }
+  let generatorName: string | null;
 
-  const generatorName = extractGeneratorNameFromUrl(url);
-  if (!generatorName) {
-    throw new Error('Could not extract generator name from URL');
+  if (url.includes('perchance.org')) {
+    generatorName = extractGeneratorNameFromUrl(url);
+    if (!generatorName) {
+      throw new Error('Could not extract generator name from URL');
+    }
+  } else {
+    // Treat the input as a generator name directly
+    generatorName = url;
   }
 
   const { document } = await fetchAndParsePerchanceGenerator(generatorName);
@@ -61,18 +64,24 @@ export async function scrapeGeneratorWithPlaywright(
   url: string,
   headless = true,
 ): Promise<ScrapedGenerator> {
-  if (!url.includes('perchance.org')) {
-    throw new Error('Only perchance.org URLs are supported');
-  }
+  let generatorName: string;
+  let fullUrl: string;
 
+  if (url.includes('perchance.org')) {
+    generatorName = extractGeneratorNameFromUrl(url) || url.split('/').filter(Boolean).pop() || 'unknown';
+    fullUrl = url;
+  } else {
+    generatorName = url;
+    fullUrl = `https://perchance.org/${url}`;
+  }
   const browser = new PerchanceBrowser();
   await browser.launch(headless);
   const page = await browser.newPage();
 
   try {
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.goto(fullUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    const name = extractGeneratorNameFromUrl(url) || url.split('/').filter(Boolean).pop() || 'unknown';
+    const name = generatorName;
 
     const code = await page.evaluate(() => {
       // Method 1: look for code textarea

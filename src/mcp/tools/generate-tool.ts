@@ -1,18 +1,19 @@
 /**
  * MCP Tool: generate_perchance
- * Uses Groq AI to generate a complete .perchance generator from a topic
+ * Generates a complete .perchance generator from a topic using
+ * the TemplateLibrary (perchance-native, no external AI needed).
  */
 
-import Groq from 'groq-sdk';
 import { validatePerchance } from '../../core/validator.js';
 import { previewRolls } from '../../core/exporter.js';
+import { TemplateLibrary } from '../../agent/template-library.js';
 import type { GenerateRequest } from '../../types/perchance.js';
 
 export const generateTool = {
   schema: {
     name: 'generate_perchance',
     description:
-      'Generate a complete .perchance generator from a topic using AI. Returns valid Perchance.ai syntax ready to paste.',
+      'Generate a complete .perchance generator from a topic using perchance-native templates. Returns valid Perchance.ai syntax ready to paste.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -47,58 +48,16 @@ export const generateTool = {
       category: (args.category as any) || 'custom',
       style: (args.style as any) || 'nested',
       itemCount: (args.itemCount as number) || 15,
-      useAI: true,
     };
 
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-    const systemPrompt = `You are a Perchance.ai generator expert. Generate ONLY valid .perchance syntax.
-
-Perchance syntax rules:
-- List name starts at column 0 (no indent)
-- Items are indented with 2 spaces
-- Weighted items use ^number (e.g. "common item^3")
-- Reference other lists with [listName]
-- First list called "output" is shown to users
-- Comments start with //
-
-Example:
-output
-  [adjective] [creature] of the [place]
-
-adjective
-  ancient^2
-  cursed
-  forgotten^3
-  radiant
-
-creature
-  dragon
-  phoenix^2
-  wraith
-
-place
-  [adjective] ruins
-  enchanted forest
-  shadow realm^2`;
-
-    const userPrompt = `Create a ${req.style} Perchance.ai generator for: "${req.topic}"
-Category: ${req.category}
-Aim for ~${req.itemCount} items per list.
-Make it creative, varied, and immediately usable on perchance.org.
-Return ONLY the .perchance code, no explanation.`;
-
-    const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.9,
-      max_tokens: 2048,
+    const library = new TemplateLibrary();
+    const code = library.generate({
+      topic: req.topic,
+      category: req.category as any,
+      style: req.style,
+      itemCount: req.itemCount || 15,
     });
 
-    const code = completion.choices[0]?.message?.content?.trim() || '';
     const validation = validatePerchance(code);
     const preview = previewRolls(code, 5);
     const slug = req.topic.toLowerCase().replace(/[^a-z0-9]+/g, '-');

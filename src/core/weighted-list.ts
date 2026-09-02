@@ -20,7 +20,7 @@ export function buildWeightedList(entries: WeightedEntry[]): string {
 }
 
 export function parseWeightedList(code: string): WeightedEntry[] {
-  const lines = code.split('\n').filter(l => l.trim() && !l.startsWith('//'));
+  const lines = code.split('\n').filter(l => l.trim() && !l.trim().startsWith('//'));
   const entries: WeightedEntry[] = [];
   for (const line of lines) {
     const match = line.trim().match(/^(.+?)\^(\d+(?:\.\d+)?)/);

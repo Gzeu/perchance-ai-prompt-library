@@ -1,18 +1,23 @@
 // CLI unit tests - basic functionality testing
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
+const fs = jest.requireActual('fs') as typeof import('fs');
+const path = jest.requireActual('path') as typeof import('path');
 
 describe('CLI Module', () => {
   describe('CLI Structure', () => {
     it('should have CLI entry point', () => {
-      // Verify CLI module exists
-      const cliModule = require('../../src/cli/index.js');
-      expect(cliModule).toBeDefined();
+      // Verify CLI entry point exists in the filesystem
+      const cliPath = path.resolve(process.cwd(), 'src/cli/index.ts');
+      const content = fs.readFileSync(cliPath, 'utf-8');
+      expect(content).toContain("Command");
+      expect(content).toContain('perchance-gen');
     });
 
     it('should export main function', () => {
-      const cliModule = require('../../src/cli/index.js');
-      // CLI typically exports nothing or has a main execution
-      expect(typeof cliModule === 'object' || typeof cliModule === 'function').toBe(true);
+      // CLI module uses Commander; verify it's wired up as entry point
+      const cliPath = path.resolve(process.cwd(), 'src/cli/index.ts');
+      const content = fs.readFileSync(cliPath, 'utf-8');
+      expect(content).toContain('program.parse');
     });
   });
 
@@ -98,7 +103,7 @@ describe('CLI Module', () => {
   describe('CLI Integration Points', () => {
     it('should integrate with agent workflows', () => {
       // Test that CLI can call agent workflows
-      const mockWorkflow = async (topic: string, options: any) => ({
+      const mockWorkflow = async (topic: string, _options: any) => ({
         code: `output\n  ${topic}`,
         filename: `${topic}.perchance`,
       });
@@ -108,7 +113,7 @@ describe('CLI Module', () => {
 
     it('should integrate with core modules', () => {
       // Test that CLI can use core modules
-      const mockValidate = (code: string) => ({
+      const mockValidate = (_code: string) => ({
         valid: true,
         errors: [],
         warnings: [],
@@ -123,7 +128,7 @@ describe('CLI Module', () => {
 
     it('should integrate with exporter', () => {
       // Test that CLI can export generators
-      const mockExport = (code: string, options: any) => ({
+      const mockExport = (_code: string, options: any) => ({
         success: true,
         path: options.outputDir + '/' + options.filename,
       });

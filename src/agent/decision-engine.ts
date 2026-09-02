@@ -3,7 +3,7 @@
  * Intelligently selects tools and workflows based on context, quality metrics, and goals
  */
 
-import type { GenerateRequest, ValidationResult } from '../types/perchance.js';
+import type { ValidationResult } from '../types/perchance.js';
 
 export interface DecisionContext {
   topic: string;
@@ -35,7 +35,6 @@ export interface FormatDecision {
 }
 
 export class DecisionEngine {
-  private qualityHistory: Map<string, number[]> = new Map();
   private performanceMetrics: Map<string, { avgTime: number; successRate: number }> = new Map();
 
   /**

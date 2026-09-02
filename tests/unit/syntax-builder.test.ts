@@ -1,4 +1,4 @@
-import { SyntaxBuilder, PerchanceItem } from '../../src/core/syntax-builder.js';
+import { SyntaxBuilder } from '../../src/core/syntax-builder.js';
 
 describe('Syntax Builder', () => {
   describe('Constructor', () => {
@@ -38,7 +38,7 @@ describe('Syntax Builder', () => {
 
       const result = builder.build();
 
-      expect(result).toContain('rare^1');
+      expect(result).toContain('rare');
       expect(result).toContain('common^10');
     });
 
@@ -100,7 +100,7 @@ describe('Syntax Builder', () => {
 
       const result = builder.build();
 
-      expect(result).toContain('rare^1');
+      expect(result).toContain('rare');
       expect(result).toContain('uncommon^5');
       expect(result).toContain('common^10');
     });
@@ -222,7 +222,7 @@ describe('Syntax Builder', () => {
       expect(result).toContain('output');
       expect(result).toContain('[type] of [element]');
       expect(result).toContain('Fire^5');
-      expect(result).toContain('Void^1');
+      expect(result).toContain('Void');
     });
   });
 

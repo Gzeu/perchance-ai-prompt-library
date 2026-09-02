@@ -1,48 +1,63 @@
 /**
  * Agent Workflow: Improve Generator
- * Takes existing .perchance code and improves it with AI
+ * Takes existing .perchance code and improves it using local
+ * validation analysis — no external AI required.
  */
 
 import { validatePerchance } from '../../core/validator.js';
 import { previewRolls } from '../../core/exporter.js';
-import Groq from 'groq-sdk';
+import { improveGeneratorLocally } from '../../agent/template-library.js';
 
 export async function improveGeneratorWorkflow(
   existingCode: string,
-  instructions: string
+  _instructions: string
 ): Promise<{ originalCode: string; improvedCode: string; changes: string[]; preview: string[] }> {
   const validation = validatePerchance(existingCode);
   console.log(`[Improve] Original: ${validation.stats.listCount} lists, ${validation.stats.totalItems} items`);
 
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are a Perchance.ai expert. Improve the provided generator code according to instructions. Return ONLY the improved .perchance code.',
-      },
-      {
-        role: 'user',
-        content: `Improve this Perchance generator:\n\n${existingCode}\n\nInstructions: ${instructions}\n\nReturn only the improved .perchance code.`,
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 2048,
-  });
+  // Determine which strategies to apply based on validation results and instructions
+  const strategies: Parameters<typeof improveGeneratorLocally>[1] = [];
 
-  const improvedCode = completion.choices[0]?.message?.content?.trim() || existingCode;
+  if (validation.errors.length > 0) {
+    strategies.push('structure-fix');
+  }
+  if (!validation.stats.hasOutput) {
+    strategies.push('structure-fix');
+  }
+  if (validation.stats.totalItems < 10) {
+    strategies.push('content-expansion');
+  }
+  if (!validation.stats.hasWeighted) {
+    strategies.push('weight-addition');
+  }
+
+  // Always try to improve variety
+  strategies.push('variety-boost');
+
+  // If no strategies were selected, do a general improvement
+  if (strategies.length === 0) {
+    strategies.push('content-expansion');
+  }
+
+  const { improvedCode, changes } = improveGeneratorLocally(existingCode, [...new Set(strategies)]);
   const improvedValidation = validatePerchance(improvedCode);
   const preview = previewRolls(improvedCode, 8);
 
-  const changes: string[] = [];
-  if (improvedValidation.stats.totalItems > validation.stats.totalItems)
-    changes.push(`Added ${improvedValidation.stats.totalItems - validation.stats.totalItems} new items`);
-  if (!validation.stats.hasWeighted && improvedValidation.stats.hasWeighted)
-    changes.push('Added weighted probabilities');
-  if (!validation.stats.hasNested && improvedValidation.stats.hasNested)
-    changes.push('Added nested list references');
+  const additionalChanges: string[] = [];
+  if (improvedValidation.stats.totalItems > validation.stats.totalItems) {
+    additionalChanges.push(`Added ${improvedValidation.stats.totalItems - validation.stats.totalItems} new items`);
+  }
+  if (!validation.stats.hasWeighted && improvedValidation.stats.hasWeighted) {
+    additionalChanges.push('Added weighted probabilities');
+  }
+  if (!validation.stats.hasNested && improvedValidation.stats.hasNested) {
+    additionalChanges.push('Added nested list references');
+  }
 
-  return { originalCode: existingCode, improvedCode, changes, preview };
+  return {
+    originalCode: existingCode,
+    improvedCode,
+    changes: [...changes, ...additionalChanges],
+    preview,
+  };
 }

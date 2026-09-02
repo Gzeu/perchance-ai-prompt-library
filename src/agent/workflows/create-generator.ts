@@ -1,12 +1,13 @@
 /**
  * Agent Workflow: Create Generator
- * Full pipeline: topic → AI generate → validate → preview → export
+ * Full pipeline: topic → template generation → validate → preview → export
+ * Uses perchance-native TemplateLibrary — no external AI required.
  */
 
 import { validatePerchance } from '../../core/validator.js';
 import { previewRolls, exportGenerator } from '../../core/exporter.js';
+import { TemplateLibrary } from '../../agent/template-library.js';
 import type { GenerateRequest, GenerateResult } from '../../types/perchance.js';
-import Groq from 'groq-sdk';
 
 export async function createGeneratorWorkflow(
   topic: string,
@@ -17,30 +18,18 @@ export async function createGeneratorWorkflow(
     category: options.category || 'custom',
     style: options.style || 'nested',
     itemCount: options.itemCount || 15,
-    useAI: true,
   };
 
   console.log(`[Workflow] Generating: "${topic}" (${req.category}, ${req.style})`);
 
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are a Perchance.ai generator expert. Output ONLY valid .perchance syntax. No explanation, no markdown fences.',
-      },
-      {
-        role: 'user',
-        content: `Create a ${req.style} Perchance generator for: "${topic}". Category: ${req.category}. ~${req.itemCount} items per list. Start with an "output" list.`,
-      },
-    ],
-    temperature: 0.9,
-    max_tokens: 2048,
+  const library = new TemplateLibrary();
+  const code = library.generate({
+    topic,
+    category: req.category as any,
+    style: req.style,
+    itemCount: req.itemCount || 15,
   });
 
-  const code = completion.choices[0]?.message?.content?.trim() || '';
   const validation = validatePerchance(code);
   const preview = previewRolls(code, 8);
   const slug = topic.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -55,7 +44,10 @@ export async function createGeneratorWorkflow(
     code,
     filename,
     category: req.category,
-    stats: { listCount: validation.stats.listCount, totalItems: validation.stats.totalItems },
+    stats: {
+      listCount: validation.stats.listCount,
+      totalItems: validation.stats.totalItems
+    },
     previewRolls: preview,
     validationPassed: validation.valid,
     exportedTo: filepath,

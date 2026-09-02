@@ -24,4 +24,7 @@ export {
   extractDescriptionFromDocument,
 } from './utils/html-scraper.js';
 
+// Perchance-native generation (no external AI)
+export { TemplateLibrary, improveGeneratorLocally } from './agent/template-library.js';
+
 export const VERSION = '8.0.0';

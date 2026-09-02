@@ -1,4 +1,4 @@
-import { RateLimiter, groqRateLimiter, createRateLimiter } from './rate-limiter.js';
+import { RateLimiter, createRateLimiter } from './rate-limiter.js';
 
 describe('RateLimiter', () => {
   describe('Constructor', () => {
@@ -149,13 +149,6 @@ describe('RateLimiter', () => {
 
       expect(elapsed).toBeGreaterThanOrEqual(90); // Third request should wait
     });
-  });
-});
-
-describe('groqRateLimiter', () => {
-  it('should be configured for Groq API limits', () => {
-    expect(groqRateLimiter).toBeDefined();
-    expect(groqRateLimiter.getRemainingRequests()).toBe(30); // Groq limit
   });
 });
 

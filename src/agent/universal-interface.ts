@@ -3,14 +3,12 @@
  * Platform-agnostic API layer for consistent behavior across all MCP-compatible platforms
  */
 
-import { DecisionEngine, DecisionContext, ToolDecision } from './decision-engine.js';
+import { DecisionEngine, DecisionContext } from './decision-engine.js';
 import { SelfImprovementSystem, ImprovementContext } from './self-improvement.js';
 import { BatchCoordinator, BatchRequest } from './batch-coordinator.js';
 import { AutonomousTestingSuite, TestConfig } from './autonomous-testing.js';
 import { MultiFormatGenerator, MultiFormatRequest } from './multi-format-generator.js';
 import { validatePerchance } from '../core/validator.js';
-import { previewRolls } from '../core/exporter.js';
-import type { ValidationResult } from '../types/perchance.js';
 
 export interface PlatformCapabilities {
   platform: 'claude-desktop' | 'devin' | 'openclaw' | 'opencode' | 'unknown';
@@ -288,20 +286,6 @@ export class UniversalAgentInterface {
    */
   private async handleAutonomous(request: UniversalRequest, decisionPath: string[]): Promise<any> {
     decisionPath.push('Decision: Fully autonomous workflow');
-
-    // Autonomous mode: make all decisions automatically
-    const context: DecisionContext = {
-      topic: request.topic,
-      category: request.category || 'custom',
-      complexity: request.complexity || 'medium',
-      goal: 'create',
-      qualityThreshold: request.options?.qualityThreshold || 0.8,
-      constraints: {
-        requireTesting: true,
-        requirePlaywright: this.currentPlatform.supportsPlaywright,
-        preferSpeed: false
-      }
-    };
 
     // Step 1: Generate
     decisionPath.push('Step 1: Generate');

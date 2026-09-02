@@ -310,7 +310,7 @@ export class AutonomousTestingSuite {
     const issues: string[] = [];
 
     try {
-      const rolls = previewRolls(code, 100);
+      previewRolls(code, 100);
       const executionTime = Date.now() - startTime;
 
       if (executionTime > 5000) {
@@ -470,7 +470,6 @@ export class AutonomousTestingSuite {
   }
 
   private testNoInfiniteLoops(code: string): TestResult {
-    const lines = code.split('\n');
     const issues: string[] = [];
 
     // Check for potential circular references

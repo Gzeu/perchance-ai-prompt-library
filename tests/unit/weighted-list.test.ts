@@ -247,6 +247,9 @@ describe('Weighted List', () => {
       const built = buildWeightedList(originalEntries);
       const parsed = parseWeightedList(built);
       const rebuilt = buildWeightedList(parsed);
+      expect(rebuilt).toContain('common^10');
+      expect(rebuilt).toContain('rare^1');
+      expect(rebuilt).toContain('uncommon^5');
 
       // Values should be preserved
       expect(parsed).toHaveLength(3);
@@ -269,8 +272,8 @@ noun
   shield^3
   potion^2`;
 
-      const adjectiveList = parseWeightedList(code.split('\n\n')[2]);
-      const nounList = parseWeightedList(code.split('\n\n')[3]);
+      const adjectiveList = parseWeightedList(code.split('\n\n')[1].split('\n').slice(1).join('\n'));
+      const nounList = parseWeightedList(code.split('\n\n')[2].split('\n').slice(1).join('\n'));
 
       expect(adjectiveList).toHaveLength(3);
       expect(nounList).toHaveLength(3);

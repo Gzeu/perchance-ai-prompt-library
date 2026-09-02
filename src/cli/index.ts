@@ -14,7 +14,7 @@ const program = new Command();
 
 program
   .name('perchance-gen')
-  .description('🎲 Perchance.ai Generator Toolkit — AI-powered .perchance generator builder')
+  .description('🎲 Perchance.ai Generator Toolkit — perchance-native generation, scraping, and testing')
   .version('8.0.0');
 
 // Error handling helper
@@ -25,10 +25,7 @@ function handleError(error: unknown, context: string): void {
     console.error(`   ${error.message}`);
 
     // Provide helpful suggestions based on error type
-    if (error.message.includes('GROQ_API_KEY')) {
-      console.error('\n💡 Solution: Set GROQ_API_KEY environment variable');
-      console.error('   export GROQ_API_KEY=your-key-here');
-    } else if (error.message.includes('ENOENT') || error.message.includes('file not found')) {
+    if (error.message.includes('ENOENT') || error.message.includes('file not found')) {
       console.error('\n💡 Solution: Check that the file path is correct');
       console.error('   Use absolute path or ensure you\'re in the right directory');
     } else if (error.message.includes('EACCES')) {
@@ -50,7 +47,7 @@ function handleError(error: unknown, context: string): void {
 // CREATE command
 program
   .command('create <topic>')
-  .description('Create a new .perchance generator with AI')
+  .description('Create a new .perchance generator from a topic using perchance-native templates')
   .option('-c, --category <category>', 'Category: names|characters|scenes|items|dialogue|images|loot|quests|custom', 'custom')
   .option('-s, --style <style>', 'Style: simple|weighted|nested|complex', 'nested')
   .option('-n, --count <number>', 'Items per list', '15')
@@ -186,4 +183,7 @@ process.on('unhandledRejection', (error) => {
   handleError(error, 'unhandled promise rejection');
 });
 
-program.parse();
+// Only parse when run directly (not when imported by tests)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  program.parse();
+}
