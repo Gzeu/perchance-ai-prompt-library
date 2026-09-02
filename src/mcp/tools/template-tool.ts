@@ -1,89 +1,100 @@
 /**
  * MCP Tool: list_templates + get_template
- * Browse and retrieve the 150+ built-in Perchance templates
+ * Browse and retrieve built-in Perchance template categories from the
+ * TemplateLibrary word banks. No external AI — everything perchance-native.
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { TemplateLibrary } from '../../agent/template-library.js';
+import type { PerchanceCategory, GeneratorStyle } from '../../types/perchance.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TEMPLATES_DIR = path.resolve(__dirname, '../../../templates');
-
-function scanTemplates() {
-  const results: Array<{ name: string; category: string; path: string }> = [];
-  if (!fs.existsSync(TEMPLATES_DIR)) return results;
-
-  const categories = fs.readdirSync(TEMPLATES_DIR, { withFileTypes: true })
-    .filter(d => d.isDirectory()).map(d => d.name);
-
-  for (const category of categories) {
-    const catDir = path.join(TEMPLATES_DIR, category);
-    const files = fs.readdirSync(catDir).filter(f => f.endsWith('.perchance') || f.endsWith('.txt'));
-    for (const file of files) {
-      results.push({ name: file.replace(/\.(perchance|txt)$/, ''), category, path: path.join(catDir, file) });
-    }
-  }
-  return results;
-}
+const lib = new TemplateLibrary();
 
 export const templateTool = {
   schema: [
     {
       name: 'list_templates',
-      description: 'List all available Perchance generator templates, optionally filtered by category.',
+      description:
+        'List all available Perchance template categories (names, characters, scenes, items, dialogue, images, loot, quests).',
+      inputSchema: { type: 'object', properties: {} },
+    },
+    {
+      name: 'get_template',
+      description:
+        'Get the word bank and a sample generated template for a specific category.',
       inputSchema: {
         type: 'object',
         properties: {
           category: {
             type: 'string',
-            description: 'Filter by category (e.g. characters, scenes, items, dialogue, images)',
+            description: 'Category name from list_templates (e.g. "characters", "items", "loot")',
+          },
+          topic: {
+            type: 'string',
+            description: 'Topic for the template (default: "generic")',
+          },
+          style: {
+            type: 'string',
+            description: 'Style: simple | weighted | complex (default: simple)',
+          },
+          itemCount: {
+            type: 'number',
+            description: 'Number of items per list (default: 10)',
           },
         },
-      },
-    },
-    {
-      name: 'get_template',
-      description: 'Get the full .perchance code of a specific template by name.',
-      inputSchema: {
-        type: 'object',
-        properties: {
-          name: { type: 'string', description: 'Template name (from list_templates)' },
-        },
-        required: ['name'],
+        required: ['category'],
       },
     },
   ],
 
   handler: async (toolName: string, args: Record<string, unknown>) => {
-    const templates = scanTemplates();
-
     if (toolName === 'list_templates') {
-      const category = args.category as string | undefined;
-      const filtered = category ? templates.filter(t => t.category === category) : templates;
+      const templates = lib.listTemplates();
       return {
         content: [{
           type: 'text',
           text: JSON.stringify({
-            total: filtered.length,
-            categories: [...new Set(filtered.map(t => t.category))],
-            templates: filtered.map(t => ({ name: t.name, category: t.category })),
+            total: templates.length,
+            categories: templates.map(t => ({
+              category: t.category,
+              lists: t.lists,
+            })),
+            tip: 'Use get_template with a category name to see a sample .perchance generator.',
           }, null, 2),
         }],
       };
     }
 
     if (toolName === 'get_template') {
-      const name = args.name as string;
-      const template = templates.find(t => t.name === name || t.name.includes(name));
-      if (!template) {
-        return { content: [{ type: 'text', text: `Template "${name}" not found. Use list_templates to see available templates.` }], isError: true };
+      const category = args.category as PerchanceCategory;
+      const topic = (args.topic as string) || 'generic';
+      const style = (args.style as GeneratorStyle) || 'simple';
+      const itemCount = (args.itemCount as number) || 10;
+
+      const bank = lib.getTemplate(category);
+      if (Object.keys(bank).length === 0) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Category "${category}" not found. Use list_templates to see available categories.`,
+          }],
+          isError: true,
+        };
       }
-      const code = fs.readFileSync(template.path, 'utf-8');
+
+      const code = lib.generate({ topic, category, style, itemCount });
+      const preview = await previewRolls(code, 3);
+
       return {
         content: [{
           type: 'text',
-          text: JSON.stringify({ name: template.name, category: template.category, code }, null, 2),
+          text: JSON.stringify({
+            category,
+            topic,
+            style,
+            wordBank: bank,
+            code,
+            sampleRolls: preview,
+          }, null, 2),
         }],
       };
     }
@@ -91,3 +102,9 @@ export const templateTool = {
     return { content: [{ type: 'text', text: 'Unknown template operation' }], isError: true };
   },
 };
+
+// Lazy import to avoid circular dependency
+async function previewRolls(code: string, count: number): Promise<string[]> {
+  const { previewRolls: _preview } = await import('../../core/exporter.js');
+  return _preview(code, count);
+}
