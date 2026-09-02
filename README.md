@@ -30,6 +30,12 @@ A focused CLI and MCP toolkit for [Perchance.ai](https://perchance.org) — the 
 npm install -g perchance-ai-prompt-library
 export GROQ_API_KEY=your-key
 
+# Scrape a generator from perchance.org (web UI)
+perchance-gen ui                      # opens http://localhost:3000
+
+# Scrape via CLI (jsdom, no browser)
+perchance-gen scrape https://perchance.org/fdqirttayk
+
 # Create a generator
 perchance-gen create "fantasy tavern name" --style weighted
 
@@ -88,6 +94,9 @@ perchance-gen run <file>        Run on perchance.org via Playwright
 
 perchance-gen scrape <url>      Scrape & clone a public generator
   --output    Output directory
+
+perchance-gen ui [options]        Launch web UI for scraping perchance.org generators
+  -p, --port    Port (default: 3000)
 ```
 
 ---
