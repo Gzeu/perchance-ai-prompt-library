@@ -3,6 +3,25 @@
 
 export { validatePerchance } from './core/validator.js';
 export { previewRolls, exportGenerator } from './core/exporter.js';
-export * from './types/perchance.js';
+export type * from './types/perchance.js';
+
+// Scraping API — lightweight jsdom-based generator scraping
+export {
+  scrapeGenerator,
+  scrapeGeneratorWithJsdom,
+  scrapeGeneratorWithPlaywright,
+  scrapeMultiple,
+  type ScrapedGenerator,
+} from './playwright/scraper.js';
+export {
+  fetchHtml,
+  parseHtml,
+  fetchAndParseHtml,
+  fetchPerchanceGeneratorHtml,
+  fetchAndParsePerchanceGenerator,
+  extractGeneratorNameFromUrl,
+  extractGeneratorFromDocument,
+  extractDescriptionFromDocument,
+} from './utils/html-scraper.js';
 
 export const VERSION = '8.0.0';

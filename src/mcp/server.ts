@@ -31,6 +31,7 @@ import { batchGenerateTool } from './tools/batch-generate-tool.js';
 import { improveGeneratorTool } from './tools/improve-generator-tool.js';
 import { autonomousTestTool } from './tools/autonomous-test-tool.js';
 import { multiFormatTool } from './tools/multi-format-tool.js';
+import { scrapeGeneratorTool } from './tools/scrape-tool.js';
 
 const server = new Server(
   { name: 'perchance-mcp', version: '1.0.0' },
@@ -46,8 +47,9 @@ const TOOLS = [
   autonomousGenerateTool.schema,
   batchGenerateTool.schema,
   improveGeneratorTool.schema,
-  autonomousTestTool.schema,
+   autonomousTestTool.schema,
   multiFormatTool.schema,
+  scrapeGeneratorTool.schema,
 ];
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -79,6 +81,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return autonomousTestTool.handler(args ?? {});
   case 'multi_format_generate':
     return multiFormatTool.handler(args ?? {});
+  case 'scrape_generator':
+    return scrapeGeneratorTool.handler(args ?? {});
   default:
     throw new Error(`Unknown tool: ${name}`);
   }

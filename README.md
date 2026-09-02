@@ -125,6 +125,7 @@ mcp-config/         MCP server configs (Claude Desktop, OpenClaw)
 | `improve_generator` | AI-powered improvement of existing code |
 | `autonomous_test` | Automated testing suite for generators |
 | `multi_format_generate` | Generate in optimal format (Perchance/HTML) |
+| `scrape_generator` | Scrape a public perchance.org generator — extract full source code via lightweight jsdom (no browser), preview locally, validate, and save |
 
 ---
 

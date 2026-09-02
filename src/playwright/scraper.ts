@@ -1,10 +1,18 @@
 /**
  * Perchance Scraper
- * Scrapes existing public Perchance.ai generators to extract their source code
- * Useful for cloning, studying, and adapting popular generators
+ * Scrapes existing public Perchance.ai generators to extract their source code.
+ * Uses the lightweight downloadGenerator API + jsdom parsing as the primary
+ * method (no browser required). Falls back to full Playwright browser for
+ * edge cases where the API doesn't return the expected structure.
  */
 
 import { PerchanceBrowser } from './perchance-browser.js';
+import {
+  extractGeneratorNameFromUrl,
+  fetchAndParsePerchanceGenerator,
+  extractGeneratorFromDocument,
+  extractDescriptionFromDocument,
+} from '../utils/html-scraper.js';
 
 export interface ScrapedGenerator {
   url: string;
@@ -15,9 +23,43 @@ export interface ScrapedGenerator {
   scrapedAt: string;
 }
 
-export async function scrapeGenerator(
+/**
+ * Scrape a generator using the perchance.org downloadGenerator API + jsdom.
+ * Lightweight — no browser needed. The API returns HTML with the full
+ * generator code embedded in a <script id="preloaded-generator-data"> element.
+ */
+export async function scrapeGeneratorWithJsdom(url: string): Promise<ScrapedGenerator> {
+  if (!url.includes('perchance.org')) {
+    throw new Error('Only perchance.org URLs are supported');
+  }
+
+  const generatorName = extractGeneratorNameFromUrl(url);
+  if (!generatorName) {
+    throw new Error('Could not extract generator name from URL');
+  }
+
+  const { document } = await fetchAndParsePerchanceGenerator(generatorName);
+
+  const { code, description: docDescription } = extractGeneratorFromDocument(document);
+  const metaDescription = extractDescriptionFromDocument(document);
+  const description = docDescription || metaDescription;
+
+  return {
+    url,
+    name: generatorName,
+    code: code || '// Could not extract source code (try Playwright fallback)',
+    description: description || undefined,
+    scrapedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Scrape a generator using Playwright (full browser, JS execution).
+ * Used as a fallback when the jsdom/API approach fails.
+ */
+export async function scrapeGeneratorWithPlaywright(
   url: string,
-  headless = true
+  headless = true,
 ): Promise<ScrapedGenerator> {
   if (!url.includes('perchance.org')) {
     throw new Error('Only perchance.org URLs are supported');
@@ -28,18 +70,27 @@ export async function scrapeGenerator(
   const page = await browser.newPage();
 
   try {
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    // Extract generator name from URL slug
-    const name = url.split('/').filter(Boolean).pop() || 'unknown';
+    const name = extractGeneratorNameFromUrl(url) || url.split('/').filter(Boolean).pop() || 'unknown';
 
-    // Try to get the source code (usually in a hidden textarea or script)
     const code = await page.evaluate(() => {
       // Method 1: look for code textarea
-      const textarea = document.querySelector('textarea#generator-code, textarea.code-editor') as HTMLTextAreaElement;
+      const textarea = document.querySelector(
+        'textarea#generator-code, textarea.code-editor',
+      ) as HTMLTextAreaElement | null;
       if (textarea?.value) return textarea.value;
 
-      // Method 2: look for script tags with generator data
+      // Method 2: look for #preloaded-generator-data (perchance.org download API format)
+      const dataScript = document.querySelector('script#preloaded-generator-data') as HTMLScriptElement | null;
+      if (dataScript?.textContent) {
+        try {
+          const data = JSON.parse(dataScript.textContent.trim());
+          if (data.modelText) return data.modelText;
+        } catch {}
+      }
+
+      // Method 3: look for script tags with generatorCode variable
       const scripts = Array.from(document.querySelectorAll('script'));
       for (const script of scripts) {
         if (script.textContent?.includes('generatorCode')) {
@@ -48,16 +99,17 @@ export async function scrapeGenerator(
         }
       }
 
-      // Method 3: look for pre/code blocks
+      // Method 4: look for pre/code blocks
       const pre = document.querySelector('pre.generator-source, code.perchance-code');
       if (pre?.textContent) return pre.textContent;
 
       return null;
     });
 
-    // Get description if available
     const description = await page.evaluate(() => {
-      const el = document.querySelector('meta[name="description"]') as HTMLMetaElement;
+      const el = document.querySelector(
+        'meta[name="description"]',
+      ) as HTMLMetaElement | null;
       return el?.content || undefined;
     });
 
@@ -76,6 +128,24 @@ export async function scrapeGenerator(
   }
 }
 
+/**
+ * Scrape a generator — tries the lightweight jsdom/API method first,
+ * falls back to full Playwright browser for edge cases.
+ */
+export async function scrapeGenerator(
+  url: string,
+  options?: { headless?: boolean },
+): Promise<ScrapedGenerator> {
+  // Attempt lightweight jsdom scrape (via downloadGenerator API) first
+  const jsdomResult = await scrapeGeneratorWithJsdom(url).catch(() => null);
+
+  if (jsdomResult && jsdomResult.code && !jsdomResult.code.startsWith('// Could not extract')) {
+    return jsdomResult;
+  }
+
+  return scrapeGeneratorWithPlaywright(url, options?.headless);
+}
+
 export async function scrapeMultiple(urls: string[]): Promise<ScrapedGenerator[]> {
   const results: ScrapedGenerator[] = [];
   for (const url of urls) {
@@ -88,3 +158,6 @@ export async function scrapeMultiple(urls: string[]): Promise<ScrapedGenerator[]
   }
   return results;
 }
+
+// Re-export shared extraction utilities for testing and reuse
+export { extractGeneratorFromDocument, extractDescriptionFromDocument };

@@ -14,7 +14,7 @@ export async function scrapeAndCloneWorkflow(
   console.log(`[Scrape] Fetching: ${url}`);
   const scraped = await scrapeGenerator(url);
 
-  if (!scraped.code || scraped.code.startsWith('//')) {
+  if (!scraped.code || scraped.code.startsWith('// Could not extract')) {
     throw new Error(`Could not extract source from ${url}`);
   }
 
